@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Uis.API.Models;
+
+public class Department : BaseEntity
+{
+    public required string Name { get; set; }
+    public required string Code { get; set; }
+
+    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+}
+

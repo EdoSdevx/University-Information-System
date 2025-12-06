@@ -1,0 +1,654 @@
+﻿/* ========================================== */
+/* GLOBAL RESET & STYLES */
+/* ========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: 'Georgia', serif;
+    color: #2c2c2c;
+    background: #f9f9f9;
+}
+
+/* ========================================== */
+/* LOGIN PAGE STYLES */
+/* ========================================== */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1f3a5c 0%, #2d5a8c 100%);
+}
+
+.login-box {
+    background: white;
+    padding: 50px;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-logo-text {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f3a5c;
+    letter-spacing: 2px;
+}
+
+.login-logo-subtext {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.login-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f3a5c;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.login-form-group {
+    margin-bottom: 20px;
+}
+
+.login-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.login-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: 0.3s;
+}
+
+    .login-input:focus {
+        outline: none;
+        border-color: #1f3a5c;
+        box-shadow: 0 0 0 3px rgba(31, 58, 92, 0.1);
+    }
+
+.login-role-section {
+    margin-bottom: 25px;
+}
+
+.login-role-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.login-role-options {
+    display: flex;
+    gap: 10px;
+}
+
+.login-role-option {
+    flex: 1;
+}
+
+.login-role-input {
+    display: none;
+}
+
+.login-role-label-box {
+    display: block;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+    background: white;
+}
+
+    .login-role-label-box:hover {
+        border-color: #1f3a5c;
+        background: #f8f9fa;
+    }
+
+.login-role-input:checked + .login-role-label-box {
+    background: #e8f0f8;
+    border-color: #1f3a5c;
+    color: #1f3a5c;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(to right, #1f3a5c 0%, #2d5a8c 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+    .login-btn:hover {
+        opacity: 0.9;
+    }
+
+.login-demo-note {
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+}
+
+    .login-demo-note strong {
+        color: #1f3a5c;
+    }
+
+/* ========================================== */
+/* DASHBOARD HEADER */
+/* ========================================== */
+.dashboard-header {
+    background: linear-gradient(to right, #1f3a5c 0%, #2d5a8c 100%);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: 64px;
+}
+
+.dashboard-header-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.dashboard-user-section {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.dashboard-user-info {
+    text-align: right;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.dashboard-user-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.dashboard-user-role {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.dashboard-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.dashboard-logout-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 9px 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: 0.3s;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 600;
+}
+
+    .dashboard-logout-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+/* ========================================== */
+/* DASHBOARD LAYOUT */
+/* ========================================== */
+#dashboardPage {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+}
+
+    #dashboardPage.visible {
+        display: flex;
+    }
+
+.dashboard-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.dashboard-sidebar {
+    width: 250px;
+    background: #f9f9f9;
+    padding: 25px 0;
+    border-right: 1px solid #ddd;
+    font-family: 'Segoe UI', sans-serif;
+    overflow-y: auto;
+}
+
+.dashboard-sidebar-section {
+    margin-bottom: 5px;
+}
+
+.dashboard-sidebar-title {
+    padding: 0 20px;
+    font-size: 10px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin: 18px 0 8px 0;
+}
+
+.dashboard-sidebar-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #666;
+    transition: 0.3s;
+    border-left: 4px solid transparent;
+}
+
+    .dashboard-sidebar-item:hover {
+        background: #f0f0f0;
+        border-left-color: #1f3a5c;
+    }
+
+    .dashboard-sidebar-item.active {
+        background: #e8f0f8;
+        border-left-color: #1f3a5c;
+        color: #1f3a5c;
+        font-weight: 600;
+    }
+
+.dashboard-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    background: #f5f7fa;
+}
+
+/* ========================================== */
+/* STUDENT CONTENT STYLES */
+/* ========================================== */
+.student-breadcrumb {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 20px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.student-banner {
+    background: linear-gradient(to right, #2d7a2d 0%, #3d9a3d 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 2px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.student-banner-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.student-banner-text {
+    font-size: 13px;
+    opacity: 0.95;
+    line-height: 1.6;
+}
+
+.student-section-header {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #1f3a5c;
+    margin-bottom: 18px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #1f3a5c;
+}
+
+.student-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 35px;
+}
+
+.student-stat-card {
+    background: white;
+    padding: 25px;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-top: 4px solid #1f3a5c;
+    text-align: center;
+}
+
+    .student-stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+.student-stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f3a5c;
+    margin-bottom: 10px;
+}
+
+.student-stat-label {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.student-courses {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.student-course-card {
+    background: white;
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: 0.3s;
+    border: 1px solid #e0e0e0;
+}
+
+    .student-course-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+.student-course-header {
+    background: #1f3a5c;
+    color: white;
+    padding: 20px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+    .student-course-header.alt1 {
+        background: #2d5a2d;
+    }
+
+    .student-course-header.alt2 {
+        background: #8b6914;
+    }
+
+.student-course-code {
+    font-size: 10px;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.student-course-name {
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.student-course-body {
+    padding: 20px;
+}
+
+.student-course-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.student-course-meta-item {
+}
+
+.student-course-meta-label {
+    color: #999;
+    text-transform: uppercase;
+    font-size: 9px;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.student-course-meta-value {
+    font-weight: 600;
+    color: #2c2c2c;
+    font-size: 12px;
+}
+
+.student-course-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.student-course-btn {
+    flex: 1;
+    background: #1f3a5c;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: 0.3s;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+    .student-course-btn:hover {
+        background: #2d5a8c;
+    }
+
+    .student-course-btn.secondary {
+        background: #f0f0f0;
+        color: #2c2c2c;
+        border: 1px solid #ddd;
+    }
+
+        .student-course-btn.secondary:hover {
+            background: #e0e0e0;
+        }
+
+/* ========================================== */
+/* PLACEHOLDER PAGES */
+/* ========================================== */
+.placeholder-page {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.placeholder-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.placeholder-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f3a5c;
+    margin-bottom: 10px;
+}
+
+.placeholder-text {
+    font-size: 14px;
+    color: #999;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ========================================== */
+/* RESPONSIVE DESIGN */
+/* ========================================== */
+@media (max-width: 1200px) {
+    .student-courses {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .student-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .student-courses {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-layout {
+        flex-direction: column;
+    }
+
+    .dashboard-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        padding: 15px 0;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        height: auto;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .dashboard-header-title {
+        width: 100%;
+    }
+
+    .dashboard-user-section {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .dashboard-content {
+        padding: 20px;
+    }
+
+    .login-box {
+        padding: 40px 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-box {
+        padding: 30px 20px;
+    }
+
+    .dashboard-header {
+        padding: 15px;
+    }
+
+    .dashboard-sidebar {
+        padding: 10px 0;
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .dashboard-sidebar-section {
+        display: flex;
+        gap: 0;
+    }
+
+    .dashboard-sidebar-title {
+        display: none;
+    }
+
+    .dashboard-sidebar-item {
+        flex: 0 0 auto;
+        padding: 10px 15px;
+        border-bottom: 3px solid transparent;
+        border-left: none;
+        white-space: nowrap;
+    }
+
+    .dashboard-content {
+        padding: 15px;
+    }
+
+    .student-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .student-courses {
+        grid-template-columns: 1fr;
+    }
+}

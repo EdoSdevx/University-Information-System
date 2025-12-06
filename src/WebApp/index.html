@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Student Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="login-logo-text">UNIVERSITY</div>
+                <div class="login-logo-subtext">Student Portal</div>
+            </div>
+            <div class="login-title">Login</div>
+            <form id="loginForm">
+                <div class="login-form-group">
+                    <label class="login-label">Email Address</label>
+                    <input type="email" id="loginEmail" class="login-input" placeholder="your.email@university.edu" required>
+                </div>
+                <div class="login-form-group">
+                    <label class="login-label">Password</label>
+                    <input type="password" id="loginPassword" class="login-input" placeholder="Password" required>
+                </div>
+                <div class="login-role-section">
+                    <label class="login-role-label">Login As</label>
+                    <div class="login-role-options">
+                        <div class="login-role-option">
+                            <input type="radio" name="role" value="student" id="roleStudent" class="login-role-input" checked>
+                            <label for="roleStudent" class="login-role-label-box">Student</label>
+                        </div>
+                        <div class="login-role-option">
+                            <input type="radio" name="role" value="teacher" id="roleTeacher" class="login-role-input">
+                            <label for="roleTeacher" class="login-role-label-box">Teacher</label>
+                        </div>
+                        <div class="login-role-option">
+                            <input type="radio" name="role" value="admin" id="roleAdmin" class="login-role-input">
+                            <label for="roleAdmin" class="login-role-label-box">Admin</label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="login-btn">Sign In</button>
+                <div class="login-demo-note">
+                    Demo Mode: Use any email and password to test the system.
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboardPage">
+        <div id="headerContainer"></div>
+        <div class="dashboard-layout">
+            <div id="sidebarContainer"></div>
+            <div class="dashboard-content" id="appContainer"></div>
+        </div>
+    </div>
+
+    <!-- Main application script (module) -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

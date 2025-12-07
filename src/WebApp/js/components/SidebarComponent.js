@@ -12,6 +12,7 @@ export const SidebarComponent = {
             navigation: [
                 { page: 'dashboard', label: 'Dashboard' },
                 { page: 'courses', label: 'My Courses' },
+                { page: 'schedule', label: 'My Schedule' },
                 { page: 'registration', label: 'Course Registration' },
                 { page: 'grades', label: 'Grades & Transcripts' }
             ],
@@ -25,6 +26,7 @@ export const SidebarComponent = {
             navigation: [
                 { page: 'dashboard', label: 'Dashboard' },
                 { page: 'classes', label: 'My Classes' },
+                { page: 'schedule', label: 'My Schedule' },
                 { page: 'grading', label: 'Grading' },
                 { page: 'roster', label: 'Class Roster' }
             ],

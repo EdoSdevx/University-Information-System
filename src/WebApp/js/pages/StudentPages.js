@@ -248,6 +248,93 @@ export const StudentPages = {
         afterRender: () => { }
     },
 
+    attendance: {
+        render: () => `
+        <div class="student-breadcrumb">Home / Attendance</div>
+        <div class="student-section-header">My Attendance Record</div>
+        
+        <div class="student-attendance-container">
+            <div class="student-attendance-summary">
+                <div class="student-attendance-card">
+                    <div class="student-attendance-card-label">Overall Attendance</div>
+                    <div class="student-attendance-card-percent">92%</div>
+                    <div class="student-attendance-card-bar">
+                        <div class="student-attendance-card-fill" style="width: 92%"></div>
+                    </div>
+                </div>
+                <div class="student-attendance-card">
+                    <div class="student-attendance-card-label">Classes Attended</div>
+                    <div class="student-attendance-card-value">23/25</div>
+                </div>
+                <div class="student-attendance-card">
+                    <div class="student-attendance-card-label">Absences</div>
+                    <div class="student-attendance-card-value">2</div>
+                </div>
+                <div class="student-attendance-card">
+                    <div class="student-attendance-card-label">Late Arrivals</div>
+                    <div class="student-attendance-card-value">1</div>
+                </div>
+            </div>
+
+            <div class="student-attendance-table-wrapper">
+                <h3>Attendance History</h3>
+                <table class="student-attendance-table">
+                    <thead>
+                        <tr>
+                            <th class="student-attendance-col-date">Date</th>
+                            <th class="student-attendance-col-course">Course</th>
+                            <th class="student-attendance-col-status">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-09</td>
+                            <td class="student-attendance-col-course">CS101 - Introduction to Programming</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
+                        </tr>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-08</td>
+                            <td class="student-attendance-col-course">MATH101 - Calculus I</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
+                        </tr>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-07</td>
+                            <td class="student-attendance-col-course">CS101 - Introduction to Programming</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-late">Late</span></td>
+                        </tr>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-06</td>
+                            <td class="student-attendance-col-course">ENG101 - English I</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
+                        </tr>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-05</td>
+                            <td class="student-attendance-col-course">MATH101 - Calculus I</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-absent">Absent</span></td>
+                        </tr>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-04</td>
+                            <td class="student-attendance-col-course">CS101 - Introduction to Programming</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
+                        </tr>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-03</td>
+                            <td class="student-attendance-col-course">ENG101 - English I</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
+                        </tr>
+                        <tr class="student-attendance-row">
+                            <td class="student-attendance-col-date">2024-10-02</td>
+                            <td class="student-attendance-col-course">MATH101 - Calculus I</td>
+                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `,
+        afterRender: () => { }
+    },
+
     registration: {
         render: () => `
         <div class="student-breadcrumb">Home / Course Registration</div>

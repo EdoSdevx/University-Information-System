@@ -43,6 +43,17 @@ body {
     }
 }
 
+/* Remove spinner from number input */
+.teacher-grading-input::-webkit-outer-spin-button,
+.teacher-grading-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.teacher-grading-input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 /* ==========================================================================
    2. AUTHENTICATION (LOGIN PAGE)
    ========================================================================== */
@@ -2061,6 +2072,1865 @@ body {
     /* Schedule */
     .schedule-container {
         grid-template-columns: 1fr;
+    }
+}
+/* ========================================== */
+/* TEACHER GRADING STYLES */
+/* ========================================== */
+.teacher-grading-container {
+    background: white;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.teacher-grading-selector {
+    padding: 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+    .teacher-grading-selector label {
+        font-weight: 600;
+        color: #1f3a5c;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+        min-width: 100px;
+    }
+
+.teacher-grading-class-select {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    background: white;
+    cursor: pointer;
+    color: #2c2c2c;
+}
+
+    .teacher-grading-class-select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+    }
+
+.teacher-grading-info {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 2px solid #8b5cf6;
+}
+
+    .teacher-grading-info p {
+        margin: 0;
+        font-size: 13px;
+        color: #666;
+        font-weight: 600;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+/* Grades Table */
+.teacher-grading-table-wrapper {
+    overflow-x: auto;
+    margin: 20px;
+}
+
+.teacher-grading-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+    .teacher-grading-table thead {
+        background: white;
+        color: #8b5cf6;
+        border-bottom: 2px solid #8b5cf6;
+    }
+
+    .teacher-grading-table th {
+        padding: 14px 10px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-family: 'Segoe UI', sans-serif;
+        color: #8b5cf6;
+    }
+
+    .teacher-grading-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+.teacher-grading-row:hover {
+    background: #f9f9f9;
+}
+
+.teacher-grading-row:last-child td {
+    border-bottom: none;
+}
+
+/* Table Columns */
+.teacher-grading-col-student {
+    font-weight: 600;
+    color: #2c2c2c;
+    min-width: 150px;
+}
+
+.teacher-grading-col-id {
+    color: #666;
+    min-width: 90px;
+    font-size: 12px;
+}
+
+.teacher-grading-col-grade {
+    text-align: center;
+    min-width: 75px;
+}
+
+.teacher-grading-input {
+    width: 60px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    text-align: center;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 600;
+}
+
+    .teacher-grading-input:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background: #f8f5ff;
+    }
+
+.teacher-grading-col-letter {
+    text-align: center;
+    min-width: 70px;
+}
+
+.teacher-grading-letter {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.teacher-grading-letter-a {
+    background: #d4edda;
+    color: #155724;
+}
+
+.teacher-grading-letter-b {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.teacher-grading-letter-c {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.teacher-grading-letter-d {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.teacher-grading-letter-f {
+    background: #f5c2c7;
+    color: #842029;
+    font-weight: 900;
+}
+
+.teacher-grading-col-action {
+    text-align: center;
+    min-width: 80px;
+}
+
+.teacher-grading-action-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+    .teacher-grading-action-btn:hover {
+        background: #ff5252;
+    }
+
+/* Save Button */
+.teacher-grading-save-btn {
+    background: linear-gradient(to right, #8b5cf6 0%, #a855f7 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0 20px 20px 20px;
+    transition: 0.3s;
+    width: calc(100% - 40px);
+}
+
+    .teacher-grading-save-btn:hover {
+        opacity: 0.9;
+    }
+
+
+.teacher-grading-input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Toast Notification */
+.teacher-grading-toast {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #27ae60;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+    z-index: 2000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: bottom 0.3s ease;
+    max-width: 90%;
+}
+
+.teacher-grading-toast-show {
+    bottom: 30px;
+}
+
+.teacher-grading-toast-success {
+    background: linear-gradient(to right, #27ae60 0%, #229954 100%);
+}
+
+.teacher-grading-toast-error {
+    background: linear-gradient(to right, #ff6b6b 0%, #ff5252 100%);
+}
+
+.teacher-grading-toast-warning {
+    background: linear-gradient(to right, #f39c12 0%, #e67e22 100%);
+}
+
+/* Bell Curve Info */
+.teacher-grading-bell-curve-info {
+    display: block;
+    font-size: 11px;
+    color: #999;
+    margin-top: 8px;
+    font-style: italic;
+}
+/* Responsive */
+@media (max-width: 768px) {
+    .teacher-grading-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .teacher-grading-table th,
+    .teacher-grading-table td {
+        padding: 8px 6px;
+        font-size: 11px;
+    }
+
+    .teacher-grading-input {
+        width: 50px;
+        padding: 4px 6px;
+        font-size: 12px;
+    }
+}
+
+/* ========================================== */
+/* TEACHER ROSTER STYLES */
+/* ========================================== */
+.teacher-roster-container {
+    background: white;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.teacher-roster-selector {
+    padding: 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+    .teacher-roster-selector label {
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+        min-width: 100px;
+    }
+
+.teacher-roster-class-select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    background: white;
+    cursor: pointer;
+    color: #2c2c2c;
+}
+
+    .teacher-roster-class-select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+    }
+
+.teacher-roster-search {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #2c2c2c;
+}
+
+    .teacher-roster-search:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background: #f8f5ff;
+    }
+
+    .teacher-roster-search::placeholder {
+        color: #999;
+    }
+
+.teacher-roster-info {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 2px solid #8b5cf6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .teacher-roster-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #2c2c2c;
+        font-weight: 600;
+    }
+
+#rosterCount {
+    font-size: 12px;
+    color: #666;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Roster Table */
+.teacher-roster-table-wrapper {
+    overflow-x: auto;
+}
+
+.teacher-roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+    .teacher-roster-table thead {
+        background: white;
+        color: #8b5cf6;
+        border-bottom: 2px solid #8b5cf6;
+    }
+
+    .teacher-roster-table th {
+        padding: 14px 15px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-family: 'Segoe UI', sans-serif;
+        color: #8b5cf6;
+    }
+
+    .teacher-roster-table td {
+        padding: 14px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+.teacher-roster-row:hover {
+    background: #f9f9f9;
+}
+
+.teacher-roster-row:last-child td {
+    border-bottom: none;
+}
+
+/* Table Columns */
+.teacher-roster-col-id {
+    font-weight: 700;
+    color: #8b5cf6;
+    min-width: 90px;
+}
+
+.teacher-roster-col-name {
+    font-weight: 600;
+    color: #2c2c2c;
+    min-width: 150px;
+}
+
+.teacher-roster-col-email {
+    color: #666;
+    min-width: 200px;
+    font-size: 12px;
+}
+
+.teacher-roster-col-status {
+    text-align: center;
+    min-width: 90px;
+}
+
+.teacher-roster-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.teacher-roster-status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.teacher-roster-status-inactive {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.teacher-roster-col-enrolled {
+    color: #666;
+    min-width: 120px;
+    font-size: 12px;
+}
+
+.teacher-roster-col-action {
+    text-align: center;
+    min-width: 80px;
+}
+
+.teacher-roster-action-btn {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+    .teacher-roster-action-btn:hover {
+        background: #7c3aed;
+    }
+
+/* ========================================== */
+/* TEACHER ROSTER STYLES */
+/* ========================================== */
+.teacher-roster-container {
+    background: white;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.teacher-roster-selector {
+    padding: 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+    .teacher-roster-selector label {
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+        min-width: 100px;
+    }
+
+.teacher-roster-class-select {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    background: white;
+    cursor: pointer;
+    color: #2c2c2c;
+}
+
+    .teacher-roster-class-select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+    }
+
+.teacher-roster-search {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #2c2c2c;
+}
+
+    .teacher-roster-search:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background: #f8f5ff;
+    }
+
+    .teacher-roster-search::placeholder {
+        color: #999;
+    }
+
+.teacher-roster-info {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 2px solid #8b5cf6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .teacher-roster-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #2c2c2c;
+        font-weight: 600;
+    }
+
+#rosterCount {
+    font-size: 12px;
+    color: #666;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Roster Table */
+.teacher-roster-table-wrapper {
+    overflow-x: auto;
+}
+
+.teacher-roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+    .teacher-roster-table thead {
+        background: white;
+        color: #8b5cf6;
+        border-bottom: 2px solid #8b5cf6;
+    }
+
+    .teacher-roster-table th {
+        padding: 14px 15px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-family: 'Segoe UI', sans-serif;
+        color: #8b5cf6;
+    }
+
+    .teacher-roster-table td {
+        padding: 14px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+.teacher-roster-row:hover {
+    background: #f9f9f9;
+}
+
+.teacher-roster-row:last-child td {
+    border-bottom: none;
+}
+
+/* Table Columns */
+.teacher-roster-col-id {
+    font-weight: 700;
+    color: #8b5cf6;
+    min-width: 90px;
+}
+
+.teacher-roster-col-name {
+    font-weight: 600;
+    color: #2c2c2c;
+    min-width: 150px;
+}
+
+.teacher-roster-col-email {
+    color: #666;
+    min-width: 200px;
+    font-size: 12px;
+}
+
+.teacher-roster-col-status {
+    text-align: center;
+    min-width: 90px;
+}
+
+.teacher-roster-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.teacher-roster-status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.teacher-roster-status-inactive {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.teacher-roster-col-enrolled {
+    color: #666;
+    min-width: 120px;
+    font-size: 12px;
+}
+
+/* Dropdown Menu */
+.teacher-roster-col-action {
+    text-align: center;
+    min-width: 80px;
+}
+
+.teacher-roster-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.teacher-roster-dropdown-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #8b5cf6;
+    padding: 5px 10px;
+    transition: 0.3s;
+    font-weight: 700;
+}
+
+    .teacher-roster-dropdown-btn:hover {
+        color: #7c3aed;
+    }
+
+.teacher-roster-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 160px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: 0.3s;
+    z-index: 100;
+    margin-top: 5px;
+}
+
+.teacher-roster-dropdown:hover .teacher-roster-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.teacher-roster-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    background: none;
+    color: #2c2c2c;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    font-family: 'Segoe UI', sans-serif;
+    transition: 0.2s;
+}
+
+    .teacher-roster-dropdown-item:first-child {
+        border-radius: 3px 3px 0 0;
+    }
+
+    .teacher-roster-dropdown-item:last-child {
+        border-radius: 0 0 3px 3px;
+    }
+
+    .teacher-roster-dropdown-item:hover {
+        background: #f9f9f9;
+    }
+
+.teacher-roster-dropdown-message:hover {
+    background: #e3f2fd;
+    color: #3498db;
+}
+
+.teacher-roster-dropdown-grade:hover {
+    background: #f3e5f5;
+    color: #8b5cf6;
+}
+
+.teacher-roster-dropdown-attendance:hover {
+    background: #fff3e0;
+    color: #f39c12;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .teacher-roster-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .teacher-roster-class-select,
+    .teacher-roster-search {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .teacher-roster-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .teacher-roster-table th,
+    .teacher-roster-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .teacher-roster-col-email {
+        min-width: 150px;
+    }
+}
+/* ========================================== */
+/* CHANGE GRADE MODAL */
+/* ========================================== */
+.teacher-change-grade-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.teacher-change-grade-modal-content {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    animation: teacher-change-grade-slideIn 0.3s ease;
+}
+
+@keyframes teacher-change-grade-slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.teacher-change-grade-modal-header {
+    background: #8b5cf6;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px 4px 0 0;
+}
+
+    .teacher-change-grade-modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+.teacher-change-grade-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+    .teacher-change-grade-modal-close:hover {
+        opacity: 0.8;
+    }
+
+/* Form */
+.teacher-change-grade-modal-body {
+    padding: 25px;
+}
+
+.teacher-change-grade-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.teacher-change-grade-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .teacher-change-grade-form-group label {
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .teacher-change-grade-form-group input {
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'Segoe UI', sans-serif;
+        color: #2c2c2c;
+        font-weight: 600;
+    }
+
+        .teacher-change-grade-form-group input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: #f8f5ff;
+        }
+
+        .teacher-change-grade-form-group input::-webkit-outer-spin-button,
+        .teacher-change-grade-form-group input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .teacher-change-grade-form-group input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+.teacher-change-grade-max {
+    position: absolute;
+    margin-top: 38px;
+    margin-left: 70px;
+    font-size: 12px;
+    color: #999;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Preview */
+.teacher-change-grade-preview {
+    background: #f8f5ff;
+    padding: 15px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.teacher-change-grade-preview-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+    .teacher-change-grade-preview-item span:first-child {
+        font-size: 12px;
+        color: #666;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+.teacher-change-grade-preview-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #8b5cf6;
+}
+
+.teacher-change-grade-preview-letter {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.teacher-change-grade-letter-a {
+    background: #d4edda;
+    color: #155724;
+}
+
+.teacher-change-grade-letter-b {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.teacher-change-grade-letter-c {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.teacher-change-grade-letter-d {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.teacher-change-grade-letter-f {
+    background: #f5c2c7;
+    color: #842029;
+    font-weight: 900;
+}
+
+/* Footer */
+.teacher-change-grade-modal-footer {
+    padding: 15px 25px;
+    background: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-radius: 0 0 4px 4px;
+}
+
+.teacher-change-grade-btn-cancel,
+.teacher-change-grade-btn-save {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: 0.3s;
+}
+
+.teacher-change-grade-btn-cancel {
+    background: #e0e0e0;
+    color: #666;
+}
+
+    .teacher-change-grade-btn-cancel:hover {
+        background: #d0d0d0;
+    }
+
+.teacher-change-grade-btn-save {
+    background: linear-gradient(to right, #8b5cf6 0%, #a855f7 100%);
+    color: white;
+}
+
+    .teacher-change-grade-btn-save:hover {
+        opacity: 0.9;
+    }
+/* ========================================== */
+/* TEACHER ANNOUNCEMENTS */
+/* ========================================== */
+.teacher-announcements-container {
+    background: white;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.teacher-announcements-header {
+    padding: 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.teacher-announcements-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #2c2c2c;
+    font-weight: 600;
+}
+
+.teacher-announcements-new-btn {
+    background: linear-gradient(to right, #8b5cf6 0%, #a855f7 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: 0.3s;
+}
+
+    .teacher-announcements-new-btn:hover {
+        opacity: 0.9;
+    }
+
+.teacher-announcements-selector {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 2px solid #8b5cf6;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+    .teacher-announcements-selector label {
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+        min-width: 100px;
+    }
+
+.teacher-announcements-class-select {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    cursor: pointer;
+    color: #2c2c2c;
+}
+
+    .teacher-announcements-class-select:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background: #f8f5ff;
+    }
+
+/* Announcements List */
+.teacher-announcements-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.teacher-announcements-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+    .teacher-announcements-empty p {
+        font-size: 13px;
+        margin: 5px 0;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+/* Announcement Card */
+.teacher-announcement-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 15px;
+    transition: 0.3s;
+}
+
+    .teacher-announcement-card:hover {
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+        border-color: #8b5cf6;
+    }
+
+.teacher-announcement-card-urgent {
+    border-left: 4px solid #ff6b6b;
+    background: #fff5f5;
+}
+
+.teacher-announcement-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.teacher-announcement-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c2c2c;
+    margin: 0 0 8px 0;
+}
+
+.teacher-announcement-urgent-badge {
+    display: inline-block;
+    background: #ff6b6b;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.teacher-announcement-card-date {
+    font-size: 11px;
+    color: #999;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.teacher-announcement-card-content p {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: #666;
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+}
+
+.teacher-announcement-card-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.teacher-announcement-edit-btn,
+.teacher-announcement-delete-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.teacher-announcement-edit-btn {
+    background: #8b5cf6;
+    color: white;
+}
+
+    .teacher-announcement-edit-btn:hover {
+        background: #7c3aed;
+    }
+
+.teacher-announcement-delete-btn {
+    background: #f0f0f0;
+    color: #ff6b6b;
+}
+
+    .teacher-announcement-delete-btn:hover {
+        background: #e0e0e0;
+    }
+
+/* Modal */
+.teacher-announcement-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.teacher-announcement-modal-content {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    animation: teacher-announcement-slideIn 0.3s ease;
+}
+
+@keyframes teacher-announcement-slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.teacher-announcement-modal-header {
+    background: #8b5cf6;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .teacher-announcement-modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+.teacher-announcement-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.teacher-announcement-modal-body {
+    padding: 25px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.teacher-announcement-form-group {
+    margin-bottom: 20px;
+}
+
+    .teacher-announcement-form-group label {
+        display: block;
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 13px;
+        margin-bottom: 8px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+.teacher-announcement-class-display {
+    display: block;
+    padding: 10px;
+    background: #f8f5ff;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #2c2c2c;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.teacher-announcement-input,
+.teacher-announcement-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #2c2c2c;
+    box-sizing: border-box;
+}
+
+    .teacher-announcement-input:focus,
+    .teacher-announcement-textarea:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background: #f8f5ff;
+    }
+
+.teacher-announcement-textarea {
+    resize: vertical;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.teacher-announcement-checkbox {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.teacher-announcement-modal-footer {
+    padding: 15px 25px;
+    background: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.teacher-announcement-btn-cancel,
+.teacher-announcement-btn-send {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: 0.3s;
+}
+
+.teacher-announcement-btn-cancel {
+    background: #e0e0e0;
+    color: #666;
+}
+
+    .teacher-announcement-btn-cancel:hover {
+        background: #d0d0d0;
+    }
+
+.teacher-announcement-btn-send {
+    background: linear-gradient(to right, #8b5cf6 0%, #a855f7 100%);
+    color: white;
+}
+
+    .teacher-announcement-btn-send:hover {
+        opacity: 0.9;
+    }
+
+/* Toast */
+.teacher-announcement-toast {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #27ae60;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+    z-index: 2001;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: bottom 0.3s ease;
+}
+
+.teacher-announcement-toast-show {
+    bottom: 30px;
+}
+
+.teacher-announcement-toast-success {
+    background: linear-gradient(to right, #27ae60 0%, #229954 100%);
+}
+
+/* ========================================== */
+/* TEACHER ATTENDANCE */
+/* ========================================== */
+.teacher-attendance-container {
+    background: white;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.teacher-attendance-selector {
+    padding: 20px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.teacher-attendance-selector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .teacher-attendance-selector-group label {
+        font-weight: 600;
+        color: #8b5cf6;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+.teacher-attendance-class-select,
+.teacher-attendance-date-input {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #2c2c2c;
+    min-width: 200px;
+}
+
+    .teacher-attendance-class-select:focus,
+    .teacher-attendance-date-input:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background: #f8f5ff;
+    }
+
+.teacher-attendance-info {
+    padding: 15px 20px;
+    background: white;
+    border-bottom: 2px solid #8b5cf6;
+}
+
+    .teacher-attendance-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #2c2c2c;
+        font-weight: 600;
+    }
+
+.teacher-attendance-list {
+    padding: 20px;
+}
+
+.teacher-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .teacher-attendance-table thead {
+        background: white;
+        border-bottom: 2px solid #8b5cf6;
+    }
+
+    .teacher-attendance-table th {
+        padding: 14px 15px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #8b5cf6;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .teacher-attendance-table td {
+        padding: 14px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+    }
+
+.teacher-attendance-row:hover {
+    background: #f9f9f9;
+}
+
+.teacher-attendance-col-name {
+    font-weight: 600;
+    color: #2c2c2c;
+    min-width: 150px;
+}
+
+.teacher-attendance-col-id {
+    color: #8b5cf6;
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.teacher-attendance-col-status {
+    min-width: 250px;
+}
+
+.teacher-attendance-status-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.teacher-attendance-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    font-family: 'Segoe UI', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+    .teacher-attendance-btn:hover {
+        border-color: #8b5cf6;
+    }
+
+.teacher-attendance-btn-present {
+    color: #155724;
+}
+
+    .teacher-attendance-btn-present.teacher-attendance-btn-active {
+        background: #d4edda;
+        border-color: #155724;
+    }
+
+.teacher-attendance-btn-late {
+    color: #664d03;
+}
+
+    .teacher-attendance-btn-late.teacher-attendance-btn-active {
+        background: #fff3cd;
+        border-color: #664d03;
+    }
+
+.teacher-attendance-btn-absent {
+    color: #842029;
+}
+
+    .teacher-attendance-btn-absent.teacher-attendance-btn-active {
+        background: #f8d7da;
+        border-color: #842029;
+    }
+
+.teacher-attendance-save-btn {
+    background: linear-gradient(to right, #8b5cf6 0%, #a855f7 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0 20px 20px 20px;
+    width: calc(100% - 40px);
+    transition: 0.3s;
+}
+
+    .teacher-attendance-save-btn:hover {
+        opacity: 0.9;
+    }
+
+.teacher-attendance-toast {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #27ae60;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+    z-index: 2000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: bottom 0.3s ease;
+}
+
+.teacher-attendance-toast-show {
+    bottom: 30px;
+}
+
+.teacher-attendance-toast-success {
+    background: linear-gradient(to right, #27ae60 0%, #229954 100%);
+}
+
+/* ========================================== */
+/* STUDENT ATTENDANCE */
+/* ========================================== */
+.student-attendance-container {
+    margin-bottom: 30px;
+}
+
+.student-attendance-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.student-attendance-card {
+    background: white;
+    padding: 20px;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid #1f3a5c;
+}
+
+.student-attendance-card-label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.student-attendance-card-percent {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f3a5c;
+    margin-bottom: 10px;
+}
+
+.student-attendance-card-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f3a5c;
+}
+
+.student-attendance-card-bar {
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.student-attendance-card-fill {
+    height: 100%;
+    background: linear-gradient(to right, #1f3a5c 0%, #2d5a8c 100%);
+}
+
+.student-attendance-table-wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+    .student-attendance-table-wrapper h3 {
+        margin: 0 0 20px 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #2c2c2c;
+    }
+
+.student-attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .student-attendance-table thead {
+        background: white;
+        border-bottom: 2px solid #1f3a5c;
+    }
+
+    .student-attendance-table th {
+        padding: 14px 15px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #1f3a5c;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .student-attendance-table td {
+        padding: 14px 15px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+.student-attendance-row:hover {
+    background: #f9f9f9;
+}
+
+.student-attendance-col-date {
+    color: #1f3a5c;
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.student-attendance-col-course {
+    color: #2c2c2c;
+    font-weight: 600;
+    min-width: 250px;
+}
+
+.student-attendance-col-status {
+    min-width: 100px;
+}
+
+.student-attendance-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.student-attendance-badge-present {
+    background: #d4edda;
+    color: #155724;
+}
+
+.student-attendance-badge-late {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.student-attendance-badge-absent {
+    background: #f8d7da;
+    color: #842029;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .student-attendance-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .teacher-attendance-selector {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .teacher-attendance-class-select,
+    .teacher-attendance-date-input {
+        min-width: 100%;
+    }
+
+    .student-attendance-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .student-attendance-table th,
+    .student-attendance-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
+/* Responsive */
+@media (max-width: 768px) {
+    .teacher-announcements-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .teacher-announcements-new-btn {
+        width: 100%;
+    }
+
+    .teacher-announcement-card-header {
+        flex-direction: column;
+    }
+}
+/* Responsive */
+@media (max-width: 768px) {
+    .teacher-change-grade-form {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-change-grade-preview {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+/* Responsive */
+@media (max-width: 1024px) {
+    .teacher-roster-selector {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .teacher-roster-class-select,
+    .teacher-roster-search {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .teacher-roster-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .teacher-roster-table th,
+    .teacher-roster-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .teacher-roster-col-email {
+        min-width: 150px;
     }
 }
 

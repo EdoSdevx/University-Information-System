@@ -249,7 +249,7 @@ export const StudentPages = {
     },
 
     attendance: {
-        render: () => `
+    render: () => `
         <div class="student-breadcrumb">Home / Attendance</div>
         <div class="student-section-header">My Attendance Record</div>
         
@@ -332,7 +332,148 @@ export const StudentPages = {
             </div>
         </div>
     `,
-        afterRender: () => { }
+    afterRender: () => {}
+},
+
+    assignments: {
+        render: () => `
+     <div class="student-breadcrumb">Home / Assignments</div>
+     <div class="student-section-header">My Assignments</div>
+     
+     <div class="student-assignment-container">
+         <div class="student-assignment-tabs">
+             <button class="student-assignment-tab active" onclick="window.filterAssignments('all')">All</button>
+             <button class="student-assignment-tab" onclick="window.filterAssignments('pending')">Pending</button>
+             <button class="student-assignment-tab" onclick="window.filterAssignments('submitted')">Submitted</button>
+             <button class="student-assignment-tab" onclick="window.filterAssignments('graded')">Graded</button>
+         </div>
+
+         <div class="student-assignment-list" id="assignmentsList"></div>
+     </div>
+
+     <!-- Modal: Submit Assignment -->
+     <div class="student-assignment-submit-modal" id="submitModal">
+         <div class="student-assignment-modal-content">
+             <div class="student-assignment-modal-header">
+                 <h3 id="submitTitle"></h3>
+                 <button class="student-assignment-modal-close" onclick="document.getElementById('submitModal').style.display='none'">×</button>
+             </div>
+             <div class="student-assignment-modal-body">
+                 <div class="student-assignment-form-group">
+                     <label>Assignment Description:</label>
+                     <p id="submitDescription" class="student-assignment-description"></p>
+                 </div>
+                 <div class="student-assignment-form-group">
+                     <label>Due Date:</label>
+                     <p id="submitDueDate" class="student-assignment-due-date"></p>
+                 </div>
+                 <div class="student-assignment-form-group">
+                     <label>Upload File *</label>
+                     <input type="file" id="submitFile" class="student-assignment-file-input">
+                     <p class="student-assignment-file-hint">Max file size: 50MB</p>
+                 </div>
+                 <div class="student-assignment-form-group">
+                     <label>Comments (Optional)</label>
+                     <textarea id="submitComments" class="student-assignment-textarea" placeholder="Add any comments..." rows="4"></textarea>
+                 </div>
+             </div>
+             <div class="student-assignment-modal-footer">
+                 <button class="student-assignment-btn-cancel" onclick="document.getElementById('submitModal').style.display='none'">Cancel</button>
+                 <button class="student-assignment-btn-submit" onclick="window.submitAssignment()">Submit Assignment</button>
+             </div>
+         </div>
+     </div>
+ `,
+        afterRender: () => {
+            const assignments = [
+                { id: 1, course: 'CS101', title: 'Variables and Data Types', description: 'Write a program using different data types', dueDate: '2024-10-15', points: 100, status: 'submitted', grade: 95 },
+                { id: 2, course: 'CS101', title: 'Functions and Loops', description: 'Implement functions and loop structures', dueDate: '2024-10-22', points: 100, status: 'pending', grade: null },
+                { id: 3, course: 'MATH101', title: 'Derivatives Practice', description: 'Solve 20 derivative problems', dueDate: '2024-10-20', points: 50, status: 'graded', grade: 48 },
+                { id: 4, course: 'ENG101', title: 'Essay Writing', description: 'Write a 5-page essay', dueDate: '2024-10-25', points: 100, status: 'pending', grade: null }
+            ];
+
+            let currentFilter = 'all';
+
+            function renderAssignments() {
+                const filtered = currentFilter === 'all' ? assignments : assignments.filter(a => a.status === currentFilter);
+
+                const list = document.getElementById('assignmentsList');
+                if (filtered.length === 0) {
+                    list.innerHTML = `
+                 <div class="student-assignment-empty">
+                     <p>No assignments in this category</p>
+                 </div>
+             `;
+                    return;
+                }
+
+                list.innerHTML = filtered.map(assign => {
+                    const dueDate = new Date(assign.dueDate);
+                    const today = new Date();
+                    const isOverdue = dueDate < today && assign.status === 'pending';
+
+                    return `
+                 <div class="student-assignment-card ${isOverdue ? 'student-assignment-card-overdue' : ''}">
+                     <div class="student-assignment-card-header">
+                         <div>
+                             <span class="student-assignment-course">${assign.course}</span>
+                             <h4 class="student-assignment-card-title">${assign.title}</h4>
+                         </div>
+                         <span class="student-assignment-card-points">${assign.points} pts</span>
+                     </div>
+                     <div class="student-assignment-card-content">
+                         <p>${assign.description}</p>
+                         <div class="student-assignment-card-meta">
+                             <span>Due: ${new Date(assign.dueDate).toLocaleDateString()}</span>
+                             <span class="student-assignment-status-badge student-assignment-status-${assign.status}">${assign.status.charAt(0).toUpperCase() + assign.status.slice(1)}</span>
+                             ${assign.grade ? `<span class="student-assignment-grade">${assign.grade}/${assign.points}</span>` : ''}
+                         </div>
+                     </div>
+                     <div class="student-assignment-card-actions">
+                         ${assign.status === 'pending' ? `<button class="student-assignment-submit-btn" onclick="window.openSubmitModal(${assign.id}, '${assign.title}', '${assign.description}', '${assign.dueDate}')">Submit</button>` : ''}
+                         ${assign.status === 'graded' ? `<button class="student-assignment-view-grade-btn" onclick="alert('Your grade: ${assign.grade}/${assign.points}')">View Grade</button>` : ''}
+                     </div>
+                 </div>
+             `;
+                }).join('');
+            }
+
+            window.filterAssignments = function (filter) {
+                currentFilter = filter;
+                document.querySelectorAll('.student-assignment-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                renderAssignments();
+            };
+
+            window.openSubmitModal = function (assignmentId, title, description, dueDate) {
+                document.getElementById('submitTitle').textContent = title;
+                document.getElementById('submitDescription').textContent = description;
+                document.getElementById('submitDueDate').textContent = new Date(dueDate).toLocaleDateString();
+                document.getElementById('submitFile').value = '';
+                document.getElementById('submitComments').value = '';
+                document.getElementById('submitModal').style.display = 'flex';
+            };
+
+            window.submitAssignment = function () {
+                const file = document.getElementById('submitFile').value;
+
+                if (!file) {
+                    alert('Please select a file');
+                    return;
+                }
+
+                alert('Assignment submitted successfully!');
+                document.getElementById('submitModal').style.display = 'none';
+            };
+
+            document.getElementById('submitModal').addEventListener('click', function (e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+
+            renderAssignments();
+        }
     },
 
     registration: {

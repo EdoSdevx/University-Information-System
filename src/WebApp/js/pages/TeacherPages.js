@@ -334,27 +334,43 @@ export const TeacherPages = {
                         <option value="ENG101-A">ENG101-A - English I</option>
                     </select>
                 </div>
-                <div class="teacher-attendance-selector-group">
-                    <label>Date:</label>
-                    <input type="date" id="attendanceDate" class="teacher-attendance-date-input">
-                </div>
             </div>
 
             <div class="teacher-attendance-info">
                 <p id="classInfo">CS101-A - Introduction to Programming</p>
             </div>
 
+            <div class="teacher-attendance-weeks">
+                <div class="teacher-attendance-weeks-header">
+                    <h4>Select Week</h4>
+                </div>
+                <div class="teacher-attendance-weeks-grid" id="weeksGrid"></div>
+            </div>
+
             <div class="teacher-attendance-list">
+                <div class="teacher-attendance-list-header">
+                    <label class="teacher-attendance-select-all">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll()">
+                        <span>Select All Students</span>
+                    </label>
+                </div>
                 <table class="teacher-attendance-table">
                     <thead>
                         <tr>
+                            <th class="teacher-attendance-col-select"></th>
                             <th class="teacher-attendance-col-name">Student Name</th>
                             <th class="teacher-attendance-col-id">Student ID</th>
-                            <th class="teacher-attendance-col-status">Status</th>
+                            <th class="teacher-attendance-col-status">Mark Status</th>
                         </tr>
                     </thead>
                     <tbody id="attendanceTable"></tbody>
                 </table>
+            </div>
+
+            <div class="teacher-attendance-actions">
+                <button class="teacher-attendance-btn-mark teacher-attendance-btn-present" onclick="window.markSelected('present')">Mark Selected as Present</button>
+                <button class="teacher-attendance-btn-mark teacher-attendance-btn-late" onclick="window.markSelected('late')">Mark Selected as Late</button>
+                <button class="teacher-attendance-btn-mark teacher-attendance-btn-absent" onclick="window.markSelected('absent')">Mark Selected as Absent</button>
             </div>
 
             <button class="teacher-attendance-save-btn" id="saveBtn">Save Attendance</button>
@@ -404,48 +420,108 @@ export const TeacherPages = {
                 }
             };
 
-            const attendanceData = {};
-
-            // Set today's date as default
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('attendanceDate').value = today;
+            let currentClassId = 'CS101-A';
+            let selectedWeek = 1;
+            const selectedStudents = new Set();
 
             function loadStudents(classId) {
                 const classData = classesData[classId];
+                currentClassId = classId;
                 document.getElementById('classInfo').textContent = classData.name;
 
                 const table = document.getElementById('attendanceTable');
                 table.innerHTML = classData.students.map((student, idx) => `
                 <tr class="teacher-attendance-row">
+                    <td class="teacher-attendance-col-select">
+                        <input type="checkbox" class="teacher-attendance-checkbox" value="${student.id}" onchange="window.updateSelectedStudents()">
+                    </td>
                     <td class="teacher-attendance-col-name">${student.name}</td>
                     <td class="teacher-attendance-col-id">${student.id}</td>
                     <td class="teacher-attendance-col-status">
-                        <div class="teacher-attendance-status-buttons">
-                            <button class="teacher-attendance-btn teacher-attendance-btn-present" onclick="window.setAttendance(${idx}, 'present')" data-student="${student.id}">Present</button>
-                            <button class="teacher-attendance-btn teacher-attendance-btn-late" onclick="window.setAttendance(${idx}, 'late')" data-student="${student.id}">Late</button>
-                            <button class="teacher-attendance-btn teacher-attendance-btn-absent" onclick="window.setAttendance(${idx}, 'absent')" data-student="${student.id}">Absent</button>
-                        </div>
+                        <span class="teacher-attendance-status-display" id="status-${student.id}">-</span>
                     </td>
                 </tr>
             `).join('');
+
+                selectedStudents.clear();
+                document.getElementById('selectAllCheckbox').checked = false;
             }
 
-            window.setAttendance = function (idx, status) {
-                const btns = document.querySelectorAll(`[data-student]`);
-                const allBtns = document.querySelectorAll('.teacher-attendance-btn');
-                allBtns.forEach(btn => btn.classList.remove('teacher-attendance-btn-active'));
-
-                const row = document.querySelectorAll('.teacher-attendance-row')[idx];
-                const buttons = row.querySelectorAll('.teacher-attendance-btn');
-                buttons.forEach(btn => btn.classList.remove('teacher-attendance-btn-active'));
-
-                if (status === 'present') {
-                    buttons[0].classList.add('teacher-attendance-btn-active');
-                } else if (status === 'late') {
-                    buttons[1].classList.add('teacher-attendance-btn-active');
-                } else if (status === 'absent') {
-                    buttons[2].classList.add('teacher-attendance-btn-active');
+            function loadWeeks() {
+                const weeksGrid = document.getElementById('weeksGrid');
+                let html = '';
+                for (let i = 1; i <= 16; i++) {
+                    html += `
+                    <button class="teacher-attendance-week-btn ${i === 1 ? 'teacher-attendance-week-btn-active' : ''}" onclick="window.selectWeek(${i})">
+                        Week ${i}
+                    </button>
+                `;
                 }
+                weeksGrid.innerHTML = html;
+            }
+
+            window.selectWeek = function (week) {
+                selectedWeek = week;
+                document.querySelectorAll('.teacher-attendance-week-btn').forEach((btn, idx) => {
+                    btn.classList.remove('teacher-attendance-week-btn-active');
+                });
+                document.querySelectorAll('.teacher-attendance-week-btn')[week - 1].classList.add('teacher-attendance-week-btn-active');
+            };
+
+            window.toggleSelectAll = function () {
+                const checkboxes = document.querySelectorAll('.teacher-attendance-checkbox');
+                const isChecked = document.getElementById('selectAllCheckbox').checked;
+
+                if (isChecked) {
+                    checkboxes.forEach(cb => {
+                        cb.checked = true;
+                        selectedStudents.add(cb.value);
+                    });
+                } else {
+                    checkboxes.forEach(cb => {
+                        cb.checked = false;
+                        selectedStudents.delete(cb.value);
+                    });
+                }
+            };
+
+            window.updateSelectedStudents = function () {
+                selectedStudents.clear();
+                document.querySelectorAll('.teacher-attendance-checkbox:checked').forEach(cb => {
+                    selectedStudents.add(cb.value);
+                });
+
+                const allCheckboxes = document.querySelectorAll('.teacher-attendance-checkbox');
+                const checkedCount = document.querySelectorAll('.teacher-attendance-checkbox:checked').length;
+                document.getElementById('selectAllCheckbox').checked = checkedCount === allCheckboxes.length;
+            };
+
+            window.markSelected = function (status) {
+                if (selectedStudents.size === 0) {
+                    alert('Please select at least one student');
+                    return;
+                }
+
+                let statusText = status.charAt(0).toUpperCase() + status.slice(1);
+                selectedStudents.forEach(studentId => {
+                    document.getElementById(`status-${studentId}`).textContent = statusText;
+                    document.getElementById(`status-${studentId}`).className = `teacher-attendance-status-display teacher-attendance-status-${status}`;
+                });
+
+                const toast = document.getElementById('attendanceToast');
+                toast.textContent = `✓ Marked ${selectedStudents.size} students as ${statusText} for Week ${selectedWeek}`;
+                toast.className = 'teacher-attendance-toast teacher-attendance-toast-success teacher-attendance-toast-show';
+
+                setTimeout(() => {
+                    toast.classList.remove('teacher-attendance-toast-show');
+                }, 4000);
+
+                // Reset checkboxes
+                document.querySelectorAll('.teacher-attendance-checkbox').forEach(cb => {
+                    cb.checked = false;
+                });
+                document.getElementById('selectAllCheckbox').checked = false;
+                selectedStudents.clear();
             };
 
             document.getElementById('classSelect').addEventListener('change', function () {
@@ -453,22 +529,31 @@ export const TeacherPages = {
             });
 
             document.getElementById('saveBtn').addEventListener('click', function () {
-                const classId = document.getElementById('classSelect').value;
-                const date = document.getElementById('attendanceDate').value;
-                const classData = classesData[classId];
-
-                alert(`Attendance saved for ${classData.name} on ${date}`);
+                const classData = classesData[currentClassId];
 
                 const toast = document.getElementById('attendanceToast');
-                toast.textContent = `✓ Attendance marked and saved for ${date}`;
+                toast.textContent = `✓ Attendance saved for ${classData.name} - Week ${selectedWeek}`;
                 toast.className = 'teacher-attendance-toast teacher-attendance-toast-success teacher-attendance-toast-show';
 
                 setTimeout(() => {
                     toast.classList.remove('teacher-attendance-toast-show');
                 }, 4000);
+
+                document.querySelectorAll('.teacher-attendance-checkbox').forEach(cb => {
+                    cb.checked = false;
+                });
+                document.getElementById('selectAllCheckbox').checked = false;
+
+                document.querySelectorAll('.teacher-attendance-status-display').forEach(el => {
+                    el.textContent = '-';
+                    el.className = 'teacher-attendance-status-display';
+                });
+
+                selectedStudents.clear();
             });
 
             loadStudents('CS101-A');
+            loadWeeks();
         }
     },
 
@@ -770,6 +855,343 @@ export const TeacherPages = {
             });
 
             loadRoster('CS101-A');
+        }
+    },
+
+    assignments: {
+        render: () => `
+        <div class="teacher-breadcrumb">Home / Assignments</div>
+        <div class="teacher-section-header">Manage Assignments</div>
+        
+        <div id="assignmentToast" class="teacher-assignment-toast"></div>
+        
+        <div class="teacher-assignment-container">
+            <div class="teacher-assignment-header">
+                <div class="teacher-assignment-info">
+                    <p id="classInfo">Select a class to manage assignments</p>
+                </div>
+                <button class="teacher-assignment-new-btn" onclick="window.openNewAssignment()">+ New Assignment</button>
+            </div>
+
+            <div class="teacher-assignment-selector">
+                <label>Select Class:</label>
+                <select id="classSelect" class="teacher-assignment-class-select">
+                    <option value="CS101-A">CS101-A - Introduction to Programming</option>
+                    <option value="CS101-B">CS101-B - Introduction to Programming</option>
+                    <option value="MATH101-A">MATH101-A - Calculus I</option>
+                    <option value="ENG101-A">ENG101-A - English I</option>
+                </select>
+            </div>
+
+            <div class="teacher-assignment-list" id="assignmentsList"></div>
+        </div>
+
+       <!-- Modal: New Assignment -->
+        <div class="teacher-assignment-modal" id="assignmentModal" style="display: none;">
+            <div class="teacher-assignment-modal-content">
+                <div class="teacher-assignment-modal-header">
+                    <h3>Create New Assignment</h3>
+                    <button class="teacher-assignment-modal-close" onclick="document.getElementById('assignmentModal').style.display='none'">×</button>
+                </div>
+                <div class="teacher-assignment-modal-body">
+                    <div class="teacher-assignment-form-group">
+                        <label>Class:</label>
+                        <span id="modalClassName" class="teacher-assignment-class-display"></span>
+                    </div>
+                    <div class="teacher-assignment-form-group">
+                        <label>Title *</label>
+                        <input type="text" id="assignmentTitle" class="teacher-assignment-input" placeholder="Assignment title">
+                    </div>
+                    <div class="teacher-assignment-form-group">
+                        <label>Description *</label>
+                        <textarea id="assignmentDescription" class="teacher-assignment-textarea" placeholder="Assignment description..." rows="6"></textarea>
+                    </div>
+                    <div class="teacher-assignment-form-group">
+                        <label>Due Date *</label>
+                        <input type="date" id="assignmentDueDate" class="teacher-assignment-input">
+                    </div>
+                    <div class="teacher-assignment-form-group">
+                        <label>Total Points *</label>
+                        <input type="number" id="assignmentPoints" class="teacher-assignment-input" placeholder="100" min="1">
+                    </div>
+                </div>
+                <div class="teacher-assignment-modal-footer">
+                    <button class="teacher-assignment-btn-cancel" onclick="document.getElementById('assignmentModal').style.display='none'">Cancel</button>
+                    <button class="teacher-assignment-btn-create" onclick="window.createAssignment()">Create Assignment</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Submissions -->
+        <div class="teacher-assignment-submissions-modal" id="submissionsModal" style="display: none;">
+            <div class="teacher-assignment-modal-content">
+                <div class="teacher-assignment-modal-header">
+                    <h3 id="submissionsTitle"></h3>
+                    <button class="teacher-assignment-modal-close" onclick="document.getElementById('submissionsModal').style.display='none'">×</button>
+                </div>
+                <div class="teacher-assignment-modal-body">
+                    <table class="teacher-assignment-submissions-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Grade</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissionsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `,
+        afterRender: () => {
+            const classesData = {
+                'CS101-A': {
+                    name: 'CS101-A - Introduction to Programming',
+                    assignments: [
+                        { id: 1, title: 'Variables and Data Types', description: 'Write a program using different data types', dueDate: '2024-10-15', points: 100, submissions: 4, graded: 2 },
+                        { id: 2, title: 'Functions and Loops', description: 'Implement functions and loop structures', dueDate: '2024-10-22', points: 100, submissions: 3, graded: 1 }
+                    ]
+                },
+                'CS101-B': {
+                    name: 'CS101-B - Introduction to Programming',
+                    assignments: [
+                        { id: 3, title: 'Array Operations', description: 'Work with arrays and lists', dueDate: '2024-10-18', points: 100, submissions: 5, graded: 3 }
+                    ]
+                },
+                'MATH101-A': {
+                    name: 'MATH101-A - Calculus I',
+                    assignments: [
+                        { id: 4, title: 'Derivatives Practice', description: 'Solve 20 derivative problems', dueDate: '2024-10-20', points: 50, submissions: 4, graded: 4 }
+                    ]
+                },
+                'ENG101-A': {
+                    name: 'ENG101-A - English I',
+                    assignments: []
+                }
+            };
+
+            let currentClassId = 'CS101-A';
+
+            function loadAssignments(classId) {
+                const classData = classesData[classId];
+                currentClassId = classId;
+
+                document.getElementById('classInfo').textContent = classData.name;
+
+                const list = document.getElementById('assignmentsList');
+                if (classData.assignments.length === 0) {
+                    list.innerHTML = `
+                    <div class="teacher-assignment-empty">
+                        <p>No assignments yet</p>
+                        <p>Click "New Assignment" to create one</p>
+                    </div>
+                `;
+                    return;
+                }
+
+                list.innerHTML = classData.assignments.map(assign => {
+                    const dueDate = new Date(assign.dueDate);
+                    const today = new Date();
+                    const isOverdue = dueDate < today;
+
+                    return `
+                    <div class="teacher-assignment-card ${isOverdue ? 'teacher-assignment-card-overdue' : ''}">
+                        <div class="teacher-assignment-card-header">
+                            <h4 class="teacher-assignment-card-title">${assign.title}</h4>
+                            <span class="teacher-assignment-card-points">${assign.points} pts</span>
+                        </div>
+                        <div class="teacher-assignment-card-content">
+                            <p>${assign.description}</p>
+                            <div class="teacher-assignment-card-meta">
+                                <span class="teacher-assignment-due-date">Due: ${new Date(assign.dueDate).toLocaleDateString()}</span>
+                                <span class="teacher-assignment-submission-count">Submissions: ${assign.submissions} | Graded: ${assign.graded}</span>
+                            </div>
+                        </div>
+                        <div class="teacher-assignment-card-actions">
+                            <button class="teacher-assignment-view-btn" onclick="window.viewSubmissions(${assign.id}, '${assign.title}')">View Submissions</button>
+                            <button class="teacher-assignment-edit-btn" onclick="alert('Edit assignment')">Edit</button>
+                            <button class="teacher-assignment-delete-btn" onclick="window.deleteAssignment(${assign.id}, '${classId}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            }
+
+            window.openNewAssignment = function () {
+                document.getElementById('modalClassName').textContent = classesData[currentClassId].name;
+                document.getElementById('assignmentTitle').value = '';
+                document.getElementById('assignmentDescription').value = '';
+                document.getElementById('assignmentDueDate').value = '';
+                document.getElementById('assignmentPoints').value = '100';
+                document.getElementById('assignmentModal').style.display = 'flex';
+            };
+
+            window.createAssignment = function () {
+                const title = document.getElementById('assignmentTitle').value.trim();
+                const description = document.getElementById('assignmentDescription').value.trim();
+                const dueDate = document.getElementById('assignmentDueDate').value;
+                const points = parseInt(document.getElementById('assignmentPoints').value);
+
+                if (!title || !description || !dueDate || !points) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+
+                const classData = classesData[currentClassId];
+                const newAssignment = {
+                    id: Date.now(),
+                    title: title,
+                    description: description,
+                    dueDate: dueDate,
+                    points: points,
+                    submissions: 0,
+                    graded: 0
+                };
+
+                classData.assignments.push(newAssignment);
+
+                const toast = document.getElementById('assignmentToast');
+                toast.textContent = `✓ Assignment "${title}" created successfully`;
+                toast.className = 'teacher-assignment-toast teacher-assignment-toast-success teacher-assignment-toast-show';
+
+                setTimeout(() => {
+                    toast.classList.remove('teacher-assignment-toast-show');
+                }, 4000);
+
+                document.getElementById('assignmentModal').style.display = 'none';
+                loadAssignments(currentClassId);
+            };
+
+            window.viewSubmissions = function (assignmentId, assignmentTitle) {
+                document.getElementById('submissionsTitle').textContent = assignmentTitle;
+
+                const submissions = [
+                    { studentName: 'Ahmed Hassan', studentId: 'STU001', status: 'submitted', submitted: '2024-10-14', grade: 95 },
+                    { studentName: 'Fatima Khan', studentId: 'STU002', status: 'submitted', submitted: '2024-10-13', grade: 88 },
+                    { studentName: 'Ali Yilmaz', studentId: 'STU003', status: 'submitted', submitted: '2024-10-15', grade: null },
+                    { studentName: 'Zeynep Demir', studentId: 'STU004', status: 'not-submitted', submitted: '-', grade: null },
+                    { studentName: 'Mustafa Ozer', studentId: 'STU005', status: 'submitted', submitted: '2024-10-15', grade: 92 }
+                ];
+
+                const table = document.getElementById('submissionsTable');
+                table.innerHTML = submissions.map(sub => `
+        <tr class="teacher-assignment-submission-row">
+            <td>${sub.studentName}</td>
+            <td><span class="teacher-assignment-status-badge teacher-assignment-status-${sub.status}">${sub.status === 'submitted' ? 'Submitted' : 'Not Submitted'}</span></td>
+            <td>${sub.submitted}</td>
+            <td>${sub.grade ? sub.grade + ' pts' : '-'}</td>
+            <td>
+                <div class="teacher-assignment-action-expand">
+                    <button class="teacher-assignment-action-toggle">⋮</button>
+                    <div class="teacher-assignment-action-expanded">
+                        <button class="teacher-assignment-action-item teacher-assignment-action-view" onclick="alert('View submission from ${sub.studentName}')">View</button>
+                        <button class="teacher-assignment-action-item teacher-assignment-action-grade" onclick="window.openGradeModal('${sub.studentId}', '${sub.studentName}')">Grade</button>
+                        <button class="teacher-assignment-action-item teacher-assignment-action-reject" onclick="window.openRejectModal('${sub.studentId}', '${sub.studentName}')">Reject</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+
+                document.getElementById('submissionsModal').style.display = 'flex';
+            };
+
+            window.openGradeModal = function (studentId, studentName) {
+                alert(`Grade submission from ${studentName}`);
+            };
+
+            window.openRejectModal = function (studentId, studentName) {
+                const modal = document.getElementById('rejectSubmissionModal');
+                if (!modal) {
+                    const body = document.body;
+                    const modalHTML = `
+            <div id="rejectSubmissionModal" class="teacher-assignment-reject-modal">
+                <div class="teacher-assignment-modal-content">
+                    <div class="teacher-assignment-modal-header">
+                        <h3>Reject Submission</h3>
+                        <button class="teacher-assignment-modal-close" onclick="document.getElementById('rejectSubmissionModal').style.display='none'">×</button>
+                    </div>
+                    <div class="teacher-assignment-modal-body">
+                        <div class="teacher-assignment-form-group">
+                            <label>Student:</label>
+                            <p id="rejectStudentName" style="margin: 0; font-size: 13px; color: #2c2c2c;"></p>
+                        </div>
+                        <div class="teacher-assignment-form-group">
+                            <label>Reason for Rejection *</label>
+                            <textarea id="rejectReason" class="teacher-assignment-textarea" placeholder="Explain why this submission is being rejected..." rows="6"></textarea>
+                        </div>
+                    </div>
+                    <div class="teacher-assignment-modal-footer">
+                        <button class="teacher-assignment-btn-cancel" onclick="document.getElementById('rejectSubmissionModal').style.display='none'">Cancel</button>
+                        <button class="teacher-assignment-btn-reject" onclick="window.submitReject()">Reject Submission</button>
+                    </div>
+                </div>
+            </div>
+        `;
+                    body.insertAdjacentHTML('beforeend', modalHTML);
+
+                    document.getElementById('rejectSubmissionModal').addEventListener('click', function (e) {
+                        if (e.target === this) this.style.display = 'none';
+                    });
+                }
+
+                document.getElementById('rejectStudentName').textContent = studentName;
+                document.getElementById('rejectReason').value = '';
+                document.getElementById('rejectSubmissionModal').style.display = 'flex';
+            };
+
+            window.submitReject = function () {
+                const reason = document.getElementById('rejectReason').value.trim();
+
+                if (!reason) {
+                    alert('Please provide a reason for rejection');
+                    return;
+                }
+
+                const toast = document.getElementById('assignmentToast');
+                toast.textContent = `✓ Submission rejected with reason`;
+                toast.className = 'teacher-assignment-toast teacher-assignment-toast-success teacher-assignment-toast-show';
+
+                setTimeout(() => {
+                    toast.classList.remove('teacher-assignment-toast-show');
+                }, 4000);
+
+                document.getElementById('rejectSubmissionModal').style.display = 'none';
+            };
+
+            window.deleteAssignment = function (assignmentId, classId) {
+                if (confirm('Delete this assignment?')) {
+                    const classData = classesData[classId];
+                    classData.assignments = classData.assignments.filter(a => a.id !== assignmentId);
+
+                    const toast = document.getElementById('assignmentToast');
+                    toast.textContent = '✓ Assignment deleted';
+                    toast.className = 'teacher-assignment-toast teacher-assignment-toast-success teacher-assignment-toast-show';
+
+                    setTimeout(() => {
+                        toast.classList.remove('teacher-assignment-toast-show');
+                    }, 4000);
+
+                    loadAssignments(classId);
+                }
+            };
+
+            document.getElementById('classSelect').addEventListener('change', function () {
+                loadAssignments(this.value);
+            });
+
+            document.getElementById('assignmentModal').addEventListener('click', function (e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+
+            document.getElementById('submissionsModal').addEventListener('click', function (e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+
+            loadAssignments('CS101-A');
         }
     },
 

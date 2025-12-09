@@ -48,6 +48,7 @@ public class EnrollmentService : IEnrollmentService
         var dtos = pagedEnrollments.Select(e => new EnrollmentResponse
         {
             Id = e.Id,
+            CourseInstanceId = e.CourseInstanceId,
             CourseCode = e.CourseInstance?.Course?.Code ?? null,
             CourseName = e.CourseInstance?.Course?.Name ?? null,
             Section = e.CourseInstance?.Section ?? null,

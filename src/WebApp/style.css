@@ -1479,7 +1479,7 @@ body {
 }
 
 .student-grades-col-grade {
-    text-align: center;
+    text-align: left;
     font-weight: 600;
     color: #2c2c2c;
     min-width: 70px;
@@ -1490,12 +1490,12 @@ body {
     }
 
 .student-grades-col-letter {
-    text-align: center;
+    text-align: left;
     min-width: 80px;
 }
 
 .student-grades-col-credits {
-    text-align: center;
+    text-align: left;
     font-weight: 600;
     color: #1f3a5c;
     min-width: 60px;

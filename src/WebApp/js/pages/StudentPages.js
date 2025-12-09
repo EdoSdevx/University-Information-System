@@ -3,6 +3,86 @@
  * Page templates for student dashboard
  */
 
+import { apiRequest } from '../core/ApiService.js';
+
+const StudentDashboardService = {
+    async fetchDashboardData() {
+        try {
+            const enrollmentsResponse = await apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100');
+            const gradesResponse = await apiRequest('/grade/my-grades?pageIndex=1&pageSize=100');
+
+            if (!enrollmentsResponse.ok || !gradesResponse.ok) {
+                console.error('Failed to fetch dashboard data');
+                return null;
+            }
+
+            return {
+                enrollments: enrollmentsResponse.data || [],
+                grades: gradesResponse.data || []
+            };
+        } catch (error) {
+            console.error('Dashboard data fetch error:', error);
+            return null;
+        }
+    },
+
+    calculateGPA(grades) {
+        if (!grades || grades.length === 0) return 0;
+
+        const gradePoints = {
+            'A': 4.0,
+            'B': 3.0,
+            'C': 2.0,
+            'D': 1.0,
+            'F': 0.0
+        };
+
+        let totalPoints = 0;
+        let totalCourses = 0;
+
+        grades.forEach(grade => {
+            const points = gradePoints[grade.letterGrade] || 0;
+            totalPoints += points;
+            totalCourses++;
+        });
+
+        return totalCourses > 0 ? (totalPoints / totalCourses).toFixed(2) : 0;
+    },
+
+    formatSchedule(day1, day2, startTime, endTime) {
+        if (!day1 || !startTime) return 'TBA';
+
+        const getDayAbbr = (day) => {
+            const abbr = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+            return abbr[day] || '';
+        };
+
+        const formatTime = (time) => {
+            if (!time) return '';
+            const [hours, minutes] = time.split(':');
+            const h = parseInt(hours);
+            const m = minutes;
+            const ampm = h >= 12 ? 'pm' : 'am';
+            const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+            return `${displayH}:${m}${ampm}`;
+        };
+
+        const day1Str = getDayAbbr(day1);
+        const day2Str = day2 ? getDayAbbr(day2) : '';
+        const timeStr = formatTime(startTime);
+
+        if (day2Str) {
+            return `${day1Str}/${day2Str} ${timeStr}`;
+        }
+        return `${day1Str} ${timeStr}`;
+    },
+
+    getColorClass(index) {
+        const colors = ['', 'alt1', 'alt2'];
+        return colors[index % colors.length];
+    }
+};
+
 export const StudentPages = {
     dashboard: {
         render: () => `
@@ -13,239 +93,283 @@ export const StudentPages = {
             </div>
             <div style="margin-bottom: 30px;">
                 <div class="student-section-header">Academic Summary</div>
-                <div class="student-stats">
+                <div id="academicSummary" class="student-stats">
                     <div class="student-stat-card">
-                        <div class="student-stat-value">4</div>
+                        <div class="student-stat-value loading">-</div>
                         <div class="student-stat-label">Enrolled Courses</div>
                     </div>
                     <div class="student-stat-card">
-                        <div class="student-stat-value">3.75</div>
+                        <div class="student-stat-value loading">-</div>
                         <div class="student-stat-label">Current GPA</div>
                     </div>
                     <div class="student-stat-card">
-                        <div class="student-stat-value">48</div>
+                        <div class="student-stat-value loading">-</div>
                         <div class="student-stat-label">Credits Earned</div>
                     </div>
                     <div class="student-stat-card">
-                        <div class="student-stat-value">3</div>
+                        <div class="student-stat-value loading">-</div>
                         <div class="student-stat-label">Upcoming Exams</div>
                     </div>
                 </div>
             </div>
             <div>
                 <div class="student-section-header">Current Course Enrollment</div>
-                <div class="student-courses">
-                    <div class="student-course-card">
-                        <div class="student-course-header">
-                            <div class="student-course-code">CS101</div>
-                            <div class="student-course-name">Introduction to Programming</div>
-                        </div>
-                        <div class="student-course-body">
-                            <div class="student-course-meta">
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Instructor</div>
-                                    <div class="student-course-meta-value">Dr. Smith</div>
-                                </div>
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Schedule</div>
-                                    <div class="student-course-meta-value">MWF 10:00am</div>
-                                </div>
-                            </div>
-                            <div class="student-course-actions">
-                                <button class="student-course-btn">View Details</button>
-                                <button class="student-course-btn secondary">Syllabus</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="student-course-card">
-                        <div class="student-course-header alt1">
-                            <div class="student-course-code">MATH201</div>
-                            <div class="student-course-name">Calculus II</div>
-                        </div>
-                        <div class="student-course-body">
-                            <div class="student-course-meta">
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Instructor</div>
-                                    <div class="student-course-meta-value">Prof. Johnson</div>
-                                </div>
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Schedule</div>
-                                    <div class="student-course-meta-value">TTh 2:00pm</div>
-                                </div>
-                            </div>
-                            <div class="student-course-actions">
-                                <button class="student-course-btn">View Details</button>
-                                <button class="student-course-btn secondary">Syllabus</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="student-course-card">
-                        <div class="student-course-header alt2">
-                            <div class="student-course-code">ENG102</div>
-                            <div class="student-course-name">Academic Writing</div>
-                        </div>
-                        <div class="student-course-body">
-                            <div class="student-course-meta">
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Instructor</div>
-                                    <div class="student-course-meta-value">Dr. Williams</div>
-                                </div>
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Schedule</div>
-                                    <div class="student-course-meta-value">MWF 2:00pm</div>
-                                </div>
-                            </div>
-                            <div class="student-course-actions">
-                                <button class="student-course-btn">View Details</button>
-                                <button class="student-course-btn secondary">Syllabus</button>
-                            </div>
-                        </div>
-                    </div>
+                <div id="enrolledCourses" class="student-courses">
+                    <div style="text-align: center; padding: 20px;">Loading courses...</div>
                 </div>
             </div>
         `,
-        afterRender: () => { }
+        afterRender: async () => {
+            const data = await StudentDashboardService.fetchDashboardData();
+            if (!data) {
+                document.getElementById('enrolledCourses').innerHTML =
+                    '<div style="text-align: center; padding: 20px; color: red;">Failed to load courses</div>';
+                return;
+            }
+
+            const gpa = StudentDashboardService.calculateGPA(data.grades);
+            const enrollmentCount = data.enrollments.length;
+            const creditsEarned = enrollmentCount * 3;
+
+            const summaryHTML = `
+                <div class="student-stat-card">
+                    <div class="student-stat-value">${enrollmentCount}</div>
+                    <div class="student-stat-label">Enrolled Courses</div>
+                </div>
+                <div class="student-stat-card">
+                    <div class="student-stat-value">${gpa}</div>
+                    <div class="student-stat-label">Current GPA</div>
+                </div>
+                <div class="student-stat-card">
+                    <div class="student-stat-value">${creditsEarned}</div>
+                    <div class="student-stat-label">Credits Earned</div>
+                </div>
+                <div class="student-stat-card">
+                    <div class="student-stat-value">${data.enrollments.length > 0 ? Math.ceil(data.enrollments.length * 0.75) : 0}</div>
+                    <div class="student-stat-label">Upcoming Exams</div>
+                </div>
+            `;
+            document.getElementById('academicSummary').innerHTML = summaryHTML;
+
+            if (data.enrollments.length === 0) {
+                document.getElementById('enrolledCourses').innerHTML =
+                    '<div style="text-align: center; padding: 20px;">No courses enrolled yet. <a href="#registration">Browse available courses</a></div>';
+                return;
+            }
+
+            const coursesHTML = data.enrollments.map((enrollment, index) => {
+                const colorClass = StudentDashboardService.getColorClass(index);
+
+                return `
+                    <div class="student-course-card">
+                        <div class="student-course-header ${colorClass}">
+                            <div class="student-course-code">${enrollment.courseCode || 'N/A'}</div>
+                            <div class="student-course-name">${enrollment.courseName || 'Course'}</div>
+                        </div>
+                        <div class="student-course-body">
+                            <div class="student-course-meta">
+                                <div class="student-course-meta-item">
+                                    <div class="student-course-meta-label">Instructor</div>
+                                    <div class="student-course-meta-value">${enrollment.teacherName || 'TBA'}</div>
+                                </div>
+                                <div class="student-course-meta-item">
+                                    <div class="student-course-meta-label">Section</div>
+                                    <div class="student-course-meta-value">${enrollment.section || 'N/A'}</div>
+                                </div>
+                                <div class="student-course-meta-item">
+                                    <div class="student-course-meta-label">Status</div>
+                                    <div class="student-course-meta-value">${enrollment.status || 'Active'}</div>
+                                </div>
+                            </div>
+                            <div class="student-course-actions">
+                                <button class="student-course-btn" data-course-id="${enrollment.id}">View Details</button>
+                                <button class="student-course-btn secondary" data-course-instance-id="${enrollment.courseInstanceId}">Drop Course</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('enrolledCourses').innerHTML = coursesHTML;
+
+            document.querySelectorAll('[data-course-instance-id]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (confirm('Are you sure you want to drop this course?')) {
+                        const response = await apiRequest('/enrollment/drop', 'POST', {
+                            courseInstanceId: parseInt(btn.dataset.courseInstanceId)
+                        });
+
+                        if (response.ok) {
+                            alert('Course dropped successfully');
+                            window.location.reload();
+                        } else {
+                            alert('Failed to drop course: ' + response.message);
+                        }
+                    }
+                });
+            });
+        }
     },
 
     courses: {
         render: () => `
-        <div class="student-breadcrumb">Home / My Courses</div>
-        <div class="student-section-header">Your Enrolled Courses</div>
-        <div class="student-courses">
-            <div class="student-course-card">
-                <div class="student-course-header">
-                    <div class="student-course-code">CS101</div>
-                    <div class="student-course-name">Introduction to Programming</div>
-                </div>
-                <div class="student-course-body">
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Instructor</div>
-                            <div class="student-course-meta-value">Dr. Smith</div>
-                        </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Credits</div>
-                            <div class="student-course-meta-value">3</div>
-                        </div>
-                    </div>
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Schedule</div>
-                            <div class="student-course-meta-value">MWF 10am</div>
-                        </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Grade</div>
-                            <div class="student-course-meta-value">A-</div>
-                        </div>
-                    </div>
-                    <div class="student-course-actions">
-                        <button class="student-course-btn">View Details</button>
-                        <button class="student-course-btn secondary">Drop Course</button>
-                    </div>
-                </div>
+            <div class="student-breadcrumb">Home / My Courses</div>
+            <div class="student-section-header">Your Enrolled Courses</div>
+            <div id="coursesList" class="student-courses">
+                <div style="text-align: center; padding: 20px;">Loading courses...</div>
             </div>
+        `,
+        afterRender: async () => {
+            const response = await apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100');
+            if (!response.ok || !response.data || response.data.length === 0) {
+                document.getElementById('coursesList').innerHTML =
+                    '<div style="text-align: center; padding: 20px;">No courses enrolled yet.</div>';
+                return;
+            }
 
-            <div class="student-course-card">
-                <div class="student-course-header alt1">
-                    <div class="student-course-code">MATH201</div>
-                    <div class="student-course-name">Calculus II</div>
-                </div>
-                <div class="student-course-body">
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Instructor</div>
-                            <div class="student-course-meta-value">Prof. Johnson</div>
-                        </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Credits</div>
-                            <div class="student-course-meta-value">4</div>
-                        </div>
-                    </div>
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Schedule</div>
-                            <div class="student-course-meta-value">TTh 2pm</div>
-                        </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Grade</div>
-                            <div class="student-course-meta-value">B+</div>
-                        </div>
-                    </div>
-                    <div class="student-course-actions">
-                        <button class="student-course-btn">View Details</button>
-                        <button class="student-course-btn secondary">Drop Course</button>
-                    </div>
-                </div>
-            </div>
+            const courses = response.data;
+            const coursesHTML = courses.map((enrollment, index) => {
+                const colorClass = StudentDashboardService.getColorClass(index);
 
-            <div class="student-course-card">
-                <div class="student-course-header alt2">
-                    <div class="student-course-code">ENG102</div>
-                    <div class="student-course-name">Academic Writing</div>
-                </div>
-                <div class="student-course-body">
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Instructor</div>
-                            <div class="student-course-meta-value">Dr. Williams</div>
+                return `
+                    <div class="student-course-card">
+                        <div class="student-course-header ${colorClass}">
+                            <div class="student-course-code">${enrollment.courseCode}</div>
+                            <div class="student-course-name">${enrollment.courseName}</div>
                         </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Credits</div>
-                            <div class="student-course-meta-value">3</div>
+                        <div class="student-course-body">
+                            <div class="student-course-meta">
+                                <div class="student-course-meta-item">
+                                    <div class="student-course-meta-label">Instructor</div>
+                                    <div class="student-course-meta-value">${enrollment.teacherName}</div>
+                                </div>
+                                <div class="student-course-meta-item">
+                                    <div class="student-course-meta-label">Section</div>
+                                    <div class="student-course-meta-value">${enrollment.section}</div>
+                                </div>
+                                <div class="student-course-meta-item">
+                                    <div class="student-course-meta-label">Status</div>
+                                    <div class="student-course-meta-value">${enrollment.status}</div>
+                                </div>
+                                <div class="student-course-meta-item">
+                                    <div class="student-course-meta-label">Enrolled</div>
+                                    <div class="student-course-meta-value">${new Date(enrollment.enrolledAt).toLocaleDateString()}</div>
+                                </div>
+                            </div>
+                            <div class="student-course-actions">
+                                <button class="student-course-btn">View Details</button>
+                                <button class="student-course-btn secondary" data-course-instance-id="${enrollment.courseInstanceId}">Drop Course</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Schedule</div>
-                            <div class="student-course-meta-value">MWF 2pm</div>
-                        </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Grade</div>
-                            <div class="student-course-meta-value">A</div>
-                        </div>
-                    </div>
-                    <div class="student-course-actions">
-                        <button class="student-course-btn">View Details</button>
-                        <button class="student-course-btn secondary">Drop Course</button>
-                    </div>
-                </div>
-            </div>
+                `;
+            }).join('');
+                
+            document.getElementById('coursesList').innerHTML = coursesHTML;
 
-            <div class="student-course-card">
-                <div class="student-course-header">
-                    <div class="student-course-code">PHY101</div>
-                    <div class="student-course-name">Physics I</div>
-                </div>
-                <div class="student-course-body">
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Instructor</div>
-                            <div class="student-course-meta-value">Prof. Davis</div>
-                        </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Credits</div>
-                            <div class="student-course-meta-value">4</div>
-                        </div>
-                    </div>
-                    <div class="student-course-meta">
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Schedule</div>
-                            <div class="student-course-meta-value">TTh 10am</div>
-                        </div>
-                        <div class="student-course-meta-item">
-                            <div class="student-course-meta-label">Grade</div>
-                            <div class="student-course-meta-value">B</div>
-                        </div>
-                    </div>
-                    <div class="student-course-actions">
-                        <button class="student-course-btn">View Details</button>
-                        <button class="student-course-btn secondary">Drop Course</button>
-                    </div>
-                </div>
+            document.querySelectorAll('[data-course-instance-id]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (confirm('Are you sure you want to drop this course?')) {
+                        const dropResponse = await apiRequest('/enrollment/drop', 'POST', {
+                            courseInstanceId: parseInt(btn.dataset.courseInstanceId)
+                        });
+
+                        if (dropResponse.ok) {
+                            alert('Course dropped successfully');
+                            window.location.reload();
+                        } else {
+                            alert('Failed to drop course: ' + dropResponse.message);
+                        }
+                    }
+                });
+            });
+        }
+    },
+
+    schedule: {
+        render: () => `
+            <div class="student-breadcrumb">Home / Schedule</div>
+            <div class="student-section-header">My Class Schedule</div>
+            <div id="scheduleContainer" class="schedule-container">
+                <div style="text-align: center; padding: 20px;">Loading schedule...</div>
             </div>
-        </div>
-    `,
-        afterRender: () => { }
+        `,
+        afterRender: async () => {
+            const response = await apiRequest('/courseInstance/my-schedule');
+
+            if (!response.ok || !response.data || response.data.length === 0) {
+                document.getElementById('scheduleContainer').innerHTML =
+                    '<div style="text-align: center; padding: 20px;">No scheduled classes.</div>';
+                return;
+            }
+
+            const courseInstances = response.data;
+
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const scheduleByDay = {};
+
+            dayNames.forEach(day => {
+                scheduleByDay[day] = [];
+            });
+
+            courseInstances.forEach(course => {
+                if (course.day1) {
+                    const dayName = dayNames[course.day1];
+                    scheduleByDay[dayName].push({
+                        courseName: course.courseName,
+                        courseCode: course.courseCode,
+                        instructor: course.teacherName,
+                        location: course.location,
+                        startTime: course.startTime,
+                        endTime: course.endTime,
+                        section: course.section
+                    });
+                }
+
+                if (course.day2) {
+                    const dayName = dayNames[course.day2];
+                    scheduleByDay[dayName].push({
+                        courseName: course.courseName,
+                        courseCode: course.courseCode,
+                        instructor: course.teacherName,
+                        location: course.location,
+                        startTime: course.startTime,
+                        endTime: course.endTime,
+                        section: course.section
+                    });
+                }
+            });
+
+            const scheduleHTML = dayNames.map(day => {
+                const classes = scheduleByDay[day];
+
+                if (classes.length === 0) {
+                    return `
+                        <div class="schedule-day-card empty">
+                            <div class="schedule-day-header">${day}</div>
+                            <div class="schedule-no-classes">No Classes</div>
+                        </div>
+                    `;
+                }
+
+                const classesHTML = classes.map(cls => `
+                    <div class="schedule-class-item">
+                        <div class="schedule-time">${cls.startTime} - ${cls.endTime}</div>
+                        <div class="schedule-course">${cls.courseCode} - ${cls.courseName}</div>
+                        <div class="schedule-meta">${cls.instructor} | ${cls.location || 'TBA'} | ${cls.section}</div>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="schedule-day-card">
+                        <div class="schedule-day-header">${day}</div>
+                        ${classesHTML}
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('scheduleContainer').innerHTML = scheduleHTML;
+        }
     },
 
     attendance: {
@@ -902,93 +1026,91 @@ export const StudentPages = {
 
     grades: {
         render: () => `
-        <div class="student-breadcrumb">Home / Grades & Transcripts</div>
-        <div class="student-section-header">Your Grades</div>
-        
-        <div class="student-grades-container">
-            <div class="student-grades-header">
-                <h3>Current Semester Grades</h3>
-                <div class="student-grades-summary">
-                    <span>GPA: <strong id="gpa">3.65</strong></span>
-                    <span>Credits: <strong>13/15</strong></span>
+            <div class="student-breadcrumb">Home / Grades & Transcripts</div>
+            <div class="student-section-header">Your Grades</div>
+            <div id="gradesContainer">
+                <div style="text-align: center; padding: 20px;">Loading grades...</div>
+            </div>
+        `,
+        afterRender: async () => {
+            const response = await apiRequest('/grade/my-grades?pageIndex=1&pageSize=100');
+
+            if (!response.ok || !response.data || response.data.length === 0) {
+                document.getElementById('gradesContainer').innerHTML =
+                    '<div style="text-align: center; padding: 20px;">No grades available yet.</div>';
+                return;
+            }
+
+            const grades = response.data;
+            const gpa = StudentDashboardService.calculateGPA(grades);
+            const totalCredits = grades.reduce((sum, g) => sum + (g.creditHours || 0), 0);
+
+            const getGradeColor = (letterGrade) => {
+                const colors = {
+                    'A': { bg: '#d4edda', text: '#155724', border: '#c3e6cb' },
+                    'B': { bg: '#cce5ff', text: '#004085', border: '#b8daff' },
+                    'C': { bg: '#fff3cd', text: '#856404', border: '#ffeeba' },
+                    'D': { bg: '#f8d7da', text: '#721c24', border: '#f5c6cb' },
+                    'F': { bg: '#f5c6cb', text: '#721c24', border: '#f1b0b7' }
+                };
+                const firstChar = letterGrade?.charAt(0) || 'F';
+                return colors[firstChar] || colors['F'];
+            };
+
+            const gradesHTML = `
+                <div class="student-grades-container">
+                    <div class="student-grades-header">
+                        <div>
+                            <h3>Current Semester Grades</h3>
+                            <p class="student-grades-subtitle">${grades.length} course(s)</p>
+                        </div>
+                        <div class="student-grades-summary">
+                                <span>GPA: <strong>${gpa}</strong></span>
+                                <span>Credits: <strong>${totalCredits}/15</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="student-grades-table-wrapper">
+                        <table class="student-grades-table">
+                            <thead>
+                                <tr>
+                                    <th class="student-grades-col-code">Course Code</th>
+                                    <th class="student-grades-col-name">Course Name</th>
+                                    <th class="student-grades-col-grade">Exam 1</th>
+                                    <th class="student-grades-col-grade">Exam 2</th>
+                                    <th class="student-grades-col-grade">Final</th>
+                                    <th class="student-grades-col-grade">Project</th>
+                                    <th class="student-grades-col-letter">Letter Grade</th>
+                                    <th class="student-grades-col-credits">Credits</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${grades.map(grade => `
+                                <tr class="student-grades-row">
+                                    <td class="student-grades-col-code"><strong>${grade.courseCode}</strong></td>
+                                    <td class="student-grades-col-name">${grade.courseName}</td>
+                                    <td class="student-grades-col-grade">${grade.exam1 || '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.exam2 || '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.final || '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.project || '-'}</td>
+                                    <td class="student-grades-col-letter">
+                                        <span class="student-grades-letter student-grades-letter-${grade.letterGrade.toLowerCase()}">${grade.letterGrade}</span>
+                                    </td>
+                                    <td class="student-grades-col-credits">${grade.creditHours}</td>
+                                </tr>
+                            `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="student-grades-info">
+                        <p><strong>Note:</strong> Grades are updated as instructors submit them. Contact your instructor if you believe there's an error.</p>
+                    </div>
                 </div>
-            </div>
+            `;
 
-            <div class="student-grades-table-wrapper">
-                <table class="student-grades-table">
-                    <thead>
-                        <tr>
-                            <th class="student-grades-col-code">Course Code</th>
-                            <th class="student-grades-col-name">Course Name</th>
-                            <th class="student-grades-col-grade">Exam 1</th>
-                            <th class="student-grades-col-grade">Exam 2</th>
-                            <th class="student-grades-col-grade">Final</th>
-                            <th class="student-grades-col-grade">Project</th>
-                            <th class="student-grades-col-letter">Letter Grade</th>
-                            <th class="student-grades-col-credits">Credits</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="student-grades-row">
-                            <td class="student-grades-col-code">CS101</td>
-                            <td class="student-grades-col-name">Introduction to Programming</td>
-                            <td class="student-grades-col-grade">85</td>
-                            <td class="student-grades-col-grade">88</td>
-                            <td class="student-grades-col-grade">90</td>
-                            <td class="student-grades-col-grade">92</td>
-                            <td class="student-grades-col-letter"><span class="student-grades-letter student-grades-letter-a">A-</span></td>
-                            <td class="student-grades-col-credits">3</td>
-                        </tr>
-                        <tr class="student-grades-row">
-                            <td class="student-grades-col-code">MATH101</td>
-                            <td class="student-grades-col-name">Calculus I</td>
-                            <td class="student-grades-col-grade">82</td>
-                            <td class="student-grades-col-grade">85</td>
-                            <td class="student-grades-col-grade">88</td>
-                            <td class="student-grades-col-grade">-</td>
-                            <td class="student-grades-col-letter"><span class="student-grades-letter student-grades-letter-b">B+</span></td>
-                            <td class="student-grades-col-credits">4</td>
-                        </tr>
-                        <tr class="student-grades-row">
-                            <td class="student-grades-col-code">ENG101</td>
-                            <td class="student-grades-col-name">English I</td>
-                            <td class="student-grades-col-grade">90</td>
-                            <td class="student-grades-col-grade">92</td>
-                            <td class="student-grades-col-grade">94</td>
-                            <td class="student-grades-col-grade">95</td>
-                            <td class="student-grades-col-letter"><span class="student-grades-letter student-grades-letter-a">A</span></td>
-                            <td class="student-grades-col-credits">3</td>
-                        </tr>
-                        <tr class="student-grades-row">
-                            <td class="student-grades-col-code">CS102</td>
-                            <td class="student-grades-col-name">Programming II</td>
-                            <td class="student-grades-col-grade">78</td>
-                            <td class="student-grades-col-grade">80</td>
-                            <td class="student-grades-col-grade">82</td>
-                            <td class="student-grades-col-grade">85</td>
-                            <td class="student-grades-col-letter"><span class="student-grades-letter student-grades-letter-b">B</span></td>
-                            <td class="student-grades-col-credits">3</td>
-                        </tr>
-                        <tr class="student-grades-row">
-                            <td class="student-grades-col-code">MATH102</td>
-                            <td class="student-grades-col-name">Calculus II</td>
-                            <td class="student-grades-col-grade">86</td>
-                            <td class="student-grades-col-grade">87</td>
-                            <td class="student-grades-col-grade">89</td>
-                            <td class="student-grades-col-grade">-</td>
-                            <td class="student-grades-col-letter"><span class="student-grades-letter student-grades-letter-a">A-</span></td>
-                            <td class="student-grades-col-credits">4</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="student-grades-info">
-                <p><strong>Note:</strong> "-" indicates no project for this course. Final grade is calculated as: (Exam1×20% + Exam2×20% + Final×40% + Project×20%)</p>
-            </div>
-        </div>
-    `,
-        afterRender: () => { }
+            document.getElementById('gradesContainer').innerHTML = gradesHTML;
+        }
     },
 
     profile: {
@@ -1030,78 +1152,5 @@ export const StudentPages = {
         afterRender: () => { }
     },
 
-    schedule: {
-        render: () => `
-            <div class="student-breadcrumb">Home / Schedule</div>
-            <div class="student-section-header">My Class Schedule</div>
-            <div class="schedule-container">
-                <div class="schedule-day-card">
-                    <div class="schedule-day-header">Monday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">09:00 - 12:00</div>
-                        <div class="schedule-course">Introduction to Programming</div>
-                        <div class="schedule-meta">Dr. Smith | Room 101 | Group A1</div>
-                    </div>
-                </div>
-
-                <div class="schedule-day-card">
-                    <div class="schedule-day-header">Tuesday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">14:00 - 17:00</div>
-                        <div class="schedule-course">Calculus II</div>
-                        <div class="schedule-meta">Prof. Johnson | Room 205 | Group B2</div>
-                    </div>
-                </div>
-
-                <div class="schedule-day-card">
-                    <div class="schedule-day-header">Wednesday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">10:00 - 13:00</div>
-                        <div class="schedule-course">Academic Writing</div>
-                        <div class="schedule-meta">Dr. Williams | Room 304 | Group C1</div>
-                    </div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">15:00 - 17:00</div>
-                        <div class="schedule-course">Data Structures</div>
-                        <div class="schedule-meta">Dr. Brown | Lab 102 | Group A2</div>
-                    </div>
-                </div>
-
-                <div class="schedule-day-card">
-                    <div class="schedule-day-header">Thursday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">09:00 - 12:00</div>
-                        <div class="schedule-course">Physics I</div>
-                        <div class="schedule-meta">Prof. Davis | Room 401 | Group B1</div>
-                    </div>
-                </div>
-
-                <div class="schedule-day-card">
-                    <div class="schedule-day-header">Friday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">10:00 - 12:00</div>
-                        <div class="schedule-course">Introduction to Programming</div>
-                        <div class="schedule-meta">Dr. Smith | Lab 101 | Group A1</div>
-                    </div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">13:00 - 16:00</div>
-                        <div class="schedule-course">Calculus II</div>
-                        <div class="schedule-meta">Prof. Johnson | Room 205 | Group B2</div>
-                    </div>
-
-                </div>
-
-                <div class="schedule-day-card empty">
-                    <div class="schedule-day-header">Saturday</div>
-                    <div class="schedule-no-classes">No Classes</div>
-                </div>
-
-                <div class="schedule-day-card empty">
-                    <div class="schedule-day-header">Sunday</div>
-                    <div class="schedule-no-classes">No Classes</div>
-                </div>
-            </div>
-        `,
-        afterRender: () => { }
-    }
+    
 };

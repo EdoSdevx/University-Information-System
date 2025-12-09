@@ -49,9 +49,14 @@ public class GradeService : IGradeService
             CourseCode = g.CourseInstance?.Course?.Code ?? null,
             CourseName = g.CourseInstance?.Course?.Name ?? null,
             Section = g.CourseInstance?.Section ?? null,
+            Exam1 = g.Exam1,
+            Exam2 = g.Exam2,
+            Final = g.Final,
+            Project = g.Project,
             Score = g.Score,
             LetterGrade = g.LetterGrade,
-            SubmittedAt = g.SubmittedAt
+            SubmittedAt = g.SubmittedAt,
+            CreditHours = g.CourseInstance?.Course?.CreditHours ?? 0
         }).ToList();
 
         _logger.LogInformation("Retrieved {Count} grades for student {StudentId}. Page {PageIndex}/{TotalPages}",

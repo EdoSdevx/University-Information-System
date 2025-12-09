@@ -142,7 +142,7 @@ using (var scope = app.Services.CreateScope())
     await SeedData.SeedAsync(context);
 }
 
-app.MapGet("/", () => "Hello world");
+app.UseCors("AllowClient");
 
 app.UseAuthentication();
 

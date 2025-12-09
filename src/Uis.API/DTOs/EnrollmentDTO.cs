@@ -24,6 +24,7 @@ public class DropCourseRequest
 public class EnrollmentResponse
 {
     public int Id { get; set; }
+    public int CourseInstanceId { get; set; }
     public string? CourseCode { get; set; }
     public string? CourseName { get; set; }
     public string? Section { get; set; }

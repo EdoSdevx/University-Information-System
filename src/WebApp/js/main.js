@@ -1,32 +1,37 @@
-/**
- * Main Module
- * Application entry point - imports all modules and initializes app
- */
-
-// Import core modules
-import { AppState } from './core/AppState.js';
-import { Router } from './core/Router.js';
-
-// Import component modules
 import { HeaderComponent } from './components/HeaderComponent.js';
 import { SidebarComponent } from './components/SidebarComponent.js';
 
-// Import page modules
 import { StudentPages } from './pages/StudentPages.js';
 import { TeacherPages } from './pages/TeacherPages.js';
 import { AdminPages } from './pages/AdminPages.js';
 
-/**
- * App Module
- * Initializes the application and handles login/logout flows
- */
+import { Router } from './core/Router.js';
+import { AppState } from './core/AppState.js';
+import { apiRequest } from './core/ApiService.js';
+
 const App = {
-    /**
-     * Initialize app - attach event listeners
-     */
     init() {
         console.log('Initializing application...');
+        this.checkExistingSession();
+        this.attachLoginForm();
+    },
 
+    checkExistingSession() {
+        const token = localStorage.getItem('jwtToken');
+        const email = localStorage.getItem('email');
+        const role = localStorage.getItem('role');
+
+        if (token && email && role) {
+            console.log('Existing session found, loading dashboard...');
+            AppState.setUser(email, role);
+            this.showDashboard(email, role);
+        } else {
+            console.log('No session, showing login page');
+            this.showLoginPage();
+        }
+    },
+
+    attachLoginForm() {
         const loginForm = document.getElementById('loginForm');
         if (loginForm) {
             loginForm.addEventListener('submit', (e) => {
@@ -36,55 +41,125 @@ const App = {
         }
     },
 
-    /**
-     * Handle login form submission
-     */
-    handleLogin() {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        const role = document.querySelector('input[name="role"]:checked').value;
+    async handleLogin() {
+        const emailInput = document.getElementById('loginEmail');
+        const passwordInput = document.getElementById('loginPassword');
+        const roleInput = document.querySelector('input[name="role"]:checked');
+        const loginBtn = document.querySelector('button[type="submit"]');
+        const errorContainer = document.getElementById('loginError');
 
-        // Create mock JWT token
-        const payload = btoa(JSON.stringify({ email, role, iat: Date.now() }));
-        const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${payload}.mock_signature`;
+        if (!emailInput || !passwordInput || !roleInput) {
+            console.error('Login form elements not found');
+            return;
+        }
 
-        // Update app state
-        AppState.setUser(email, role);
-        AppState.token = token;
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const role = roleInput.value;
 
-        console.log('? JWT Token (demo):', token);
+        if (!email || !password) {
+            this.showLoginError('Please enter email and password', errorContainer);
+            return;
+        }
 
-        // Show dashboard
-        this.showDashboard();
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in...';
+
+        if (errorContainer) {
+            errorContainer.style.display = 'none';
+            errorContainer.textContent = '';
+        }
+
+        try {
+            const response = await apiRequest('/authentication/login', 'POST', {
+                email,
+                password
+            });
+
+            if (!response.ok) {
+                const message = response.message || 'Login failed. Please try again.';
+                this.showLoginError(message, errorContainer);
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+                return;
+            }
+
+            const actualRole = response.data.role.toLowerCase();
+
+            // Warn if selected role doesn't match actual role
+            if (role.toLowerCase() !== actualRole) {
+                console.warn(
+                    `Role mismatch: You selected "${role}" but your actual role is "${actualRole}"`
+                );
+                this.showLoginError(
+                    `Note: You are registered as a ${actualRole}, not a ${role}`,
+                    errorContainer
+                );
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Sign In';
+                return;
+            }
+
+            AppState.setUser(email, actualRole);
+
+            localStorage.setItem('jwtToken', response.data.accessToken);
+            localStorage.setItem("refreshToken", response.data.refreshToken);
+            localStorage.setItem('email', email);
+            localStorage.setItem('role', actualRole);
+
+
+            console.log('Login successful for:', email);
+            this.showDashboard(email, actualRole);
+
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showLoginError('An unexpected error occurred. Please try again.', errorContainer);
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+        }
     },
 
-    /**
-     * Show dashboard and render header, sidebar, and initial page
-     */
-    showDashboard() {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('dashboardPage').classList.add('visible');
+    showLoginError(message, errorContainer) {
+        if (errorContainer) {
+            errorContainer.textContent = message;
+            errorContainer.style.display = 'block';
+        }
+        console.warn('Login failed:', message);
+    },
 
-        // Set router pages based on user role
-        this.setRouterPages(AppState.role);
+    showLoginPage() {
+        const loginPage = document.getElementById('loginPage');
+        const dashboardPage = document.getElementById('dashboardPage');
 
-        // Render header
-        document.getElementById('headerContainer').innerHTML = HeaderComponent.render();
-        HeaderComponent.attach(() => this.logout());
+        if (loginPage) loginPage.style.display = 'flex';
+        if (dashboardPage) dashboardPage.classList.remove('visible');
+    },
 
-        // Render sidebar
-        document.getElementById('sidebarContainer').innerHTML = SidebarComponent.render(AppState.role);
-        SidebarComponent.attach();
+    showDashboard(email, role) {
+        const loginPage = document.getElementById('loginPage');
+        const dashboardPage = document.getElementById('dashboardPage');
 
-        // Navigate to dashboard page
+        if (loginPage) loginPage.style.display = 'none';
+        if (dashboardPage) dashboardPage.classList.add('visible');
+
+        this.setRouterPages(role);
+
+        const headerContainer = document.getElementById('headerContainer');
+        if (headerContainer) {
+            headerContainer.innerHTML = HeaderComponent.render(email, role);
+            HeaderComponent.attach(() => this.logout());
+        }
+
+        const sidebarContainer = document.getElementById('sidebarContainer');
+        if (sidebarContainer) {
+            sidebarContainer.innerHTML = SidebarComponent.render(role);
+            SidebarComponent.attach();
+        }
+
         Router.goToPage('dashboard');
-
-        console.log('? Dashboard shown');
+        console.log('Dashboard shown for user:', email);
     },
 
-    /**
-     * Set router pages based on user role
-     */
     setRouterPages(role) {
         switch (role) {
             case 'student':
@@ -99,27 +174,29 @@ const App = {
             default:
                 Router.Pages = StudentPages;
         }
-        console.log('? Router pages set for role:', role);
     },
 
-    /**
-     * Handle logout - reset state and show login page
-     */
     logout() {
-        AppState.reset();
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('email');
+        localStorage.removeItem('role');
 
-        document.getElementById('loginPage').style.display = 'flex';
-        document.getElementById('dashboardPage').classList.remove('visible');
-        document.getElementById('loginForm').reset();
-        document.getElementById('roleStudent').checked = true;
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.reset();
+        }
 
-        console.log('? Logged out');
+        const roleStudent = document.getElementById('roleStudent');
+        if (roleStudent) {
+            roleStudent.checked = true;
+        }
+
+        this.showLoginPage();
+        console.log('Logged out successfully');
     }
 };
 
-/**
- * Initialize app when DOM is ready
- */
 window.addEventListener('DOMContentLoaded', () => {
     App.init();
 });

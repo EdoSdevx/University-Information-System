@@ -31,9 +31,14 @@ public class GradeResponse
     public string? CourseCode { get; set; }
     public string? CourseName { get; set; }
     public string? Section { get; set; }
+    public int? Exam1 { get; set; }
+    public int? Exam2 { get; set; }
+    public int? Final { get; set; }
+    public int? Project { get; set; }
     public decimal Score { get; set; }
     public string? LetterGrade { get; set; }
     public DateTime? SubmittedAt { get; set; }
+    public int CreditHours { get; set; }
 }
 
 public class StudentGradeResponse

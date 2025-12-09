@@ -11,13 +11,11 @@ public static class SeedData
 {
     public static async Task SeedAsync(ApplicationDbContext context)
     {
-        // Check if data already exists
         if (context.Users.Any())
         {
             return;
         }
 
-        // ==================== ACADEMIC YEAR ====================
         var academicYear = new AcademicYear
         {
             StartYear = 2024,
@@ -30,7 +28,6 @@ public static class SeedData
         };
         context.AcademicYears.Add(academicYear);
 
-        // ==================== DEPARTMENTS ====================
         var departments = new List<Department>
         {
             new Department { Code = "CSE", Name = "Computer Science & Engineering", CreatedAt = DateTime.UtcNow },
@@ -41,32 +38,27 @@ public static class SeedData
         context.Departments.AddRange(departments);
         await context.SaveChangesAsync();
 
-        // ==================== COURSES ====================
         var courses = new List<Course>
         {
-            // CSE Courses
             new Course { Code = "CS101", Name = "Introduction to Computer Science", CreditHours = 3, DepartmentId = departments[0].Id, CreatedAt = DateTime.UtcNow },
             new Course { Code = "CS201", Name = "Data Structures", CreditHours = 4, DepartmentId = departments[0].Id, CreatedAt = DateTime.UtcNow },
             new Course { Code = "CS301", Name = "Algorithms", CreditHours = 4, DepartmentId = departments[0].Id, CreatedAt = DateTime.UtcNow },
             new Course { Code = "CS401", Name = "Database Systems", CreditHours = 3, DepartmentId = departments[0].Id, CreatedAt = DateTime.UtcNow },
-            
-            // ENG Courses
+            new Course { Code = "CS501", Name = "Web Development", CreditHours = 3, DepartmentId = departments[0].Id, CreatedAt = DateTime.UtcNow },
+
             new Course { Code = "ENG101", Name = "Circuit Analysis", CreditHours = 4, DepartmentId = departments[1].Id, CreatedAt = DateTime.UtcNow },
             new Course { Code = "ENG201", Name = "Digital Logic Design", CreditHours = 4, DepartmentId = departments[1].Id, CreatedAt = DateTime.UtcNow },
             new Course { Code = "ENG301", Name = "Signal Processing", CreditHours = 3, DepartmentId = departments[1].Id, CreatedAt = DateTime.UtcNow },
-            
-            // MATH Courses
+
             new Course { Code = "MATH101", Name = "Calculus I", CreditHours = 4, DepartmentId = departments[2].Id, CreatedAt = DateTime.UtcNow },
             new Course { Code = "MATH201", Name = "Linear Algebra", CreditHours = 3, DepartmentId = departments[2].Id, CreatedAt = DateTime.UtcNow },
-            
-            // PHYS Courses
+
             new Course { Code = "PHYS101", Name = "Physics I", CreditHours = 4, DepartmentId = departments[3].Id, CreatedAt = DateTime.UtcNow },
             new Course { Code = "PHYS201", Name = "Physics II", CreditHours = 4, DepartmentId = departments[3].Id, CreatedAt = DateTime.UtcNow }
         };
         context.Courses.AddRange(courses);
         await context.SaveChangesAsync();
 
-        // ==================== USERS ====================
         var admin = new User
         {
             Email = "admin@university.edu",
@@ -78,160 +70,537 @@ public static class SeedData
             CreatedAt = DateTime.UtcNow
         };
 
-        // Teachers for each department
         var teachers = new List<User>
         {
-            // CSE Teachers
             new User { Email = "dr.smith@university.edu", FirstName = "Dr.", LastName = "Smith", DepartmentId = departments[0].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Teacher123"), Role = UserRole.Teacher, CreatedAt = DateTime.UtcNow },
             new User { Email = "dr.johnson@university.edu", FirstName = "Dr.", LastName = "Johnson", DepartmentId = departments[0].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Teacher123"), Role = UserRole.Teacher, CreatedAt = DateTime.UtcNow },
-            
-            // ENG Teachers
             new User { Email = "dr.brown@university.edu", FirstName = "Dr.", LastName = "Brown", DepartmentId = departments[1].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Teacher123"), Role = UserRole.Teacher, CreatedAt = DateTime.UtcNow },
             new User { Email = "dr.williams@university.edu", FirstName = "Dr.", LastName = "Williams", DepartmentId = departments[1].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Teacher123"), Role = UserRole.Teacher, CreatedAt = DateTime.UtcNow },
-            
-            // MATH Teachers
             new User { Email = "dr.taylor@university.edu", FirstName = "Dr.", LastName = "Taylor", DepartmentId = departments[2].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Teacher123"), Role = UserRole.Teacher, CreatedAt = DateTime.UtcNow },
-            
-            // PHYS Teachers
             new User { Email = "dr.miller@university.edu", FirstName = "Dr.", LastName = "Miller", DepartmentId = departments[3].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Teacher123"), Role = UserRole.Teacher, CreatedAt = DateTime.UtcNow }
         };
 
-        // CSE Students
-        var cseStudents = new List<User>
+        var cseStudents = Enumerable.Range(1, 10).Select(i => new User
         {
-            new User { Email = "student1@university.edu", FirstName = "John", LastName = "Doe", DepartmentId = departments[0].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"), Role = UserRole.Student, CreatedAt = DateTime.UtcNow },
-            new User { Email = "student2@university.edu", FirstName = "Jane", LastName = "Smith", DepartmentId = departments[0].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"), Role = UserRole.Student, CreatedAt = DateTime.UtcNow },
-            new User { Email = "student3@university.edu", FirstName = "Alice", LastName = "Johnson", DepartmentId = departments[0].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"), Role = UserRole.Student, CreatedAt = DateTime.UtcNow }
-        };
+            Email = $"cse.student{i}@university.edu",
+            FirstName = $"CSE_Student",
+            LastName = i.ToString(),
+            DepartmentId = departments[0].Id,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
+            Role = UserRole.Student,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
 
-        // ENG Students
-        var engStudents = new List<User>
+        var engStudents = Enumerable.Range(1, 8).Select(i => new User
         {
-            new User { Email = "student4@university.edu", FirstName = "Bob", LastName = "Wilson", DepartmentId = departments[1].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"), Role = UserRole.Student, CreatedAt = DateTime.UtcNow },
-            new User { Email = "student5@university.edu", FirstName = "Carol", LastName = "Brown", DepartmentId = departments[1].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"), Role = UserRole.Student, CreatedAt = DateTime.UtcNow }
-        };
+            Email = $"eng.student{i}@university.edu",
+            FirstName = $"ENG_Student",
+            LastName = i.ToString(),
+            DepartmentId = departments[1].Id,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
+            Role = UserRole.Student,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
 
-        // MATH Students
-        var mathStudents = new List<User>
+        var mathStudents = Enumerable.Range(1, 5).Select(i => new User
         {
-            new User { Email = "student6@university.edu", FirstName = "David", LastName = "Taylor", DepartmentId = departments[2].Id, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"), Role = UserRole.Student, CreatedAt = DateTime.UtcNow }
-        };
+            Email = $"math.student{i}@university.edu",
+            FirstName = $"MATH_Student",
+            LastName = i.ToString(),
+            DepartmentId = departments[2].Id,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
+            Role = UserRole.Student,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
+
+        var physicsStudents = Enumerable.Range(1, 5).Select(i => new User
+        {
+            Email = $"phys.student{i}@university.edu",
+            FirstName = $"PHYS_Student",
+            LastName = i.ToString(),
+            DepartmentId = departments[3].Id,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
+            Role = UserRole.Student,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
 
         context.Users.Add(admin);
         context.Users.AddRange(teachers);
         context.Users.AddRange(cseStudents);
         context.Users.AddRange(engStudents);
         context.Users.AddRange(mathStudents);
+        context.Users.AddRange(physicsStudents);
         await context.SaveChangesAsync();
 
-        // ==================== COURSE INSTANCES ====================
         var courseInstances = new List<CourseInstance>
         {
-            // CS101 - 2 sections
-            new CourseInstance { CourseId = courses[0].Id, TeacherId = teachers[0].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[0].Id, Section = "A", Capacity = 30, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(9, 0), EndTime = new TimeOnly(10, 30), Location = "Room 101", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow },
-            new CourseInstance { CourseId = courses[0].Id, TeacherId = teachers[1].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[0].Id, Section = "B", Capacity = 25, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(11, 0), EndTime = new TimeOnly(12, 30), Location = "Room 102", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow },
-            
-            // CS201
-            new CourseInstance { CourseId = courses[1].Id, TeacherId = teachers[0].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[0].Id, Section = "A", Capacity = 28, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(14, 0), EndTime = new TimeOnly(15, 30), Location = "Room 201", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow },
-            
-            // CS301
-            new CourseInstance { CourseId = courses[2].Id, TeacherId = teachers[1].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[0].Id, Section = "A", Capacity = 25, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(14, 0), EndTime = new TimeOnly(15, 30), Location = "Room 301", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow },
-            
-            // ENG101
-            new CourseInstance { CourseId = courses[4].Id, TeacherId = teachers[2].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[1].Id, Section = "A", Capacity = 30, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(9, 0), EndTime = new TimeOnly(10, 30), Location = "Lab 101", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow },
-            
-            // ENG201
-            new CourseInstance { CourseId = courses[5].Id, TeacherId = teachers[3].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[1].Id, Section = "A", Capacity = 25, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(11, 0), EndTime = new TimeOnly(12, 30), Location = "Lab 201", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow },
-            
-            // MATH101
-            new CourseInstance { CourseId = courses[7].Id, TeacherId = teachers[4].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[2].Id, Section = "A", Capacity = 35, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(11, 0), EndTime = new TimeOnly(12, 30), Location = "Room 501", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow },
-            
-            // PHYS101
-            new CourseInstance { CourseId = courses[9].Id, TeacherId = teachers[5].Id, AcademicYearId = academicYear.Id, DepartmentId = departments[3].Id, Section = "A", Capacity = 30, CurrentEnrollmentCount = 0, Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(14, 0), EndTime = new TimeOnly(15, 30), Location = "Room 601", Status = CourseInstanceStatus.Open, ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow }
+            new CourseInstance
+            {
+                CourseId = courses[0].Id, TeacherId = teachers[0].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[0].Id, Section = "A", Capacity = 30, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(9, 0),
+                EndTime = new TimeOnly(10, 30), Location = "Room 101", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+            new CourseInstance
+            {
+                CourseId = courses[0].Id, TeacherId = teachers[1].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[0].Id, Section = "B", Capacity = 25, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(11, 0),
+                EndTime = new TimeOnly(12, 30), Location = "Room 102", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+            new CourseInstance
+            {
+                CourseId = courses[1].Id, TeacherId = teachers[0].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[0].Id, Section = "A", Capacity = 28, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(14, 0),
+                EndTime = new TimeOnly(15, 30), Location = "Room 201", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+            new CourseInstance
+            {
+                CourseId = courses[2].Id, TeacherId = teachers[1].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[0].Id, Section = "A", Capacity = 25, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(14, 0),
+                EndTime = new TimeOnly(15, 30), Location = "Room 301", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+            new CourseInstance
+            {
+                CourseId = courses[3].Id, TeacherId = teachers[0].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[0].Id, Section = "A", Capacity = 20, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(16, 0),
+                EndTime = new TimeOnly(17, 30), Location = "Room 401", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+            new CourseInstance
+            {
+                CourseId = courses[4].Id, TeacherId = teachers[1].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[0].Id, Section = "A", Capacity = 5, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(11, 0),
+                EndTime = new TimeOnly(12, 30), Location = "Room 501", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+
+            new CourseInstance
+            {
+                CourseId = courses[5].Id, TeacherId = teachers[2].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[1].Id, Section = "A", Capacity = 30, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(9, 0),
+                EndTime = new TimeOnly(10, 30), Location = "Lab 101", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+            new CourseInstance
+            {
+                CourseId = courses[6].Id, TeacherId = teachers[3].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[1].Id, Section = "A", Capacity = 25, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(11, 0),
+                EndTime = new TimeOnly(12, 30), Location = "Lab 201", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+
+            new CourseInstance
+            {
+                CourseId = courses[8].Id, TeacherId = teachers[4].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[2].Id, Section = "A", Capacity = 35, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Monday, Day2 = DayOfWeek.Wednesday, StartTime = new TimeOnly(11, 0),
+                EndTime = new TimeOnly(12, 30), Location = "Room 501", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+            new CourseInstance
+            {
+                CourseId = courses[9].Id, TeacherId = teachers[4].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[2].Id, Section = "A", Capacity = 25, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(14, 0),
+                EndTime = new TimeOnly(15, 30), Location = "Room 601", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            },
+
+            new CourseInstance
+            {
+                CourseId = courses[10].Id, TeacherId = teachers[5].Id, AcademicYearId = academicYear.Id,
+                DepartmentId = departments[3].Id, Section = "A", Capacity = 30, CurrentEnrollmentCount = 0,
+                Day1 = DayOfWeek.Tuesday, Day2 = DayOfWeek.Thursday, StartTime = new TimeOnly(14, 0),
+                EndTime = new TimeOnly(15, 30), Location = "Room 701", Status = CourseInstanceStatus.Open,
+                ConcurrencyToken = new byte[8], CreatedAt = DateTime.UtcNow
+            }
         };
         context.CourseInstances.AddRange(courseInstances);
         await context.SaveChangesAsync();
 
-        // ==================== ENROLLMENTS ====================
-        var enrollments = new List<Enrollment>
+        var enrollments = new List<Enrollment>();
+
+        // CSE Students enrolling in multiple courses
+        for (int i = 0; i < cseStudents.Count; i++)
         {
-            // CSE Student 1 enrolled in CS101 Section A and CS201
-            new Enrollment { StudentId = cseStudents[0].Id, CourseInstanceId = courseInstances[0].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            new Enrollment { StudentId = cseStudents[0].Id, CourseInstanceId = courseInstances[2].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // CSE Student 2 enrolled in CS101 Section B and CS301
-            new Enrollment { StudentId = cseStudents[1].Id, CourseInstanceId = courseInstances[1].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            new Enrollment { StudentId = cseStudents[1].Id, CourseInstanceId = courseInstances[3].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // CSE Student 3 enrolled in CS101 Section A
-            new Enrollment { StudentId = cseStudents[2].Id, CourseInstanceId = courseInstances[0].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // ENG Student 1 enrolled in ENG101 and ENG201
-            new Enrollment { StudentId = engStudents[0].Id, CourseInstanceId = courseInstances[4].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            new Enrollment { StudentId = engStudents[0].Id, CourseInstanceId = courseInstances[5].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // ENG Student 2 enrolled in ENG101
-            new Enrollment { StudentId = engStudents[1].Id, CourseInstanceId = courseInstances[4].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // MATH Student 1 enrolled in MATH101
-            new Enrollment { StudentId = mathStudents[0].Id, CourseInstanceId = courseInstances[6].Id, AcademicYearId = academicYear.Id, Status = EnrollmentStatus.Active, EnrolledAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow }
-        };
+            enrollments.Add(new Enrollment
+            {
+                StudentId = cseStudents[i].Id,
+                CourseInstanceId = courseInstances[i % 2].Id,
+                AcademicYearId = academicYear.Id,
+                Status = EnrollmentStatus.Active,
+                EnrolledAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            if (i < 5)
+            {
+                enrollments.Add(new Enrollment
+                {
+                    StudentId = cseStudents[i].Id,
+                    CourseInstanceId = courseInstances[2].Id,
+                    AcademicYearId = academicYear.Id,
+                    Status = EnrollmentStatus.Active,
+                    EnrolledAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        // ENG Students
+        for (int i = 0; i < engStudents.Count; i++)
+        {
+            enrollments.Add(new Enrollment
+            {
+                StudentId = engStudents[i].Id,
+                CourseInstanceId = courseInstances[6].Id,
+                AcademicYearId = academicYear.Id,
+                Status = EnrollmentStatus.Active,
+                EnrolledAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        // MATH Students
+        for (int i = 0; i < mathStudents.Count; i++)
+        {
+            enrollments.Add(new Enrollment
+            {
+                StudentId = mathStudents[i].Id,
+                CourseInstanceId = courseInstances[8].Id,
+                AcademicYearId = academicYear.Id,
+                Status = EnrollmentStatus.Active,
+                EnrolledAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        // Physics Students
+        for (int i = 0; i < physicsStudents.Count; i++)
+        {
+            enrollments.Add(new Enrollment
+            {
+                StudentId = physicsStudents[i].Id,
+                CourseInstanceId = courseInstances[10].Id,
+                AcademicYearId = academicYear.Id,
+                Status = EnrollmentStatus.Active,
+                EnrolledAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
         context.Enrollments.AddRange(enrollments);
 
         // Update enrollment counts
-        courseInstances[0].CurrentEnrollmentCount = 2;
-        courseInstances[1].CurrentEnrollmentCount = 1;
-        courseInstances[2].CurrentEnrollmentCount = 1;
-        courseInstances[3].CurrentEnrollmentCount = 1;
-        courseInstances[4].CurrentEnrollmentCount = 2;
-        courseInstances[5].CurrentEnrollmentCount = 1;
-        courseInstances[6].CurrentEnrollmentCount = 1;
+        foreach (var ci in courseInstances)
+        {
+            ci.CurrentEnrollmentCount = enrollments.Count(e => e.CourseInstanceId == ci.Id);
+        }
 
         await context.SaveChangesAsync();
 
-        // ==================== ANNOUNCEMENTS ====================
+        // Announcements
         var announcements = new List<Announcement>
         {
-            // CS101 Section A announcements
-            new Announcement { Title = "Welcome to CS101 Section A", Content = "This is an introductory computer science course. Welcome everyone!", CreatedByTeacherId = teachers[0].Id, CreatedByTeacherName = $"{teachers[0].FirstName} {teachers[0].LastName}", TargetCourseInstanceId = courseInstances[0].Id, PublishedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            new Announcement { Title = "Assignment 1 Released", Content = "First programming assignment is now available. Due in 2 weeks.", CreatedByTeacherId = teachers[0].Id, CreatedByTeacherName = $"{teachers[0].FirstName} {teachers[0].LastName}", TargetCourseInstanceId = courseInstances[0].Id, PublishedAt = DateTime.UtcNow.AddDays(-2), CreatedAt = DateTime.UtcNow.AddDays(-2) },
-            
-            // CS101 Section B announcements
-            new Announcement { Title = "Welcome to CS101 Section B", Content = "Welcome to the Tuesday/Thursday session of CS101.", CreatedByTeacherId = teachers[1].Id, CreatedByTeacherName = $"{teachers[1].FirstName} {teachers[1].LastName}", TargetCourseInstanceId = courseInstances[1].Id, PublishedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // CS201 announcements
-            new Announcement { Title = "Midterm Exam Announcement", Content = "Midterm exam will be held on December 20th. Study the first 5 chapters.", CreatedByTeacherId = teachers[0].Id, CreatedByTeacherName = $"{teachers[0].FirstName} {teachers[0].LastName}", TargetCourseInstanceId = courseInstances[2].Id, PublishedAt = DateTime.UtcNow.AddDays(-5), CreatedAt = DateTime.UtcNow.AddDays(-5) },
-            
-            // CS301 announcements
-            new Announcement { Title = "Advanced Algorithms Course Started", Content = "Welcome to CS301. This is an advanced course on algorithm design.", CreatedByTeacherId = teachers[1].Id, CreatedByTeacherName = $"{teachers[1].FirstName} {teachers[1].LastName}", TargetCourseInstanceId = courseInstances[3].Id, PublishedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // ENG101 announcements
-            new Announcement { Title = "Circuit Lab Session 1", Content = "Please bring your lab manual to the first lab session.", CreatedByTeacherId = teachers[2].Id, CreatedByTeacherName = $"{teachers[2].FirstName} {teachers[2].LastName}", TargetCourseInstanceId = courseInstances[4].Id, PublishedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // MATH101 announcements
-            new Announcement { Title = "Calculus I Class Starts", Content = "Welcome to Calculus I. This course covers limits, derivatives, and integrals.", CreatedByTeacherId = teachers[4].Id, CreatedByTeacherName = $"{teachers[4].FirstName} {teachers[4].LastName}", TargetCourseInstanceId = courseInstances[6].Id, PublishedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow }
+            new Announcement
+            {
+                Title = "Welcome to CS101 Section A",
+                Content = "Welcome to Introduction to Computer Science. This course covers fundamental programming concepts.",
+                CreatedByTeacherId = teachers[0].Id,
+                CreatedByTeacherName = "Dr. Smith",
+                TargetCourseInstanceId = courseInstances[0].Id,
+                PublishedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Announcement
+            {
+                Title = "Assignment 1: Hello World Program",
+                Content = "Your first assignment is to write a simple Hello World program in Python. Due next Friday.",
+                CreatedByTeacherId = teachers[0].Id,
+                CreatedByTeacherName = "Dr. Smith",
+                TargetCourseInstanceId = courseInstances[0].Id,
+                PublishedAt = DateTime.UtcNow.AddDays(-3),
+                CreatedAt = DateTime.UtcNow.AddDays(-3)
+            },
+            new Announcement
+            {
+                Title = "Quiz 1 Results",
+                Content = "Quiz 1 has been graded. Check your scores on the portal.",
+                CreatedByTeacherId = teachers[0].Id,
+                CreatedByTeacherName = "Dr. Smith",
+                TargetCourseInstanceId = courseInstances[0].Id,
+                PublishedAt = DateTime.UtcNow.AddDays(-7),
+                CreatedAt = DateTime.UtcNow.AddDays(-7)
+            },
+            new Announcement
+            {
+                Title = "Welcome to CS101 Section B",
+                Content = "Welcome to the Tuesday/Thursday session of CS101. Looking forward to meeting you all.",
+                CreatedByTeacherId = teachers[1].Id,
+                CreatedByTeacherName = "Dr. Johnson",
+                TargetCourseInstanceId = courseInstances[1].Id,
+                PublishedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Announcement
+            {
+                Title = "Data Structures Course Begins",
+                Content = "Welcome to CS201. This course will cover arrays, linked lists, stacks, queues, and trees.",
+                CreatedByTeacherId = teachers[0].Id,
+                CreatedByTeacherName = "Dr. Smith",
+                TargetCourseInstanceId = courseInstances[2].Id,
+                PublishedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Announcement
+            {
+                Title = "Midterm Exam Schedule",
+                Content = "Midterm exam will be held on December 15th from 2:00 PM to 3:30 PM in Room 101.",
+                CreatedByTeacherId = teachers[0].Id,
+                CreatedByTeacherName = "Dr. Smith",
+                TargetCourseInstanceId = courseInstances[2].Id,
+                PublishedAt = DateTime.UtcNow.AddDays(-5),
+                CreatedAt = DateTime.UtcNow.AddDays(-5)
+            },
+            new Announcement
+            {
+                Title = "Algorithms Course Overview",
+                Content = "CS301 covers algorithm analysis, sorting, searching, graph algorithms, and dynamic programming.",
+                CreatedByTeacherId = teachers[1].Id,
+                CreatedByTeacherName = "Dr. Johnson",
+                TargetCourseInstanceId = courseInstances[3].Id,
+                PublishedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Announcement
+            {
+                Title = "Circuit Lab Safety",
+                Content = "Important: Always wear safety goggles in the lab. Follow all lab procedures strictly.",
+                CreatedByTeacherId = teachers[2].Id,
+                CreatedByTeacherName = "Dr. Brown",
+                TargetCourseInstanceId = courseInstances[6].Id,
+                PublishedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Announcement
+            {
+                Title = "Calculus I Course Starts",
+                Content = "Welcome to MATH101. We will cover limits, derivatives, integration, and applications.",
+                CreatedByTeacherId = teachers[4].Id,
+                CreatedByTeacherName = "Dr. Taylor",
+                TargetCourseInstanceId = courseInstances[8].Id,
+                PublishedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            },
+            new Announcement
+            {
+                Title = "Calculus Homework Collection",
+                Content = "Problem set 1 is due next week. Solutions will be posted after the deadline.",
+                CreatedByTeacherId = teachers[4].Id,
+                CreatedByTeacherName = "Dr. Taylor",
+                TargetCourseInstanceId = courseInstances[8].Id,
+                PublishedAt = DateTime.UtcNow.AddDays(-2),
+                CreatedAt = DateTime.UtcNow.AddDays(-2)
+            }
         };
         context.Announcements.AddRange(announcements);
         await context.SaveChangesAsync();
 
-        // ==================== GRADES ====================
-        var grades = new List<Grade>
+        // Grades with Exam1, Exam2, Final, Project components
+        var grades = new List<Grade>();
+
+        // CS101 Section A grades (cseStudents[0-4])
+        for (int i = 0; i < 5 && i < cseStudents.Count; i++)
         {
-            // CS101 Section A grades
-            new Grade { StudentId = cseStudents[0].Id, CourseInstanceId = courseInstances[0].Id, SubmittedByTeacherId = teachers[0].Id, Score = 85, LetterGrade = "A", SubmittedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            new Grade { StudentId = cseStudents[2].Id, CourseInstanceId = courseInstances[0].Id, SubmittedByTeacherId = teachers[0].Id, Score = 78, LetterGrade = "B", SubmittedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // CS101 Section B grades
-            new Grade { StudentId = cseStudents[1].Id, CourseInstanceId = courseInstances[1].Id, SubmittedByTeacherId = teachers[1].Id, Score = 92, LetterGrade = "A", SubmittedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // CS201 grades
-            new Grade { StudentId = cseStudents[0].Id, CourseInstanceId = courseInstances[2].Id, SubmittedByTeacherId = teachers[0].Id, Score = 88, LetterGrade = "A", SubmittedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            
-            // ENG101 grades
-            new Grade { StudentId = engStudents[0].Id, CourseInstanceId = courseInstances[4].Id, SubmittedByTeacherId = teachers[2].Id, Score = 75, LetterGrade = "C", SubmittedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow },
-            new Grade { StudentId = engStudents[1].Id, CourseInstanceId = courseInstances[4].Id, SubmittedByTeacherId = teachers[2].Id, Score = 82, LetterGrade = "B", SubmittedAt = DateTime.UtcNow, CreatedAt = DateTime.UtcNow }
-        };
+            var exam1 = 80 + (i * 2);
+            var exam2 = 82 + (i * 2);
+            var final = 85 + (i * 2);
+            var project = 88 + (i * 2);
+            var score = CalculateScore(exam1, exam2, final, project);
+
+            grades.Add(new Grade
+            {
+                StudentId = cseStudents[i].Id,
+                CourseInstanceId = courseInstances[0].Id,
+                SubmittedByTeacherId = teachers[0].Id,
+                Exam1 = exam1,
+                Exam2 = exam2,
+                Final = final,
+                Project = project,
+                Score = score,
+                LetterGrade = CalculateLetterGrade(score),
+                SubmittedAt = DateTime.UtcNow.AddDays(-10),
+                CreatedAt = DateTime.UtcNow.AddDays(-10)
+            });
+        }
+
+        // CS201 Data Structures grades (cseStudents[0-4])
+        for (int i = 0; i < 5 && i < cseStudents.Count; i++)
+        {
+            var exam1 = 85 + (i * 1);
+            var exam2 = 87 + (i * 1);
+            var final = 89 + (i * 1);
+            var project = (int?)null; // No project for this course
+            var score = CalculateScore(exam1, exam2, final, project);
+
+            grades.Add(new Grade
+            {
+                StudentId = cseStudents[i].Id,
+                CourseInstanceId = courseInstances[2].Id,
+                SubmittedByTeacherId = teachers[0].Id,
+                Exam1 = exam1,
+                Exam2 = exam2,
+                Final = final,
+                Project = project,
+                Score = score,
+                LetterGrade = CalculateLetterGrade(score),
+                SubmittedAt = DateTime.UtcNow.AddDays(-8),
+                CreatedAt = DateTime.UtcNow.AddDays(-8)
+            });
+        }
+
+        // Circuit Analysis grades for ENG students
+        for (int i = 0; i < engStudents.Count; i++)
+        {
+            var exam1 = 75 + (i * 2);
+            var exam2 = 77 + (i * 2);
+            var final = 80 + (i * 2);
+            var project = 82 + (i * 2);
+            var score = CalculateScore(exam1, exam2, final, project);
+
+            grades.Add(new Grade
+            {
+                StudentId = engStudents[i].Id,
+                CourseInstanceId = courseInstances[6].Id,
+                SubmittedByTeacherId = teachers[2].Id,
+                Exam1 = exam1,
+                Exam2 = exam2,
+                Final = final,
+                Project = project,
+                Score = score,
+                LetterGrade = CalculateLetterGrade(score),
+                SubmittedAt = DateTime.UtcNow.AddDays(-7),
+                CreatedAt = DateTime.UtcNow.AddDays(-7)
+            });
+        }
+
+        // Calculus I grades for MATH students
+        for (int i = 0; i < mathStudents.Count; i++)
+        {
+            var exam1 = 78 + (i * 2);
+            var exam2 = 80 + (i * 2);
+            var final = 82 + (i * 2);
+            var project = (int?)null; // Math courses typically don't have projects
+            var score = CalculateScore(exam1, exam2, final, project);
+
+            grades.Add(new Grade
+            {
+                StudentId = mathStudents[i].Id,
+                CourseInstanceId = courseInstances[8].Id,
+                SubmittedByTeacherId = teachers[4].Id,
+                Exam1 = exam1,
+                Exam2 = exam2,
+                Final = final,
+                Project = project,
+                Score = score,
+                LetterGrade = CalculateLetterGrade(score),
+                SubmittedAt = DateTime.UtcNow.AddDays(-5),
+                CreatedAt = DateTime.UtcNow.AddDays(-5)
+            });
+        }
+
+        // Physics I grades for Physics students
+        for (int i = 0; i < physicsStudents.Count; i++)
+        {
+            var exam1 = 82 + (i * 1);
+            var exam2 = 84 + (i * 1);
+            var final = 86 + (i * 1);
+            var project = 85 + (i * 1);
+            var score = CalculateScore(exam1, exam2, final, project);
+
+            grades.Add(new Grade
+            {
+                StudentId = physicsStudents[i].Id,
+                CourseInstanceId = courseInstances[10].Id,
+                SubmittedByTeacherId = teachers[5].Id,
+                Exam1 = exam1,
+                Exam2 = exam2,
+                Final = final,
+                Project = project,
+                Score = score,
+                LetterGrade = CalculateLetterGrade(score),
+                SubmittedAt = DateTime.UtcNow.AddDays(-3),
+                CreatedAt = DateTime.UtcNow.AddDays(-3)
+            });
+        }
+
         context.Grades.AddRange(grades);
         await context.SaveChangesAsync();
+    }
+
+    private static string GetLetterGrade(double score)
+    {
+        return score switch
+        {
+            >= 90 => "A",
+            >= 80 => "B",
+            >= 70 => "C",
+            >= 60 => "D",
+            _ => "F"
+        };
+    }
+
+    private static decimal CalculateScore(int? exam1, int? exam2, int? final, int? project)
+    {
+        decimal score = 0;
+        int componentCount = 0;
+
+        if (exam1.HasValue)
+        {
+            score += exam1.Value * 0.2m;
+            componentCount++;
+        }
+        if (exam2.HasValue)
+        {
+            score += exam2.Value * 0.2m;
+            componentCount++;
+        }
+        if (final.HasValue)
+        {
+            score += final.Value * 0.4m;
+            componentCount++;
+        }
+        if (project.HasValue)
+        {
+            score += project.Value * 0.2m;
+            componentCount++;
+        }
+
+        return componentCount > 0 ? Math.Round(score, 2) : 0;
+    }
+
+    private static string CalculateLetterGrade(decimal score)
+    {
+        if (score >= 90) return "A";
+        if (score >= 85) return "A-";
+        if (score >= 80) return "B+";
+        if (score >= 75) return "B";
+        if (score >= 70) return "B-";
+        if (score >= 65) return "C+";
+        if (score >= 60) return "C";
+        if (score >= 55) return "C-";
+        if (score >= 50) return "D";
+        return "F";
     }
 }

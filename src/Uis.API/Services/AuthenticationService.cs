@@ -140,7 +140,8 @@ public class AuthenticationService : Interfaces.IAuthenticationService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(60)
+            AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(60),
+            Role = user.Role.ToString()
         };
 
         _logger.LogInformation("User logged in successfully: {Email}", user.Email);

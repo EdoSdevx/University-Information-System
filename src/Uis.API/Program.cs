@@ -35,7 +35,9 @@ builder.Services.AddScoped<ICourseInstanceRepository, CourseInstanceRepository>(
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IGradeRepository, GradeRepository>();
+builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 
 // ==================== SERVICES ====================
 builder.Services.AddScoped<IUserService, UserService>();
@@ -48,6 +50,7 @@ builder.Services.AddScoped<IGradeService, GradeService>();
 builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 // ==================== AUTHENTICATION ====================
 builder.Services.AddAuthentication(options =>

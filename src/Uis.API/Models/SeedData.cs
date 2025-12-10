@@ -451,7 +451,7 @@ public static class SeedData
             var exam1 = 85 + (i * 1);
             var exam2 = 87 + (i * 1);
             var final = 89 + (i * 1);
-            var project = (int?)null; // No project for this course
+            var project = (int?)null;
             var score = CalculateScore(exam1, exam2, final, project);
 
             grades.Add(new Grade
@@ -501,7 +501,7 @@ public static class SeedData
             var exam1 = 78 + (i * 2);
             var exam2 = 80 + (i * 2);
             var final = 82 + (i * 2);
-            var project = (int?)null; // Math courses typically don't have projects
+            var project = (int?)null;
             var score = CalculateScore(exam1, exam2, final, project);
 
             grades.Add(new Grade
@@ -547,18 +547,45 @@ public static class SeedData
 
         context.Grades.AddRange(grades);
         await context.SaveChangesAsync();
-    }
 
-    private static string GetLetterGrade(double score)
-    {
-        return score switch
+        // Attendances
+        var attendances = new List<Attendance>();
+        var random = new Random();
+        var startDate = DateTime.UtcNow.AddDays(-60);
+
+        // Create attendance records for each enrollment
+        foreach (var enrollment in enrollments)
         {
-            >= 90 => "A",
-            >= 80 => "B",
-            >= 70 => "C",
-            >= 60 => "D",
-            _ => "F"
-        };
+            // Create 12 attendance records (representing ~3 weeks of classes, 3 days per week)
+            for (int day = 0; day < 12; day++)
+            {
+                var attendanceDate = startDate.AddDays(day);
+
+                // Skip weekends
+                if (attendanceDate.DayOfWeek == DayOfWeek.Saturday || attendanceDate.DayOfWeek == DayOfWeek.Sunday)
+                    continue;
+
+                var statusValue = random.Next(0, 100);
+                var status = statusValue switch
+                {
+                    >= 85 => "Present",        // 15% chance
+                    >= 80 => "Late",           // 5% chance
+                    >= 75 => "Absent",         // 5% chance
+                    _ => "Present"             // 75% chance
+                };
+
+                attendances.Add(new Attendance
+                {
+                    EnrollmentId = enrollment.Id,
+                    AttendanceDate = attendanceDate,
+                    Status = status,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
+        context.Attendances.AddRange(attendances);
+        await context.SaveChangesAsync();
     }
 
     private static decimal CalculateScore(int? exam1, int? exam2, int? final, int? project)

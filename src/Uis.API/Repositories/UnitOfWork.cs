@@ -21,6 +21,7 @@ public class UnitOfWork : IUnitOfWork
     private IEnrollmentRepository? _enrollments;
     private IGradeRepository? _grades;
     private IAnnouncementRepository? _announcements;
+    private IAttendanceRepository? _attendanceRepository;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -42,6 +43,8 @@ public class UnitOfWork : IUnitOfWork
     public IGradeRepository Grades => _grades ??= new GradeRepository(_context);
 
     public IAnnouncementRepository Announcements => _announcements ??= new AnnouncementRepository(_context, _enrollments);
+
+    public IAttendanceRepository Attendances => _attendanceRepository ??= new AttendanceRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

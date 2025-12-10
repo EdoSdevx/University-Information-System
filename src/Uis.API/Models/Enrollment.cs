@@ -20,4 +20,8 @@ public class Enrollment : BaseEntity
     public User? Student { get; set; }
     public CourseInstance? CourseInstance { get; set; }
     public AcademicYear? AcademicYear { get; set; }
+
+    public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
 }
+
+

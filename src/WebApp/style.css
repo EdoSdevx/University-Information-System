@@ -1547,9 +1547,294 @@ body {
     line-height: 1.6;
 }
 
-    .student-grades-info p {
-        margin: 0;
+.student-grades-info p {
+    margin: 0;
+}
+
+/* ========================================================================== 8. STUDENT MODULE - ATTENDANCES ========================================================================== */
+
+.student-attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+}
+
+.student-attendance-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 20px;
+    align-items: center;
+    padding: 16px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #e8e8e8;
+    transition: all 0.2s ease;
+}
+
+    .student-attendance-row:hover {
+        background: #f5f5f5;
+        border-color: #d8d8d8;
     }
+
+.student-attendance-info {
+    flex: 1;
+}
+
+.student-attendance-course-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.student-attendance-section {
+    font-size: 13px;
+    color: #666;
+    font-weight: 400;
+    margin-left: 6px;
+}
+
+.student-attendance-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.student-attendance-stat {
+    font-size: 13px;
+    color: #666;
+}
+
+.student-attendance-percent {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    min-width: 60px;
+    text-align: center;
+}
+
+.student-attendance-btn {
+    padding: 8px 16px;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+    .student-attendance-btn:hover {
+        background: #1a1a1a;
+    }
+
+    .student-attendance-btn:active {
+        transform: scale(0.98);
+    }
+
+.student-attendance-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.student-attendance-modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    max-width: 550px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.student-attendance-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .student-attendance-modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+    }
+
+.student-attendance-modal-close {
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+    .student-attendance-modal-close:hover {
+        color: #333;
+    }
+
+.student-attendance-modal-body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.student-attendance-week {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+    .student-attendance-week:last-child {
+        border-bottom: none;
+    }
+
+.student-attendance-week-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.student-attendance-week-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.student-attendance-day-box {
+    flex: 0 1 calc(14.28% - 8px);
+    min-width: 90px;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #e8e8e8;
+    text-align: center;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.student-attendance-day-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.student-attendance-day-date {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.student-attendance-day-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-radius: 4px;
+    background: white;
+    margin-bottom: 4px;
+}
+
+.student-attendance-day-note {
+    font-size: 10px;
+    color: #666;
+    margin-top: 4px;
+    word-break: break-word;
+}
+
+.student-attendance-day-present {
+    border-color: #c3e6cb;
+}
+
+    .student-attendance-day-present .student-attendance-day-status {
+        color: #155724;
+        background: #d4edda;
+    }
+
+.student-attendance-day-absent {
+    border-color: #f5c6cb;
+}
+
+    .student-attendance-day-absent .student-attendance-day-status {
+        color: #721c24;
+        background: #f8d7da;
+    }
+
+.student-attendance-day-late {
+    border-color: #ffeeba;
+}
+
+    .student-attendance-day-late .student-attendance-day-status {
+        color: #856404;
+        background: #fff3cd;
+    }
+
+.student-attendance-day-excused {
+    border-color: #bee5eb;
+}
+
+    .student-attendance-day-excused .student-attendance-day-status {
+        color: #0c5460;
+        background: #d1ecf1;
+    }
+
+@media (max-width: 768px) {
+    .student-attendance-day-box {
+        flex: 0 1 calc(25% - 8px);
+        min-width: 80px;
+        min-height: 90px;
+        padding: 10px;
+    }
+
+    .student-attendance-day-name {
+        font-size: 11px;
+    }
+
+    .student-attendance-day-date {
+        font-size: 10px;
+    }
+
+    .student-attendance-day-status {
+        font-size: 11px;
+        padding: 5px 6px;
+    }
+
+    .student-attendance-day-note {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-attendance-day-box {
+        flex: 0 1 calc(33.33% - 7px);
+        min-width: 70px;
+    }
+}
 /* ========================================================================== 7. SCHEDULE PAGE STYLES (SHARED) ========================================================================== */
 .schedule-container {
     display: grid;

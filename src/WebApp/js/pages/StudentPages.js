@@ -373,91 +373,177 @@ export const StudentPages = {
     },
 
     attendance: {
-    render: () => `
+        render: () => `
         <div class="student-breadcrumb">Home / Attendance</div>
         <div class="student-section-header">My Attendance Record</div>
-        
-        <div class="student-attendance-container">
-            <div class="student-attendance-summary">
-                <div class="student-attendance-card">
-                    <div class="student-attendance-card-label">Overall Attendance</div>
-                    <div class="student-attendance-card-percent">92%</div>
-                    <div class="student-attendance-card-bar">
-                        <div class="student-attendance-card-fill" style="width: 92%"></div>
-                    </div>
-                </div>
-                <div class="student-attendance-card">
-                    <div class="student-attendance-card-label">Classes Attended</div>
-                    <div class="student-attendance-card-value">23/25</div>
-                </div>
-                <div class="student-attendance-card">
-                    <div class="student-attendance-card-label">Absences</div>
-                    <div class="student-attendance-card-value">2</div>
-                </div>
-                <div class="student-attendance-card">
-                    <div class="student-attendance-card-label">Late Arrivals</div>
-                    <div class="student-attendance-card-value">1</div>
-                </div>
-            </div>
+        <div id="attendanceContainer">
+            <div style="text-align: center; padding: 20px;">Loading attendance...</div>
+        </div>
 
-            <div class="student-attendance-table-wrapper">
-                <h3>Attendance History</h3>
-                <table class="student-attendance-table">
-                    <thead>
-                        <tr>
-                            <th class="student-attendance-col-date">Date</th>
-                            <th class="student-attendance-col-course">Course</th>
-                            <th class="student-attendance-col-status">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-09</td>
-                            <td class="student-attendance-col-course">CS101 - Introduction to Programming</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
-                        </tr>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-08</td>
-                            <td class="student-attendance-col-course">MATH101 - Calculus I</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
-                        </tr>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-07</td>
-                            <td class="student-attendance-col-course">CS101 - Introduction to Programming</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-late">Late</span></td>
-                        </tr>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-06</td>
-                            <td class="student-attendance-col-course">ENG101 - English I</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
-                        </tr>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-05</td>
-                            <td class="student-attendance-col-course">MATH101 - Calculus I</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-absent">Absent</span></td>
-                        </tr>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-04</td>
-                            <td class="student-attendance-col-course">CS101 - Introduction to Programming</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
-                        </tr>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-03</td>
-                            <td class="student-attendance-col-course">ENG101 - English I</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
-                        </tr>
-                        <tr class="student-attendance-row">
-                            <td class="student-attendance-col-date">2024-10-02</td>
-                            <td class="student-attendance-col-course">MATH101 - Calculus I</td>
-                            <td class="student-attendance-col-status"><span class="student-attendance-badge student-attendance-badge-present">Present</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div id="attendanceModal" class="student-attendance-modal" style="display: none;">
+            <div class="student-attendance-modal-content">
+                <div class="student-attendance-modal-header">
+                    <h3 id="modalTitle"></h3>
+                    <button class="student-attendance-modal-close">&times;</button>
+                </div>
+                <div class="student-attendance-modal-body">
+                    <div id="weeklyContainer"></div>
+                </div>
             </div>
         </div>
     `,
-    afterRender: () => {}
-},
+        afterRender: async () => {
+            const response = await apiRequest('/attendance/my-attendances?pageIndex=1&pageSize=100');
+
+            if (!response.ok || !response.data || response.data.length === 0) {
+                document.getElementById('attendanceContainer').innerHTML =
+                    '<div style="text-align: center; padding: 20px;">No attendance records yet.</div>';
+                return;
+            }
+
+            const records = response.data;
+            const grouped = {};
+
+            records.forEach(record => {
+                const key = `${record.courseCode}|${record.courseName}`;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        courseCode: record.courseCode,
+                        courseName: record.courseName,
+                        records: []
+                    };
+                }
+                grouped[key].records.push(record);
+            });
+
+            const courses = Object.values(grouped).map(course => {
+                const total = course.records.length;
+                const present = course.records.filter(r => r.status === 'Present').length;
+                const absent = course.records.filter(r => r.status === 'Absent').length;
+                const percent = total > 0 ? ((present / total) * 100).toFixed(1) : 0;
+
+                return {
+                    ...course,
+                    total,
+                    present,
+                    absent,
+                    percent
+                };
+            });
+
+            const statusClass = (status) => {
+                const map = {
+                    'Present': 'present',
+                    'Absent': 'absent',
+                };
+                return map[status] || '';
+            };
+
+            const html = `
+            <div class="student-attendance-list">
+                ${courses.map((course, idx) => `
+                    <div class="student-attendance-row">
+                        <div class="student-attendance-info">
+                            <div class="student-attendance-course-title">
+                                <strong>${course.courseCode}</strong> - ${course.courseName}
+                            </div>
+                            <div class="student-attendance-stats">
+                                <span class="student-attendance-stat">Present: ${course.present}</span>
+                                <span class="student-attendance-stat">Absent: ${course.absent}</span>
+                            </div>
+                        </div>
+                        <div class="student-attendance-percent">
+                            ${course.percent}%
+                        </div>
+                        <button class="student-attendance-btn" data-course-index="${idx}">
+                            View Weekly
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+            document.getElementById('attendanceContainer').innerHTML = html;
+
+            const closeBtn = document.querySelector('.student-attendance-modal-close');
+            closeBtn.addEventListener('click', () => {
+                document.getElementById('attendanceModal').style.display = 'none';
+            });
+
+            document.getElementById('attendanceModal').addEventListener('click', (e) => {
+                if (e.target.id === 'attendanceModal') {
+                    document.getElementById('attendanceModal').style.display = 'none';
+                }
+            });
+
+            document.querySelectorAll('.student-attendance-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.courseIndex);
+                    showWeekly(courses[idx]);
+                });
+            });
+
+            function showWeekly(course) {
+                document.getElementById('modalTitle').textContent =
+                    `${course.courseCode} - ${course.courseName} (${course.section})`;
+
+                const weeks = {};
+                course.records.forEach(record => {
+                    const date = new Date(record.attendanceDate);
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay());
+                    const weekKey = weekStart.toLocaleDateString();
+
+                    if (!weeks[weekKey]) {
+                        weeks[weekKey] = {
+                            start: weekStart,
+                            days: {}
+                        };
+                    }
+
+                    const dateStr = record.attendanceDate;
+                    if (!weeks[weekKey].days[dateStr]) {
+                        weeks[weekKey].days[dateStr] = record;
+                    }
+                });
+
+                const sorted = Object.values(weeks).sort((a, b) => b.start - a.start);
+
+                const html = `
+                ${sorted.map((week, weekIdx) => {
+                    const daysWithRecords = Object.keys(week.days).sort();
+
+                    return `
+                        <div class="student-attendance-week">
+                            <div class="student-attendance-week-title">
+                                Week ${sorted.length - weekIdx}
+                            </div>
+                            <div class="student-attendance-week-grid">
+                                ${daysWithRecords.map(dateStr => {
+                        const record = week.days[dateStr];
+                        const day = new Date(dateStr);
+                        const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+                        const dayDate = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                        return `
+                                        <div class="student-attendance-day-box student-attendance-day-${statusClass(record.status)}">
+                                            <div class="student-attendance-day-name">${dayName}</div>
+                                            <div class="student-attendance-day-date">${dayDate}</div>
+                                            <div class="student-attendance-day-status">${record.status}</div>                                          
+                                        </div>
+                                    `;
+                    }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+
+                document.getElementById('weeklyContainer').innerHTML = html;
+                document.getElementById('attendanceModal').style.display = 'flex';
+            }
+        }
+    },
 
     assignments: {
         render: () => `

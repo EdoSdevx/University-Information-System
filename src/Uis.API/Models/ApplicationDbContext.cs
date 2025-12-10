@@ -13,10 +13,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<Grade> Grades => Set<Grade>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<Attendance> Attendances { get; set; }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-    {
-    }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +29,7 @@ public class ApplicationDbContext : DbContext
         ConfigureEnrollmentEntity(modelBuilder);
         ConfigureGradeEntity(modelBuilder);
         ConfigureAnnouncementEntity(modelBuilder);
+        ConfigureAttendanceEntity(modelBuilder);
     }
 
     private void ConfigureUserEntity(ModelBuilder modelBuilder)
@@ -459,6 +459,11 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(e => e.AcademicYearId)
             .OnDelete(DeleteBehavior.Restrict)
             .IsRequired();
+
+        entity.HasMany(e => e.Attendances)
+            .WithOne(a => a.Enrollment)
+            .HasForeignKey(a => a.EnrollmentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     private void ConfigureGradeEntity(ModelBuilder modelBuilder)
@@ -609,5 +614,50 @@ public class ApplicationDbContext : DbContext
         entity.HasOne(a => a.TargetDepartment)
             .WithMany()
             .IsRequired(false);
+    }
+
+    private void ConfigureAttendanceEntity(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<Attendance>();
+
+        entity.ToTable("Attendances");
+        entity.HasKey(a => a.Id);
+
+        entity.Property(a => a.EnrollmentId)
+            .IsRequired()
+            .HasColumnName("EnrollmentId");
+
+        entity.Property(a => a.AttendanceDate)
+            .IsRequired()
+            .HasColumnType("datetime2")
+            .HasColumnName("AttendanceDate");
+
+        entity.Property(a => a.Status)
+            .IsRequired()
+            .HasMaxLength(20)
+            .HasColumnName("Status");
+
+        entity.Property(a => a.CreatedAt)
+            .IsRequired()
+            .HasColumnType("datetime2")
+            .HasDefaultValueSql("GETUTCDATE()")
+            .HasColumnName("CreatedAt");
+
+        entity.Property(a => a.UpdatedAt)
+            .HasColumnType("datetime2")
+            .HasColumnName("UpdatedAt");
+
+        entity.HasIndex(a => new { a.EnrollmentId, a.AttendanceDate })
+            .IsUnique()
+            .HasDatabaseName("IX_Attendance_Enrollment_Date_Unique");
+
+        entity.HasIndex(a => a.AttendanceDate)
+            .HasDatabaseName("IX_Attendance_Date");
+
+        entity.HasOne(a => a.Enrollment)
+            .WithMany(e => e.Attendances)
+            .HasForeignKey(a => a.EnrollmentId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
     }
 }

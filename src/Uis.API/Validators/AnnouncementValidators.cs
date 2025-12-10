@@ -12,7 +12,6 @@ public class CreateAnnouncementRequestValidator : AbstractValidator<CreateAnnoun
 {
     public CreateAnnouncementRequestValidator()
     {
-        RuleFor(x => x.CreatedByTeacherId).GreaterThan(0);
         RuleFor(x => x.Title).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Content).NotEmpty();
     }

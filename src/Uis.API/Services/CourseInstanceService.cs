@@ -147,6 +147,7 @@ public class CourseInstanceService : ICourseInstanceService
             CourseCode = ci.Course?.Code ?? null,
             CourseName = ci.Course?.Name ?? null,
             Section = ci.Section,
+            CourseInstanceId = ci.CourseId,
             Capacity = ci.Capacity,
             CurrentEnrollmentCount = ci.Enrollments?.Count(e => e.Status == EnrollmentStatus.Active) ?? 0,
             AcademicYear = ci.AcademicYear?.Year ?? null,

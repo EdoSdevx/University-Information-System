@@ -372,6 +372,202 @@ export const StudentPages = {
         }
     },
 
+    announcements: {
+        render: () => `
+        <div class="student-announcements-breadcrumb">Home / Announcements</div>
+        <div class="student-announcements-section-header">Course Announcements</div>
+        
+        <div class="student-announcements-container">
+            <div class="student-announcements-top-bar">
+                <div class="student-announcements-selector">
+                    <label>Select Course:</label>
+                    <select id="courseSelect" class="student-announcements-course-select">
+                        <option value="">Loading courses...</option>
+                    </select>
+                </div>
+                <div class="student-announcements-info">
+                    <span id="announcementCount">0 announcements</span>
+                </div>
+            </div>
+
+            <div class="student-announcements-list" id="announcementsList"></div>
+        </div>
+
+        <div class="student-announcements-modal" id="detailModal" style="display: none;">
+            <div class="student-announcements-modal-content">
+                <div class="student-announcements-modal-header">
+                    <div class="student-announcements-modal-header-content">
+                        <h3 id="detailTitle"></h3>
+                        <p id="detailCourseInfo"></p>
+                    </div>
+                    <button class="student-announcements-modal-close" onclick="document.getElementById('detailModal').style.display='none'">&times;</button>
+                </div>
+                <div class="student-announcements-modal-body">
+                    <div id="detailUrgent" class="student-announcements-detail-urgent" style="display: none;">
+                        <span class="student-announcements-urgent-badge-large">URGENT</span>
+                    </div>
+                    <p id="detailMessage" class="student-announcements-detail-message"></p>
+                    <div class="student-announcements-detail-meta">
+                        <div class="student-announcements-detail-meta-item">
+                            <span class="student-announcements-detail-label">Posted:</span>
+                            <span id="detailDate"></span>
+                        </div>
+                        <div class="student-announcements-detail-meta-item">
+                            <span class="student-announcements-detail-label">By:</span>
+                            <span id="detailTeacher"></span>
+                        </div>
+                        <div class="student-announcements-detail-meta-item">
+                            <span class="student-announcements-detail-label">Course:</span>
+                            <span id="detailCourse"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `,
+        afterRender: async () => {
+            const courseSelect = document.getElementById('courseSelect');
+            const announcementsList = document.getElementById('announcementsList');
+            const announcementCount = document.getElementById('announcementCount');
+            const detailModal = document.getElementById('detailModal');
+
+            let courses = [];
+            let allAnnouncements = [];
+            let currentCourseId = null;
+
+            const enrollResponse = await apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100');
+
+            if (enrollResponse.ok && enrollResponse.data && enrollResponse.data.length > 0) {
+                courses = enrollResponse.data;
+                currentCourseId = courses[0].courseInstanceId;
+
+                courseSelect.innerHTML = '<option value="">All Courses</option>' +
+                    courses.map(course => `
+                    <option value="${course.courseInstanceId}">
+                        ${course.courseCode} - ${course.courseName}
+                    </option>
+                `).join('');
+
+                courseSelect.value = currentCourseId;
+                loadAnnouncements();
+            } else {
+                courseSelect.innerHTML = '<option value="">No courses enrolled</option>';
+                announcementsList.innerHTML = '<div class="student-announcements-empty">No courses available</div>';
+            }
+
+            async function loadAnnouncements() {
+                announcementsList.innerHTML = '<div style="text-align: center; padding: 40px 20px;">Loading announcements...</div>';
+
+                const response = await apiRequest('/announcement/my-announcements?pageIndex=1&pageSize=100');
+
+                if (!response.ok || !response.data) {
+                    announcementsList.innerHTML = '<div class="student-announcements-empty">Could not load announcements</div>';
+                    announcementCount.textContent = '0 announcements';
+                    return;
+                }
+
+                allAnnouncements = response.data.sort((a, b) =>
+                    new Date(b.publishedAt) - new Date(a.publishedAt)
+                );
+
+                displayAnnouncements();
+            }
+
+            function displayAnnouncements() {
+                let filtered = allAnnouncements;
+
+                if (currentCourseId) {
+                    filtered = allAnnouncements.filter(a => a.targetCourseInstanceId === currentCourseId);
+                }
+
+                announcementCount.textContent = `${filtered.length} announcement${filtered.length !== 1 ? 's' : ''}`;
+
+                if (filtered.length === 0) {
+                    announcementsList.innerHTML = `
+                    <div class="student-announcements-empty">
+                        <p>No announcements for this course</p>
+                    </div>
+                `;
+                    return;
+                }
+
+                announcementsList.innerHTML = filtered.map(ann => {
+                    const course = courses.find(c => c.courseInstanceId === ann.targetCourseInstanceId) || {};
+           
+                    const isUrgent = ann.content && (ann.content.toLowerCase().includes('urgent') || ann.content.toLowerCase().includes('important'));
+
+                    return `
+                    <div class="student-announcements-card ${isUrgent ? 'student-announcements-card-urgent' : ''}">
+                        <div class="student-announcements-card-header">
+                            <div class="student-announcements-card-info">
+                                <div class="student-announcements-card-meta">
+                                    <span class="student-announcements-card-course">${course.courseCode}</span>
+                                    <span class="student-announcements-card-teacher">${course.teacherName}</span>
+                                    ${isUrgent ? '<span class="student-announcements-urgent-badge">URGENT</span>' : ''}
+                                </div>
+                                <h4 class="student-announcements-card-title">${ann.title}</h4>
+                            </div>
+                            <span class="student-announcements-card-date">${new Date(ann.publishedAt).toLocaleDateString()}</span>
+                        </div>
+                        <div class="student-announcements-card-preview">
+                            <p>${ann.content.substring(0, 120)}${ann.content.length > 120 ? '...' : ''}</p>
+                        </div>
+                        <div class="student-announcements-card-actions">
+                            <button class="student-announcements-view-btn" onclick="window.viewAnnouncementDetail(${ann.id})">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            }
+
+            window.viewAnnouncementDetail = async (announcementId) => {
+                const response = await apiRequest(`/announcement/${announcementId}/detail`);
+
+                if (!response.ok || !response.data) {
+                    alert('Could not load announcement details');
+                    return;
+                }
+
+                const ann = response.data;
+                const date = new Date(ann.publishedAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const isUrgent = ann.content && (ann.content.toLowerCase().includes('urgent') || ann.content.toLowerCase().includes('important'));
+
+                document.getElementById('detailTitle').textContent = ann.title;
+                document.getElementById('detailMessage').textContent = ann.content;
+                document.getElementById('detailDate').textContent = date;
+                document.getElementById('detailTeacher').textContent = ann.createdByTeacherName;
+                document.getElementById('detailCourse').textContent = `${ann.courseCode} - ${ann.courseName}`;
+                document.getElementById('detailCourseInfo').textContent = `${ann.courseCode} - ${ann.courseName}`;
+
+                const urgentDiv = document.getElementById('detailUrgent');
+                if (isUrgent) {
+                    urgentDiv.style.display = 'block';
+                } else {
+                    urgentDiv.style.display = 'none';
+                }
+
+                detailModal.style.display = 'flex';
+            };
+
+            courseSelect.addEventListener('change', () => {
+                currentCourseId = courseSelect.value ? parseInt(courseSelect.value) : null;
+                displayAnnouncements();
+            });
+
+            detailModal.addEventListener('click', (e) => {
+                if (e.target === detailModal) {
+                    detailModal.style.display = 'none';
+                }
+            });
+        }
+    },
+
     attendance: {
         render: () => `
         <div class="student-breadcrumb">Home / Attendance</div>

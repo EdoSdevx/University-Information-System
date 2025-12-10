@@ -14,9 +14,11 @@ public class AnnouncementController : ControllerBase
 {
     private readonly IAnnouncementService _announcementService;
     private readonly IEnrollmentService _enrollmentService;
+    private readonly ILogger<AnnouncementController> _logger;
 
-    public AnnouncementController(IAnnouncementService announcementService, IEnrollmentService enrollmentService)
+    public AnnouncementController(IAnnouncementService announcementService, IEnrollmentService enrollmentService, ILogger<AnnouncementController> logger)
     {
+        _logger = logger;
         _announcementService = announcementService;
         _enrollmentService = enrollmentService;
     }
@@ -69,7 +71,7 @@ public class AnnouncementController : ControllerBase
 
         if (!isEnrolled)
         {
-            return Forbid("You are not enrolled in this course.");
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "You are not enrolled in this course." });
         }
 
         return Ok(announcementResult);
@@ -88,7 +90,7 @@ public class AnnouncementController : ControllerBase
 
         if (teacherIdClaim == null)
         {
-            return Unauthorized("You are not authorized.");
+            return Unauthorized(new { message = "You are not authorized." });
         }
 
         var teacherId = int.Parse(teacherIdClaim);
@@ -110,7 +112,7 @@ public class AnnouncementController : ControllerBase
 
         if (teacherIdClaim == null)
         {
-            return Unauthorized("You are not authorized.");
+            return Unauthorized(new { message = "You are not authorized." });
         }
 
         var teacherId = int.Parse(teacherIdClaim);
@@ -118,6 +120,8 @@ public class AnnouncementController : ControllerBase
         var result = await _announcementService.CreateAnnouncementAsync(teacherId, request);
         if (!result.Success)
             return StatusCode(result.StatusCode, result);
+
+        _logger.LogInformation($"Announcement created successfully with ID {result.Data?.Id}");
         return StatusCode(StatusCodes.Status201Created, result);
     }
 

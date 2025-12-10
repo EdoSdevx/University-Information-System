@@ -9,7 +9,6 @@ namespace Uis.API.DTOs.Announcement;
 // ==================== REQUEST DTOs ====================
 public class CreateAnnouncementRequest
 {
-    public int CreatedByTeacherId { get; set; }
     public int TargetCourseInstanceId { get; set; }
     public string? Title { get; set; }
     public string? Content { get; set; }

@@ -2,6 +2,7 @@
  * TeacherPages Module
  * Page templates for teacher dashboard with teacher-* prefix
  */
+import { apiRequest } from '../core/ApiService.js';
 
 export const TeacherPages = {
     dashboard: {
@@ -1197,107 +1198,125 @@ export const TeacherPages = {
 
     announcements: {
         render: () => `
-        <div class="teacher-breadcrumb">Home / Announcements</div>
-        <div class="teacher-section-header">Class Announcements</div>
-        
-        <div class="teacher-announcements-container">
-            <div class="teacher-announcements-header">
-                <div class="teacher-announcements-info">
-                    <p id="classInfo">Select a class to manage announcements</p>
-                </div>
-                <button class="teacher-announcements-new-btn" onclick="window.openNewAnnouncement()">+ New Announcement</button>
+    <div class="teacher-breadcrumb">Home / Announcements</div>
+    <div class="teacher-section-header">Class Announcements</div>
+    
+    <div class="teacher-announcements-container">
+        <div class="teacher-announcements-header">
+            <div class="teacher-announcements-info">
+                <p id="classInfo">Select a class to manage announcements</p>
             </div>
-
-            <div class="teacher-announcements-selector">
-                <label>Select Class:</label>
-                <select id="classSelect" class="teacher-announcements-class-select">
-                    <option value="CS101-A">CS101-A - Introduction to Programming</option>
-                    <option value="CS101-B">CS101-B - Introduction to Programming</option>
-                    <option value="MATH101-A">MATH101-A - Calculus I</option>
-                    <option value="ENG101-A">ENG101-A - English I</option>
-                </select>
-            </div>
-
-            <div class="teacher-announcements-list" id="announcementsList"></div>
+            <button class="teacher-announcements-new-btn" onclick="window.openNewAnnouncement()">+ New Announcement</button>
         </div>
 
-        <!-- Modal: New Announcement -->
-        <div class="teacher-announcement-modal" id="announcementModal">
-            <div class="teacher-announcement-modal-content">
-                <div class="teacher-announcement-modal-body">
-                    <div class="teacher-announcement-form-group">
-                        <label>Class:</label>
-                        <span id="modalClassName" class="teacher-announcement-class-display"></span>
-                    </div>
-                    <div class="teacher-announcement-form-group">
-                        <label>Title *</label>
-                        <input type="text" id="announcementTitle" class="teacher-announcement-input" placeholder="Announcement title">
-                    </div>
-                    <div class="teacher-announcement-form-group">
-                        <label>Message *</label>
-                        <textarea id="announcementMessage" class="teacher-announcement-textarea" placeholder="Write your announcement here..." rows="8"></textarea>
-                    </div>
-                    <div class="teacher-announcement-form-group">
-                        <label>
-                            <input type="checkbox" id="announcementUrgent" class="teacher-announcement-checkbox">
-                            Mark as Important/Urgent
-                        </label>
-                    </div>
-                    <div class="teacher-announcement-form-group">
-                        <label>
-                            <input type="checkbox" id="announcementEmail" class="teacher-announcement-checkbox" checked>
-                            <span class="teacher-announcement-email-label">
-                                <span class="teacher-announcement-email-icon">✉</span>
-                                Also send as email to all students
-                            </span>
-                        </label>
-                    </div>
+        <div class="teacher-announcements-selector">
+            <label>Select Class:</label>
+            <select id="classSelect" class="teacher-announcements-class-select">
+                <option value="">Loading courses...</option>
+            </select>
+        </div>
+
+        <div class="teacher-announcements-list" id="announcementsList"></div>
+    </div>
+
+    <!-- Modal: New Announcement -->
+    <div class="teacher-announcement-modal" id="announcementModal">
+        <div class="teacher-announcement-modal-content">
+            <div class="teacher-announcement-modal-body">
+                <div class="teacher-announcement-form-group">
+                    <label>Class:</label>
+                    <span id="modalClassName" class="teacher-announcement-class-display"></span>
                 </div>
-                <div class="teacher-announcement-modal-footer">
-                    <button class="teacher-announcement-btn-cancel" onclick="document.getElementById('announcementModal').style.display='none'">Cancel</button>
-                    <button class="teacher-announcement-btn-send" onclick="window.sendAnnouncement()">Send Announcement</button>
+                <div class="teacher-announcement-form-group">
+                    <label>Title *</label>
+                    <input type="text" id="announcementTitle" class="teacher-announcement-input" placeholder="Announcement title">
+                </div>
+                <div class="teacher-announcement-form-group">
+                    <label>Message *</label>
+                    <textarea id="announcementMessage" class="teacher-announcement-textarea" placeholder="Write your announcement here..." rows="8"></textarea>
+                </div>
+                <div class="teacher-announcement-form-group">
+                    <label>
+                        <input type="checkbox" id="announcementUrgent" class="teacher-announcement-checkbox">
+                        Mark as Important/Urgent
+                    </label>
+                </div>
+                <div class="teacher-announcement-form-group">
+                    <label>
+                        <input type="checkbox" id="announcementEmail" class="teacher-announcement-checkbox" checked>
+                        <span class="teacher-announcement-email-label">
+                            <span class="teacher-announcement-email-icon">✉</span>
+                            Also send as email to all students
+                        </span>
+                    </label>
                 </div>
             </div>
+            <div class="teacher-announcement-modal-footer">
+                <button class="teacher-announcement-btn-cancel" onclick="document.getElementById('announcementModal').style.display='none'">Cancel</button>
+                <button class="teacher-announcement-btn-send" onclick="window.sendAnnouncement()">Send Announcement</button>
+            </div>
         </div>
-    `,
-        afterRender: () => {
-            const classesData = {
-                'CS101-A': {
-                    name: 'CS101-A - Introduction to Programming',
-                    announcements: [
-                        { id: 1, title: 'Midterm Exam Schedule', message: 'The midterm exam will be held on October 15th from 10:00 AM to 12:00 PM in Room 101.', date: '2024-10-05', urgent: true },
-                        { id: 2, title: 'Assignment 3 Submitted', message: 'All students must submit Assignment 3 by October 10th. Late submissions will have a 10% penalty.', date: '2024-10-01', urgent: false }
-                    ]
-                },
-                'CS101-B': {
-                    name: 'CS101-B - Introduction to Programming',
-                    announcements: [
-                        { id: 3, title: 'Lab Session Moved', message: 'This week\'s lab session has been rescheduled to Thursday at 2 PM instead of Wednesday.', date: '2024-10-03', urgent: true }
-                    ]
-                },
-                'MATH101-A': {
-                    name: 'MATH101-A - Calculus I',
-                    announcements: [
-                        { id: 4, title: 'Homework Solutions Posted', message: 'Solutions for Chapters 1-3 homework have been posted on the course portal.', date: '2024-10-02', urgent: false }
-                    ]
-                },
-                'ENG101-A': {
-                    name: 'ENG101-A - English I',
-                    announcements: []
+    </div>
+`,
+        afterRender: async () => {
+            const classSelect = document.getElementById('classSelect');
+            const classInfo = document.getElementById('classInfo');
+            const announcementsList = document.getElementById('announcementsList');
+
+            let courses = [];
+            let allAnnouncements = [];
+            let currentCourseInstanceId = null;
+            let editingAnnouncementId = null;
+
+            // Load courses
+            async function loadCourses() {
+                const response = await apiRequest('/courseInstance/my-courses?pageIndex=1&pageSize=100');
+
+                if (!response.ok || !response.data || response.data.length === 0) {
+                    classSelect.innerHTML = '<option value="">No courses available</option>';
+                    classInfo.textContent = 'No courses assigned';
+                    announcementsList.innerHTML = '<div class="teacher-announcements-empty"><p>No courses available</p></div>';
+                    return;
                 }
-            };
 
-            let currentClassId = 'CS101-A';
+                courses = response.data;
+                currentCourseInstanceId = courses[0].courseInstanceId;
 
-            function loadAnnouncements(classId) {
-                const classData = classesData[classId];
-                currentClassId = classId;
+                classSelect.innerHTML = courses.map(course => `
+                <option value="${course.courseInstanceId}">
+                    ${course.courseCode} - ${course.courseName} (Section ${course.section || 'A'})
+                </option>
+            `).join('');
 
-                document.getElementById('classInfo').textContent = classData.name;
+                classSelect.value = currentCourseInstanceId;
+                loadAnnouncements();
+            }
 
-                const list = document.getElementById('announcementsList');
-                if (classData.announcements.length === 0) {
-                    list.innerHTML = `
+            // Load announcements
+            async function loadAnnouncements() {
+                announcementsList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading announcements...</div>';
+
+                const response = await apiRequest('/announcement/my-announcements-teacher?pageIndex=1&pageSize=100');
+
+                if (!response.ok || !response.data) {
+                    allAnnouncements = [];
+                } else {
+                    allAnnouncements = response.data.sort((a, b) =>
+                        new Date(b.publishedAt) - new Date(a.publishedAt)
+                    );
+                }
+
+                displayAnnouncements();
+            }
+
+            function displayAnnouncements() {
+                const filtered = allAnnouncements.filter(a => a.targetCourseInstanceId === currentCourseInstanceId);
+                const currentCourse = courses.find(c => c.courseInstanceId === currentCourseInstanceId);
+
+                classInfo.textContent = currentCourse ? `${currentCourse.courseCode} - ${currentCourse.courseName}` : 'Select a class';
+
+                if (filtered.length === 0) {
+                    announcementsList.innerHTML = `
                     <div class="teacher-announcements-empty">
                         <p>No announcements yet</p>
                         <p>Click "New Announcement" to send one</p>
@@ -1306,108 +1325,148 @@ export const TeacherPages = {
                     return;
                 }
 
-                list.innerHTML = classData.announcements.map(ann => `
-                <div class="teacher-announcement-card ${ann.urgent ? 'teacher-announcement-card-urgent' : ''}">
-                    <div class="teacher-announcement-card-header">
-                        <div>
-                            <h4 class="teacher-announcement-card-title">${ann.title}</h4>
-                            ${ann.urgent ? '<span class="teacher-announcement-urgent-badge">URGENT</span>' : ''}
+                announcementsList.innerHTML = filtered.map(ann => {
+                    const isUrgent = ann.title && ann.title.toLowerCase().includes('urgent') ||
+                        ann.content && ann.content.toLowerCase().includes('urgent');
+
+                    return `
+                    <div class="teacher-announcement-card ${isUrgent ? 'teacher-announcement-card-urgent' : ''}">
+                        <div class="teacher-announcement-card-header">
+                            <div>
+                                <h4 class="teacher-announcement-card-title">${ann.title}</h4>
+                                ${isUrgent ? '<span class="teacher-announcement-urgent-badge">URGENT</span>' : ''}
+                            </div>
+                            <span class="teacher-announcement-card-date">${new Date(ann.publishedAt).toLocaleDateString()}</span>
                         </div>
-                        <span class="teacher-announcement-card-date">${new Date(ann.date).toLocaleDateString()}</span>
+                        <div class="teacher-announcement-card-content">
+                            <p>${ann.content.substring(0, 150)}${ann.content.length > 150 ? '...' : ''}</p>
+                        </div>
+                        <div class="teacher-announcement-card-actions">
+                            <button class="teacher-announcement-edit-btn" onclick="window.editAnnouncement(${ann.id})">Edit</button>
+                            <button class="teacher-announcement-delete-btn" onclick="window.deleteAnnouncement(${ann.id})">Delete</button>
+                        </div>
                     </div>
-                    <div class="teacher-announcement-card-content">
-                        <p>${ann.message}</p>
-                    </div>
-                    <div class="teacher-announcement-card-actions">
-                        <button class="teacher-announcement-edit-btn" onclick="alert('Edit announcement with ID: ${ann.id}')">Edit</button>
-                        <button class="teacher-announcement-delete-btn" onclick="window.deleteAnnouncement(${ann.id}, '${classId}')">Delete</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+                }).join('');
             }
 
             window.openNewAnnouncement = function () {
-                document.getElementById('modalClassName').textContent = classesData[currentClassId].name;
+                editingAnnouncementId = null;
+                const currentCourse = courses.find(c => c.courseInstanceId === currentCourseInstanceId);
+                document.getElementById('modalClassName').textContent = currentCourse ?
+                    `${currentCourse.courseCode} - ${currentCourse.courseName}` : 'Select a course';
                 document.getElementById('announcementTitle').value = '';
                 document.getElementById('announcementMessage').value = '';
                 document.getElementById('announcementUrgent').checked = false;
+                document.querySelector('.teacher-announcement-btn-send').textContent = 'Send Announcement';
                 document.getElementById('announcementModal').style.display = 'flex';
             };
 
-            window.sendAnnouncement = function () {
+            window.editAnnouncement = async function (announcementId) {
+                const ann = allAnnouncements.find(a => a.id === announcementId);
+                if (!ann) {
+                    alert('Could not load announcement');
+                    return;
+                }
+
+                editingAnnouncementId = announcementId;
+                const currentCourse = courses.find(c => c.courseInstanceId === currentCourseInstanceId);
+                document.getElementById('modalClassName').textContent = currentCourse ?
+                    `${currentCourse.courseCode} - ${currentCourse.courseName}` : 'Select a course';
+                document.getElementById('announcementTitle').value = ann.title;
+                document.getElementById('announcementMessage').value = ann.content;
+                document.getElementById('announcementUrgent').checked = ann.title && ann.title.toLowerCase().includes('urgent');
+                document.querySelector('.teacher-announcement-btn-send').textContent = 'Update Announcement';
+                document.getElementById('announcementModal').style.display = 'flex';
+            };
+
+            window.sendAnnouncement = async function () {
                 const title = document.getElementById('announcementTitle').value.trim();
-                const message = document.getElementById('announcementMessage').value.trim();
-                const urgent = document.getElementById('announcementUrgent').checked;
+                const content = document.getElementById('announcementMessage').value.trim();
+                const isUrgent = document.getElementById('announcementUrgent').checked;
                 const sendEmail = document.getElementById('announcementEmail').checked;
 
-                if (!title || !message) {
+                if (!title || !content) {
                     alert('Please fill in both title and message');
                     return;
                 }
 
-                const classData = classesData[currentClassId];
-                const newAnnouncement = {
-                    id: Date.now(),
+                const request = {
                     title: title,
-                    message: message,
-                    date: new Date().toISOString().split('T')[0],
-                    urgent: urgent,
-                    emailSent: sendEmail
+                    content: content,
+                    targetCourseInstanceId: currentCourseInstanceId
                 };
 
-                classData.announcements.unshift(newAnnouncement);
-
-                // Show toast notification
-                const toast = document.getElementById('toastNotification');
-                if (!toast) {
-                    const body = document.body;
-                    body.insertAdjacentHTML('beforeend', `<div id="toastNotification" class="teacher-announcement-toast"></div>`);
-                }
-
-                const toastEl = document.getElementById('toastNotification');
-                const className = classData.name.split(' - ')[1];
-
-                if (sendEmail) {
-                    toastEl.textContent = `✓ Announcement sent & email delivered to all students in ${className}`;
+                let response;
+                if (editingAnnouncementId) {
+                    response = await apiRequest(`/announcement/${editingAnnouncementId}`, 'PUT', request);
                 } else {
-                    toastEl.textContent = `✓ Announcement posted to ${className}`;
-                }
+                    response = await apiRequest(`/announcement`, 'POST', request);
+                    }
+                
 
-                toastEl.className = 'teacher-announcement-toast teacher-announcement-toast-success teacher-announcement-toast-show';
+                if (response.ok) {
+                    document.getElementById('announcementModal').style.display = 'none';
+                    await loadAnnouncements();
 
-                setTimeout(() => {
-                    toastEl.classList.remove('teacher-announcement-toast-show');
-                }, 4000);
+                    const toast = document.getElementById('toastNotification') || document.createElement('div');
+                    if (!document.getElementById('toastNotification')) {
+                        toast.id = 'toastNotification';
+                        document.body.appendChild(toast);
+                    }
 
-                document.getElementById('announcementModal').style.display = 'none';
-                loadAnnouncements(currentClassId);
-            };
+                    const currentCourse = courses.find(c => c.courseInstanceId === currentCourseInstanceId);
+                    const courseName = currentCourse ? currentCourse.courseCode : 'Course';
+                    const message = editingAnnouncementId ? 'updated' : 'sent';
 
-            window.deleteAnnouncement = function (annId, classId) {
-                if (confirm('Are you sure you want to delete this announcement?')) {
-                    const classData = classesData[classId];
-                    classData.announcements = classData.announcements.filter(ann => ann.id !== annId);
-                    loadAnnouncements(classId);
+                    toast.textContent = `✓ Announcement ${message} & ${sendEmail ? 'email delivered' : 'posted'} to ${courseName}`;
+                    toast.className = 'teacher-announcement-toast teacher-announcement-toast-success teacher-announcement-toast-show';
 
-                    const toastEl = document.getElementById('toastNotification');
-                    toastEl.textContent = '✓ Announcement deleted';
-                    toastEl.className = 'teacher-announcement-toast teacher-announcement-toast-success teacher-announcement-toast-show';
                     setTimeout(() => {
-                        toastEl.classList.remove('teacher-announcement-toast-show');
+                        toast.classList.remove('teacher-announcement-toast-show');
                     }, 4000);
+                } else {
+                    alert('Error: ' + (response.data?.message || 'Failed to save announcement'));
                 }
             };
 
-            document.getElementById('classSelect').addEventListener('change', function () {
-                loadAnnouncements(this.value);
+            window.deleteAnnouncement = async function (announcementId) {
+                if (!confirm('Are you sure you want to delete this announcement?')) {
+                    return;
+                }
+
+                const response = await apiRequest(`/announcement/${announcementId}`, 'DELETE');
+
+                if (response.ok) {
+                    await loadAnnouncements();
+
+                    const toast = document.getElementById('toastNotification') || document.createElement('div');
+                    if (!document.getElementById('toastNotification')) {
+                        toast.id = 'toastNotification';
+                        document.body.appendChild(toast);
+                    }
+
+                    toast.textContent = '✓ Announcement deleted';
+                    toast.className = 'teacher-announcement-toast teacher-announcement-toast-success teacher-announcement-toast-show';
+
+                    setTimeout(() => {
+                        toast.classList.remove('teacher-announcement-toast-show');
+                    }, 4000);
+                } else {
+                    alert('Error: ' + (response.data?.message || 'Failed to delete announcement'));
+                }
+            };
+
+            classSelect.addEventListener('change', function () {
+                currentCourseInstanceId = parseInt(this.value);
+                displayAnnouncements();
             });
 
-            // Close modal on background click
             document.getElementById('announcementModal').addEventListener('click', function (e) {
                 if (e.target === this) this.style.display = 'none';
             });
 
-            loadAnnouncements('CS101-A');
+            await loadCourses();
         }
     },
 

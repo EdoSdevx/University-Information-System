@@ -10,13 +10,11 @@ namespace Uis.API.DTOs.Enrollment;
 // ==================== REQUEST DTOs ====================
 public class EnrollStudentRequest
 {
-    public int StudentId { get; set; }
     public int CourseInstanceId { get; set; }
 }
 
 public class DropCourseRequest
 {
-    public int StudentId { get; set; }
     public int CourseInstanceId { get; set; }
 }
 

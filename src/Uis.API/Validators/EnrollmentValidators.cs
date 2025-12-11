@@ -12,7 +12,6 @@ public class EnrollStudentRequestValidator : AbstractValidator<EnrollStudentRequ
 {
     public EnrollStudentRequestValidator()
     {
-        RuleFor(x => x.StudentId).GreaterThan(0);
         RuleFor(x => x.CourseInstanceId).GreaterThan(0);
     }
 }

@@ -11,16 +11,20 @@ public class AssignGradeRequest
 {
     public int StudentId { get; set; }
     public int CourseInstanceId { get; set; }
-    public decimal Score { get; set; }
+    public int? Exam1 { get; set; }
+    public int? Exam2 { get; set; }
+    public int? Final { get; set; }
+    public int? Project { get; set; }
     public string? LetterGrade { get; set; }
-    public string? Notes { get; set; }
 }
 
 public class UpdateGradeRequest
 {
-    public decimal Score { get; set; }
+    public int? Exam1 { get; set; }
+    public int? Exam2 { get; set; }
+    public int? Final { get; set; }
+    public int? Project { get; set; }
     public string? LetterGrade { get; set; }
-    public string? Notes { get; set; }
 }
 
 // ==================== RESPONSE DTOs ====================
@@ -45,6 +49,10 @@ public class StudentGradeResponse
 {
     public int Id { get; set; }
     public int StudentId { get; set; }
+    public int? Exam1 { get; set; }
+    public int? Exam2 { get; set; }
+    public int? Final { get; set; }
+    public int? Project { get; set; }
     public string? StudentName { get; set; }
     public string? StudentEmail { get; set; }
     public decimal Score { get; set; }

@@ -59,9 +59,8 @@ public class EnrollmentController : ControllerBase
         }
 
         var studentId = int.Parse(studentIdClaim);
-        request.StudentId = studentId;
 
-        var result = await _enrollmentService.EnrollStudentAsync(request);
+        var result = await _enrollmentService.EnrollStudentAsync(studentId, request);
         if (!result.Success)
             return StatusCode(result.StatusCode, result);
         return StatusCode(StatusCodes.Status201Created, result);
@@ -85,9 +84,8 @@ public class EnrollmentController : ControllerBase
         }
 
         var studentId = int.Parse(studentIdClaim);
-        request.StudentId = studentId;
 
-        var result = await _enrollmentService.DropCourseAsync(request);
+        var result = await _enrollmentService.DropCourseAsync(studentId, request);
         if (!result.Success)
             return StatusCode(result.StatusCode, result);
         return Ok(result);

@@ -13,7 +13,6 @@ public class AssignGradeRequestValidator : AbstractValidator<AssignGradeRequest>
     {
         RuleFor(x => x.StudentId).GreaterThan(0);
         RuleFor(x => x.CourseInstanceId).GreaterThan(0);
-        RuleFor(x => x.Score).InclusiveBetween(0, 100);
         RuleFor(x => x.LetterGrade).NotEmpty().Length(1, 2).Must(BeValidGrade).WithMessage("Invalid letter grade");
     }
 

@@ -36,179 +36,254 @@ export const TeacherPages = {
 
     classes: {
         render: () => `
-            <div class="teacher-breadcrumb">Home / My Classes</div>
-            <div class="teacher-section-header">My Classes</div>
-            <div class="teacher-classes-grid">
-                <div class="teacher-class-card">
-                    <div class="teacher-class-header">
-                        <div class="teacher-class-code">CS101</div>
-                        <div class="teacher-class-name">Introduction to Programming</div>
-                    </div>
-                    <div class="teacher-class-body">
-                        <div class="teacher-class-info">
-                            <div><span class="teacher-label">Students:</span> 32</div>
-                            <div><span class="teacher-label">Schedule:</span> MWF 10am</div>
-                        </div>
-                        <button class="teacher-btn">Manage Class</button>
-                    </div>
+        <div class="teacher-breadcrumb">Home / My Classes</div>
+        <div class="teacher-section-header">My Classes</div>
+        <div class="teacher-classes-grid" id="classesGrid">
+            <div style="text-align: center; padding: 40px; grid-column: 1/-1;">Loading classes...</div>
+        </div>
+
+        <div class="teacher-class-modal" id="classModal" style="display: none;">
+            <div class="teacher-class-modal-content">
+                <div class="teacher-class-modal-header">
+                    <h3 id="modalTitle"></h3>
+                    <button class="teacher-class-modal-close" onclick="document.getElementById('classModal').style.display='none'">×</button>
                 </div>
-                <div class="teacher-class-card">
-                    <div class="teacher-class-header">
-                        <div class="teacher-class-code">MATH201</div>
-                        <div class="teacher-class-name">Calculus II</div>
-                    </div>
-                    <div class="teacher-class-body">
-                        <div class="teacher-class-info">
-                            <div><span class="teacher-label">Students:</span> 28</div>
-                            <div><span class="teacher-label">Schedule:</span> TTh 2pm</div>
-                        </div>
-                        <button class="teacher-btn">Manage Class</button>
-                    </div>
-                </div>
-                <div class="teacher-class-card">
-                    <div class="teacher-class-header">
-                        <div class="teacher-class-code">ENG102</div>
-                        <div class="teacher-class-name">Academic Writing</div>
-                    </div>
-                    <div class="teacher-class-body">
-                        <div class="teacher-class-info">
-                            <div><span class="teacher-label">Students:</span> 25</div>
-                            <div><span class="teacher-label">Schedule:</span> MWF 2pm</div>
-                        </div>
-                        <button class="teacher-btn">Manage Class</button>
-                    </div>
-                </div>
-                <div class="teacher-class-card">
-                    <div class="teacher-class-header">
-                        <div class="teacher-class-code">PHY101</div>
-                        <div class="teacher-class-name">Physics I</div>
-                    </div>
-                    <div class="teacher-class-body">
-                        <div class="teacher-class-info">
-                            <div><span class="teacher-label">Students:</span> 30</div>
-                            <div><span class="teacher-label">Schedule:</span> TTh 10am</div>
-                        </div>
-                        <button class="teacher-btn">Manage Class</button>
-                    </div>
+                <div class="teacher-class-modal-body">
+                    <table class="teacher-class-modal-table">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Enrolled Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classStudentsList"></tbody>
+                    </table>
                 </div>
             </div>
-        `,
-        afterRender: () => { }
+        </div>
+    `,
+        afterRender: async () => {
+            const formatSchedule = (day1, day2, startTime) => {
+                if (!day1 || !startTime) return 'TBA';
+
+                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const dayAbbr = dayNames[day1] || 'TBA';
+
+                const formatTime = (time) => {
+                    if (!time) return '';
+                    const [hours, minutes] = time.split(':');
+                    const h = parseInt(hours);
+                    const ampm = h >= 12 ? 'pm' : 'am';
+                    const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+                    return `${displayH}:${minutes}${ampm}`;
+                };
+
+                const timeStr = formatTime(startTime);
+                return `${dayAbbr} ${timeStr}`;
+            };
+
+            const getStudentCount = async (courseInstanceId) => {
+                try {
+                    const response = await apiRequest(
+                        `/enrollment/course/${courseInstanceId}?pageIndex=1&pageSize=1000`
+                    );
+                    return response.ok && response.data ? response.data.length : 0;
+                } catch (error) {
+                    console.error(`Failed to fetch student count:`, error);
+                    return 0;
+                }
+            };
+
+            try {
+                const response = await apiRequest('/courseInstance/my-courses?pageIndex=1&pageSize=100');
+
+                if (!response.ok || !response.data || response.data.length === 0) {
+                    document.getElementById('classesGrid').innerHTML =
+                        '<div style="text-align: center; padding: 40px; grid-column: 1/-1;">No classes assigned.</div>';
+                    return;
+                }
+
+                const courses = response.data;
+                const classCardsHTML = await Promise.all(courses.map(async (course) => {
+                    const studentCount = await getStudentCount(course.courseInstanceId);
+                    const schedule = formatSchedule(course.day1, course.day2, course.startTime);
+
+                    return `
+                    <div class="teacher-class-card">
+                        <div class="teacher-class-header">
+                            <div class="teacher-class-code">${course.courseCode}</div>
+                            <div class="teacher-class-name">${course.courseName}</div>
+                        </div>
+                        <div class="teacher-class-body">
+                            <div class="teacher-class-info">
+                                <div><span class="teacher-label">Students:</span> ${studentCount}</div>
+                                <div><span class="teacher-label">Schedule:</span> ${schedule}</div>
+                                <div><span class="teacher-label">Section:</span> ${course.section || 'A'}</div>
+                                <div><span class="teacher-label">Location:</span> ${course.location || 'TBA'}</div>
+                            </div>
+                            <button class="teacher-btn" onclick="window.viewClass(${course.courseInstanceId}, '${course.courseCode}', '${course.courseName}')">View Class</button>
+                        </div>
+                    </div>
+                `;
+                }));
+
+                document.getElementById('classesGrid').innerHTML = classCardsHTML.join('');
+            } catch (error) {
+                console.error('Failed to load classes:', error);
+                document.getElementById('classesGrid').innerHTML =
+                    '<div style="text-align: center; padding: 40px; grid-column: 1/-1; color: red;">Failed to load classes</div>';
+            }
+
+            window.viewClass = async function (courseInstanceId, courseCode, courseName) {
+                document.getElementById('modalTitle').textContent = `${courseCode} - ${courseName}`;
+                document.getElementById('classStudentsList').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Loading students...</td></tr>';
+                document.getElementById('classModal').style.display = 'flex';
+
+                try {
+                    const response = await apiRequest(
+                        `/enrollment/course/${courseInstanceId}?pageIndex=1&pageSize=1000`
+                    );
+
+                    if (!response.ok || !response.data || response.data.length === 0) {
+                        document.getElementById('classStudentsList').innerHTML =
+                            '<tr><td colspan="5" style="text-align: center; padding: 20px;">No students enrolled</td></tr>';
+                        return;
+                    }
+
+                    const students = response.data;
+                    const studentsList = students.map(student => `
+                    <tr>
+                        <td>${student.studentCode || student.studentId}</td>
+                        <td>${student.studentName || 'Unknown'}</td>
+                        <td>${student.studentEmail || '-'}</td>
+                        <td>${student.status || 'Active'}</td>
+                        <td>${student.enrolledAt ? new Date(student.enrolledAt).toLocaleDateString() : '-'}</td>
+                    </tr>
+                `).join('');
+
+                    document.getElementById('classStudentsList').innerHTML = studentsList;
+                } catch (error) {
+                    console.error('Failed to load students:', error);
+                    document.getElementById('classStudentsList').innerHTML =
+                        '<tr><td colspan="5" style="text-align: center; padding: 20px; color: red;">Failed to load students</td></tr>';
+                }
+            };
+
+            document.getElementById('classModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+        }
     },
 
     grading: {
         render: () => `
-        <div class="teacher-breadcrumb">Home / Grading</div>
-        <div class="teacher-section-header">Grade Management</div>
-        
-        <div id="toastNotification" class="teacher-grading-toast"></div>
-        
-        <div class="teacher-grading-container">
-            <div class="teacher-grading-selector">
-                <label>Select Class:</label>
-                <select id="classSelect" class="teacher-grading-class-select">
-                    <option value="CS101-A">CS101-A - Introduction to Programming (Dr. Smith)</option>
-                    <option value="CS101-B">CS101-B - Introduction to Programming (Dr. Smith)</option>
-                    <option value="MATH101-A">MATH101-A - Calculus I (Prof. Johnson)</option>
-                    <option value="ENG101-A">ENG101-A - English I (Dr. Williams)</option>
-                </select>
-            </div>
+    <div class="teacher-breadcrumb">Home / Grading</div>
+    <div class="teacher-section-header">Grade Management</div>
+    
+    <div id="toastNotification" class="teacher-grading-toast"></div>
+    
+    <div class="teacher-grading-container">
+        <div class="teacher-grading-selector">
+            <label>Select Class:</label>
+            <select id="classSelect" class="teacher-grading-class-select">
+                <option value="">Loading classes...</option>
+            </select>
+        </div>
 
-            <div class="teacher-grading-info">
-                <p id="classInfo">CS101-A: Introduction to Programming (32 students)</p>
-                <span class="teacher-grading-bell-curve-info">Grades calculated using Bell Curve distribution</span>
-            </div>
+        <div class="teacher-grading-info">
+            <p id="classInfo">Select a class to manage grades</p>
+            <span class="teacher-grading-bell-curve-info">Grades calculated using Bell Curve distribution</span>
+        </div>
 
-            <div class="teacher-grading-table-wrapper">
-                <table class="teacher-grading-table">
+        <div class="teacher-grading-table-wrapper">
+            <table class="teacher-grading-table">
+                <thead>
+                    <tr>
+                        <th class="teacher-grading-col-student">Student Name</th>
+                        <th class="teacher-grading-col-id">Student ID</th>
+                        <th class="teacher-grading-col-grade">Exam 1</th>
+                        <th class="teacher-grading-col-grade">Exam 2</th>
+                        <th class="teacher-grading-col-grade">Final</th>
+                        <th class="teacher-grading-col-grade">Project</th>
+                        <th class="teacher-grading-col-letter">Letter Grade</th>
+                        <th class="teacher-grading-col-action">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="gradesTable"></tbody>
+            </table>
+        </div>
+
+        <button class="teacher-grading-save-btn" id="saveBtn">Save All Grades</button>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="teacher-grading-confirm-modal" id="confirmModal">
+        <div class="teacher-grading-modal-content">
+            <div class="teacher-grading-modal-header">
+                <h3>Confirm Grade Changes</h3>
+                <button class="teacher-grading-modal-close" onclick="window.closeConfirmModal()">&times;</button>
+            </div>
+            <div class="teacher-grading-modal-body">
+                <div class="teacher-grading-changes-info">
+                    Review all changes below before confirming. This action will update grades in the system.
+                </div>
+                <table class="teacher-grading-changes-table" id="changesTable">
                     <thead>
                         <tr>
-                            <th class="teacher-grading-col-student">Student Name</th>
-                            <th class="teacher-grading-col-id">Student ID</th>
-                            <th class="teacher-grading-col-grade">Exam 1</th>
-                            <th class="teacher-grading-col-grade">Exam 2</th>
-                            <th class="teacher-grading-col-grade">Final</th>
-                            <th class="teacher-grading-col-grade">Project</th>
-                            <th class="teacher-grading-col-letter">Letter Grade</th>
-                            <th class="teacher-grading-col-action">Action</th>
+                            <th>Student Name</th>
+                            <th>Exam 1</th>
+                            <th>Exam 2</th>
+                            <th>Final</th>
+                            <th>Project</th>
                         </tr>
                     </thead>
-                    <tbody id="gradesTable"></tbody>
+                    <tbody id="changesBody"></tbody>
                 </table>
             </div>
-
-            <button class="teacher-grading-save-btn" id="saveBtn">Save All Grades</button>
+            <div class="teacher-grading-modal-footer">
+                <button class="teacher-grading-btn-cancel" onclick="window.closeConfirmModal()">Cancel</button>
+                <button class="teacher-grading-btn-confirm" onclick="window.confirmSaveGrades()">Confirm & Save</button>
+            </div>
         </div>
-    `,
-        afterRender: () => {
-            const classesData = {
-                'CS101-A': {
-                    name: 'CS101-A - Introduction to Programming (Dr. Smith)',
-                    count: 32,
-                    students: [
-                        { id: 'STU001', name: 'Ahmed Hassan', exam1: 85, exam2: 88, final: 90, project: 92 },
-                        { id: 'STU002', name: 'Fatima Khan', exam1: 92, exam2: 94, final: 96, project: 98 },
-                        { id: 'STU003', name: 'Ali Yilmaz', exam1: 78, exam2: 80, final: 82, project: null },
-                        { id: 'STU004', name: 'Zeynep Demir', exam1: 88, exam2: 90, final: 92, project: 95 },
-                        { id: 'STU005', name: 'Mustafa Ozer', exam1: 75, exam2: 77, final: 79, project: 81 }
-                    ]
-                },
-                'CS101-B': {
-                    name: 'CS101-B - Introduction to Programming (Dr. Smith)',
-                    count: 35,
-                    students: [
-                        { id: 'STU006', name: 'Layla Ahmed', exam1: 90, exam2: 92, final: 94, project: 96 },
-                        { id: 'STU007', name: 'Omar Hassan', exam1: 82, exam2: 84, final: 86, project: 88 },
-                        { id: 'STU008', name: 'Noor Ibrahim', exam1: 88, exam2: 90, final: 92, project: null },
-                        { id: 'STU009', name: 'Hana Malik', exam1: 85, exam2: 87, final: 89, project: 91 },
-                        { id: 'STU010', name: 'Karim Saleh', exam1: 70, exam2: 72, final: 74, project: 76 }
-                    ]
-                },
-                'MATH101-A': {
-                    name: 'MATH101-A - Calculus I (Prof. Johnson)',
-                    count: 40,
-                    students: [
-                        { id: 'STU011', name: 'Aisha Mohammed', exam1: 86, exam2: 89, final: 92, project: null },
-                        { id: 'STU012', name: 'Ibrahim Rahman', exam1: 84, exam2: 86, final: 88, project: null },
-                        { id: 'STU013', name: 'Sara Ahmed', exam1: 91, exam2: 93, final: 95, project: null },
-                        { id: 'STU014', name: 'Hassan Ali', exam1: 79, exam2: 81, final: 83, project: null },
-                        { id: 'STU015', name: 'Maryam Hassan', exam1: 88, exam2: 90, final: 92, project: null }
-                    ]
-                },
-                'ENG101-A': {
-                    name: 'ENG101-A - English I (Dr. Williams)',
-                    count: 25,
-                    students: [
-                        { id: 'STU016', name: 'Leila Farrokhi', exam1: 89, exam2: 91, final: 93, project: 95 },
-                        { id: 'STU017', name: 'Reza Pakzad', exam1: 92, exam2: 94, final: 96, project: 98 },
-                        { id: 'STU018', name: 'Nastaran Salaem', exam1: 85, exam2: 87, final: 89, project: 91 },
-                        { id: 'STU019', name: 'Dariush Karim', exam1: 80, exam2: 82, final: 84, project: 86 },
-                        { id: 'STU020', name: 'Parisa Ahmadi', exam1: 88, exam2: 90, final: 92, project: 94 }
-                    ]
-                }
-            };
+    </div>
+`,
+        afterRender: async () => {
+            const classSelect = document.getElementById('classSelect');
+            const classInfo = document.getElementById('classInfo');
+            const gradesTable = document.getElementById('gradesTable');
+            const saveBtn = document.getElementById('saveBtn');
+            const confirmModal = document.getElementById('confirmModal');
 
-            // Bell Curve calculation
-            function calculateBellCurveGrades(students) {
-                // Calculate final scores for each student
+            let courses = [];
+            let currentClassId = null;
+            let courseData = {};
+            let changedGrades = {};
+            let originalGrades = {};
+
+            const calculateBellCurveGrades = (students) => {
                 const scores = students.map(student => {
-                    let score = student.exam1 * 0.2 + student.exam2 * 0.2 + student.final * 0.4;
-                    if (student.project !== null && student.project !== undefined) {
+                    let score = (student.exam1 || 0) * 0.2 +
+                        (student.exam2 || 0) * 0.2 +
+                        (student.final || 0) * 0.4;
+                    if (student.project) {
                         score += student.project * 0.2;
                     }
                     return score;
                 });
 
-                // Sort scores
                 const sortedScores = [...scores].sort((a, b) => b - a);
 
-                // Calculate percentiles and assign grades
                 const gradeThresholds = {
-                    'A': Math.ceil(sortedScores.length * 0.10),   // Top 10%
-                    'B': Math.ceil(sortedScores.length * 0.30),   // Next 20%
-                    'C': Math.ceil(sortedScores.length * 0.60),   // Next 30%
-                    'D': Math.ceil(sortedScores.length * 0.85),   // Next 25%
-                    'F': sortedScores.length                       // Rest
+                    'A': Math.ceil(sortedScores.length * 0.10),
+                    'B': Math.ceil(sortedScores.length * 0.30),
+                    'C': Math.ceil(sortedScores.length * 0.60),
+                    'D': Math.ceil(sortedScores.length * 0.85),
+                    'F': sortedScores.length
                 };
 
                 const gradeMap = {};
@@ -221,17 +296,20 @@ export const TeacherPages = {
                 });
 
                 return scores.map(score => gradeMap[score]);
-            }
+            };
 
-            function getLetterGradeClass(letter) {
-                if (letter === 'A') return 'teacher-grading-letter-a';
-                if (letter === 'B') return 'teacher-grading-letter-b';
-                if (letter === 'C') return 'teacher-grading-letter-c';
-                if (letter === 'D') return 'teacher-grading-letter-d';
-                return 'teacher-grading-letter-f';
-            }
+            const getLetterGradeClass = (letter) => {
+                const map = {
+                    'A': 'teacher-grading-letter-a',
+                    'B': 'teacher-grading-letter-b',
+                    'C': 'teacher-grading-letter-c',
+                    'D': 'teacher-grading-letter-d',
+                    'F': 'teacher-grading-letter-f'
+                };
+                return map[letter] || '';
+            };
 
-            function showToast(message, type = 'success') {
+            const showToast = (message, type = 'success') => {
                 const toast = document.getElementById('toastNotification');
                 toast.textContent = message;
                 toast.className = `teacher-grading-toast teacher-grading-toast-${type} teacher-grading-toast-show`;
@@ -239,54 +317,130 @@ export const TeacherPages = {
                 setTimeout(() => {
                     toast.classList.remove('teacher-grading-toast-show');
                 }, 4000);
-            }
+            };
 
-            function loadClass(classId) {
-                const classData = classesData[classId];
-                document.getElementById('classInfo').textContent = `${classData.name} (${classData.count} students)`;
+            const loadGradesForClass = async (courseInstanceId) => {
+                gradesTable.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">Loading grades...</td></tr>';
 
-                const bellCurveGrades = calculateBellCurveGrades(classData.students);
+                const course = courses.find(c => c.courseInstanceId === courseInstanceId);
+                classInfo.textContent = `${course.courseCode}: ${course.courseName} (${course.section})`;
 
-                const table = document.getElementById('gradesTable');
-                table.innerHTML = classData.students.map((student, idx) => {
-                    const letter = bellCurveGrades[idx];
-                    return `
-                    <tr class="teacher-grading-row">
-                        <td class="teacher-grading-col-student">${student.name}</td>
-                        <td class="teacher-grading-col-id">${student.id}</td>
-                        <td class="teacher-grading-col-grade">
-                            <input type="number" class="teacher-grading-input exam1-${idx}" value="${student.exam1}" min="0" max="100" onchange="window.updateGrade(${idx})">
-                        </td>
-                        <td class="teacher-grading-col-grade">
-                            <input type="number" class="teacher-grading-input exam2-${idx}" value="${student.exam2}" min="0" max="100" onchange="window.updateGrade(${idx})">
-                        </td>
-                        <td class="teacher-grading-col-grade">
-                            <input type="number" class="teacher-grading-input final-${idx}" value="${student.final}" min="0" max="100" onchange="window.updateGrade(${idx})">
-                        </td>
-                        <td class="teacher-grading-col-grade">
-                            <input type="number" class="teacher-grading-input project-${idx}" value="${student.project || ''}" min="0" max="100" placeholder="-" onchange="window.updateGrade(${idx})">
-                        </td>
-                        <td class="teacher-grading-col-letter">
-                            <span class="teacher-grading-letter ${getLetterGradeClass(letter)} letter-${idx}">${letter}</span>
-                        </td>
-                        <td class="teacher-grading-col-action">
-                            <button class="teacher-grading-action-btn" onclick="window.clearGrades(${idx})">Clear</button>
-                        </td>
-                    </tr>
-                `;
-                }).join('');
-            }
+                try {
+                    const enrollmentsResponse = await apiRequest(
+                        `/enrollment/course/${courseInstanceId}?pageIndex=1&pageSize=1000`
+                    );
+                    const gradesResponse = await apiRequest(
+                        `/grade/course/${courseInstanceId}?pageIndex=1&pageSize=1000`
+                    );
 
-            window.updateGrade = function (idx) {
-                const classId = document.getElementById('classSelect').value;
-                const classData = classesData[classId];
+                    const enrollments = enrollmentsResponse.ok && enrollmentsResponse.data ? enrollmentsResponse.data : [];
+                    const grades = gradesResponse.ok && gradesResponse.data ? gradesResponse.data : [];
 
-                classData.students[idx].exam1 = parseFloat(document.querySelector(`.exam1-${idx}`).value) || 0;
-                classData.students[idx].exam2 = parseFloat(document.querySelector(`.exam2-${idx}`).value) || 0;
-                classData.students[idx].final = parseFloat(document.querySelector(`.final-${idx}`).value) || 0;
-                classData.students[idx].project = document.querySelector(`.project-${idx}`).value ? parseFloat(document.querySelector(`.project-${idx}`).value) : null;
+                    const studentMap = {};
+                    enrollments.forEach(enrollment => {
+                        studentMap[enrollment.studentId] = {
+                            id: enrollment.studentId,
+                            name: enrollment.studentName || 'Unknown',
+                            studentId: enrollment.studentCode || enrollment.studentId
+                        };
+                    });
 
-                const bellCurveGrades = calculateBellCurveGrades(classData.students);
+                    const students = Object.values(studentMap);
+
+                    const studentGrades = students.map(student => {
+                        const gradeRecord = grades.find(g => g.studentId === student.id);
+                        return {
+                            ...student,
+                            gradeId: gradeRecord?.id || null,
+                            exam1: gradeRecord?.exam1 || null,
+                            exam2: gradeRecord?.exam2 || null,
+                            final: gradeRecord?.final || null,
+                            project: gradeRecord?.project || null
+                        };
+                    });
+
+                    courseData[courseInstanceId] = {
+                        course,
+                        students: studentGrades
+                    };
+
+                    originalGrades = {};
+                    studentGrades.forEach((student, idx) => {
+                        originalGrades[idx] = {
+                            id: student.id,
+                            name: student.name,
+                            exam1: student.exam1,
+                            exam2: student.exam2,
+                            final: student.final,
+                            project: student.project
+                        };
+                    });
+
+                    const bellCurveGrades = calculateBellCurveGrades(studentGrades);
+
+                    gradesTable.innerHTML = studentGrades.map((student, idx) => {
+                        const letter = bellCurveGrades[idx];
+                        return `
+                                <tr class="teacher-grading-row">
+                                    <td class="teacher-grading-col-student">${student.name}</td>
+                                    <td class="teacher-grading-col-id">${student.studentId}</td>
+                                    <td class="teacher-grading-col-grade">
+                                        <input type="number" class="teacher-grading-input exam1-${idx}" value="${student.exam1 || ''}" min="0" oninput="if(this.value > 100) this.value = this.value.slice(0, -1)" onchange="window.updateGradeTable(${idx})">
+                                    </td>
+                                    <td class="teacher-grading-col-grade">
+                                        <input type="number" class="teacher-grading-input exam2-${idx}" value="${student.exam2 || ''}" min="0" oninput="if(this.value > 100) this.value = this.value.slice(0, -1)" onchange="window.updateGradeTable(${idx})">
+                                    </td>
+                                    <td class="teacher-grading-col-grade">
+                                        <input type="number" class="teacher-grading-input final-${idx}" value="${student.final || ''}" min="0" oninput="if(this.value > 100) this.value = this.value.slice(0, -1)" onchange="window.updateGradeTable(${idx})">
+                                    </td>
+                                    <td class="teacher-grading-col-grade">
+                                        <input type="number" class="teacher-grading-input project-${idx}" value="${student.project || ''}" min="0" placeholder="-" oninput="if(this.value > 100) this.value = this.value.slice(0, -1)" onchange="window.updateGradeTable(${idx})">
+                                    </td>
+                                    <td class="teacher-grading-col-letter">
+                                        <span class="teacher-grading-letter ${getLetterGradeClass(letter)} letter-${idx}">${letter}</span>
+                                    </td>
+                                    <td class="teacher-grading-col-action">
+                                        <button class="teacher-grading-action-btn" onclick="window.clearGradesTable(${idx})">Clear</button>
+                                    </td>
+                                </tr>
+                            `;
+                    }).join('');
+
+                    changedGrades = {};
+                } catch (error) {
+                    console.error('Failed to load grades:', error);
+                    gradesTable.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: red;">Failed to load grades</td></tr>';
+                }
+            };
+
+            window.updateGradeTable = function (idx) {
+                const courseId = currentClassId;
+                const course = courseData[courseId];
+                const student = course.students[idx];
+
+                const exam1 = parseFloat(document.querySelector(`.exam1-${idx}`).value) || null;
+                const exam2 = parseFloat(document.querySelector(`.exam2-${idx}`).value) || null;
+                const final = parseFloat(document.querySelector(`.final-${idx}`).value) || null;
+                const project = document.querySelector(`.project-${idx}`).value ? parseFloat(document.querySelector(`.project-${idx}`).value) : null;
+
+                student.exam1 = exam1;
+                student.exam2 = exam2;
+                student.final = final;
+                student.project = project;
+
+                changedGrades[student.id] = {
+                    idx,
+                    gradeId: student.gradeId,
+                    courseInstanceId: courseId,
+                    studentId: student.id,
+                    studentName: student.name,
+                    exam1,
+                    exam2,
+                    final,
+                    project
+                };
+
+                const bellCurveGrades = calculateBellCurveGrades(course.students);
                 const letter = bellCurveGrades[idx];
 
                 const letterEl = document.querySelector(`.letter-${idx}`);
@@ -294,26 +448,181 @@ export const TeacherPages = {
                 letterEl.className = `teacher-grading-letter ${getLetterGradeClass(letter)} letter-${idx}`;
             };
 
-            window.clearGrades = function (idx) {
+            window.clearGradesTable = function (idx) {
                 document.querySelector(`.exam1-${idx}`).value = '';
                 document.querySelector(`.exam2-${idx}`).value = '';
                 document.querySelector(`.final-${idx}`).value = '';
                 document.querySelector(`.project-${idx}`).value = '';
                 document.querySelector(`.letter-${idx}`).textContent = '-';
+                window.updateGradeTable(idx);
             };
 
-            document.getElementById('classSelect').addEventListener('change', function () {
-                loadClass(this.value);
+            window.openConfirmModal = function () {
+                const studentChanges = {};
+
+                for (const [studentId, gradeData] of Object.entries(changedGrades)) {
+                    const orig = originalGrades[gradeData.idx];
+                    const components = ['exam1', 'exam2', 'final', 'project'];
+                    let hasChanges = false;
+
+                    const changeData = {
+                        studentName: gradeData.studentName,
+                        exam1: { orig: orig.exam1 ?? '-', new: gradeData.exam1 ?? '-', changed: false },
+                        exam2: { orig: orig.exam2 ?? '-', new: gradeData.exam2 ?? '-', changed: false },
+                        final: { orig: orig.final ?? '-', new: gradeData.final ?? '-', changed: false },
+                        project: { orig: orig.project ?? '-', new: gradeData.project ?? '-', changed: false }
+                    };
+
+                    components.forEach(comp => {
+                        if (gradeData[comp] !== orig[comp]) {
+                            changeData[comp].changed = true;
+                            hasChanges = true;
+                        }
+                    });
+
+                    if (hasChanges) {
+                        studentChanges[gradeData.idx] = changeData;
+                    }
+                }
+
+                if (Object.keys(studentChanges).length === 0) {
+                    showToast('No changes detected', 'warning');
+                    return;
+                }
+
+                const changesTable = document.getElementById('changesTable');
+                changesTable.innerHTML = `
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Exam 1</th>
+                <th>Exam 2</th>
+                <th>Final</th>
+                <th>Project</th>
+            </tr>
+        </thead>
+        <tbody id="changesBody"></tbody>
+    `;
+
+                const changesBody = document.getElementById('changesBody');
+                changesBody.innerHTML = Object.values(studentChanges).map(change => `
+        <tr>
+            <td style="font-weight: 600; color: #2c2c2c;">${change.studentName}</td>
+            <td style="text-align: center;">
+                <span style="color: #666;">${change.exam1.orig}</span>
+                ${change.exam1.changed ? `<span style="color: #999;"> → </span><span style="color: #27ae60; font-weight: 600;">${change.exam1.new}</span>` : ''}
+            </td>
+            <td style="text-align: center;">
+                <span style="color: #666;">${change.exam2.orig}</span>
+                ${change.exam2.changed ? `<span style="color: #999;"> → </span><span style="color: #27ae60; font-weight: 600;">${change.exam2.new}</span>` : ''}
+            </td>
+            <td style="text-align: center;">
+                <span style="color: #666;">${change.final.orig}</span>
+                ${change.final.changed ? `<span style="color: #999;"> → </span><span style="color: #27ae60; font-weight: 600;">${change.final.new}</span>` : ''}
+            </td>
+            <td style="text-align: center;">
+                <span style="color: #666;">${change.project.orig}</span>
+                ${change.project.changed ? `<span style="color: #999;"> → </span><span style="color: #27ae60; font-weight: 600;">${change.project.new}</span>` : ''}
+            </td>
+        </tr>
+    `).join('');
+
+                confirmModal.classList.add('show');
+            };
+
+            window.closeConfirmModal = function () {
+                confirmModal.classList.remove('show');
+            };
+
+            window.confirmSaveGrades = async function () {
+                const btn = document.querySelector('.teacher-grading-btn-confirm');
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
+                let successCount = 0;
+                let failCount = 0;
+
+                for (const [studentId, gradeData] of Object.entries(changedGrades)) {
+                    try {
+                        let response;
+                        if (gradeData.gradeId) {
+                            response = await apiRequest(`/grade/${gradeData.gradeId}`, 'PUT', {
+                                exam1: gradeData.exam1,
+                                exam2: gradeData.exam2,
+                                final: gradeData.final,
+                                project: gradeData.project
+                            });
+                        } else {
+                            response = await apiRequest('/grade', 'POST', {
+                                studentId: gradeData.studentId,
+                                courseInstanceId: gradeData.courseInstanceId,
+                                exam1: gradeData.exam1,
+                                exam2: gradeData.exam2,
+                                final: gradeData.final,
+                                project: gradeData.project
+                            });
+                        }
+
+                        if (response.ok) {
+                            successCount++;
+                        } else {
+                            failCount++;
+                        }
+                    } catch (error) {
+                        failCount++;
+                        console.error(`Error saving grade:`, error);
+                    }
+                }
+
+                showToast(`Saved ${successCount} grade${successCount !== 1 ? 's' : ''}${failCount > 0 ? ` (${failCount} failed)` : ''}`);
+
+                btn.disabled = false;
+                btn.textContent = 'Confirm & Save';
+                closeConfirmModal();
+                changedGrades = {};
+
+                await loadGradesForClass(currentClassId);
+            };
+
+            try {
+                const response = await apiRequest('/courseInstance/my-courses?pageIndex=1&pageSize=100');
+
+                if (!response.ok || !response.data || response.data.length === 0) {
+                    classSelect.innerHTML = '<option value="">No classes assigned</option>';
+                    classInfo.textContent = 'No classes assigned';
+                    return;
+                }
+
+                courses = response.data;
+                currentClassId = courses[0].courseInstanceId;
+
+                classSelect.innerHTML = courses.map(course => `
+            <option value="${course.courseInstanceId}">
+                ${course.courseCode} - ${course.courseName} (${course.section})
+            </option>
+        `).join('');
+
+                classSelect.value = currentClassId;
+                await loadGradesForClass(currentClassId);
+            } catch (error) {
+                console.error('Failed to load courses:', error);
+                classSelect.innerHTML = '<option value="">Error loading classes</option>';
+            }
+
+            classSelect.addEventListener('change', function () {
+                currentClassId = parseInt(this.value);
+                loadGradesForClass(currentClassId);
             });
 
-            document.getElementById('saveBtn').addEventListener('click', function () {
-                const classId = document.getElementById('classSelect').value;
-                const classData = classesData[classId];
-                showToast(`✓ Grades for ${classData.students.length} students saved successfully!`, 'success');
-                console.log('Grades saved for class:', classId);
+            saveBtn.addEventListener('click', function () {
+                window.openConfirmModal();
             });
 
-            loadClass('CS101-A');
+            confirmModal.addEventListener('click', function (e) {
+                if (e.target === this) {
+                    window.closeConfirmModal();
+                }
+            });
         }
     },
 

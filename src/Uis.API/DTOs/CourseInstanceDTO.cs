@@ -55,6 +55,7 @@ public class CourseInstanceResponse
     public string? CourseName { get; set; }
     public string? TeacherName { get; set; }
     public string? AcademicYear { get; set; }
+    public int Credits { get; set; }
     public string? Section { get; set; }
     public int Capacity { get; set; }
     public int CurrentEnrollmentCount { get; set; }

@@ -681,7 +681,7 @@ export const StudentPages = {
 
             function showWeekly(course) {
                 document.getElementById('modalTitle').textContent =
-                    `${course.courseCode} - ${course.courseName} (${course.section})`;
+                    `${course.courseCode} - ${course.courseName}`;
 
                 const weeks = {};
                 course.records.forEach(record => {
@@ -884,28 +884,26 @@ export const StudentPages = {
 
     registration: {
         render: () => `
-        <div class="student-breadcrumb">Home / Course Registration</div>
-        
-        <div class="register-course-curriculum-header">
-            <h2>Computer Science Curriculum 2024-2025</h2>
-            <p>Select your year and semester, then choose courses to register</p>
-        </div>
+    <div class="student-breadcrumb">Home / Course Registration</div>
+    
+    <div class="register-course-curriculum-header">
+        <h2>Course Registration 2024-2025</h2>
+        <p>Select your year and semester, then choose courses to register</p>
+    </div>
 
-        <!-- Year Tabs -->
-        <div class="register-course-tabs-years">
-            <button class="register-course-year-tab active" data-year="1">1st Year</button>
-            <button class="register-course-year-tab" data-year="2">2nd Year</button>
-            <button class="register-course-year-tab" data-year="3">3rd Year</button>
-            <button class="register-course-year-tab" data-year="4">4th Year</button>
-        </div>
+    <div class="register-course-tabs-years">
+        <button class="register-course-year-tab active" data-year="1">1st Year</button>
+        <button class="register-course-year-tab" data-year="2">2nd Year</button>
+        <button class="register-course-year-tab" data-year="3">3rd Year</button>
+        <button class="register-course-year-tab" data-year="4">4th Year</button>
+    </div>
 
-        <!-- Semester Tabs -->
-        <div class="register-course-tabs-semesters">
-            <button class="register-course-semester-tab active" data-semester="fall">Fall Semester</button>
-            <button class="register-course-semester-tab" data-semester="spring">Spring Semester</button>
-        </div>
+    <div class="register-course-tabs-semesters">
+        <button class="register-course-semester-tab active" data-semester="fall">Fall Semester</button>
+        <button class="register-course-semester-tab" data-semester="spring">Spring Semester</button>
+    </div>
 
-        <!-- Curriculum Courses -->
+    <div class="register-course-main-wrapper">
         <div class="register-course-selection-box">
             <div class="register-course-selection-header">
                 <h3>Curriculum</h3>
@@ -914,7 +912,6 @@ export const StudentPages = {
             <div class="register-course-selection-list" id="coursesList"></div>
         </div>
 
-        <!-- My Selected Courses -->
         <div class="register-course-selected-box">
             <div class="register-course-selected-box-header">
                 <h3>My Selected Courses (<span id="selectedCount">0</span>)</h3>
@@ -932,153 +929,119 @@ export const StudentPages = {
             </div>
             <button class="register-course-confirm-btn" id="confirmBtn" disabled>Confirm Registration</button>
         </div>
+    </div>
 
-        <!-- Modal: Course Instances -->
-        <div class="register-course-instances-modal" id="instancesModal">
-            <div class="register-course-modal-content">
-                <div class="register-course-modal-header">
-                    <h3 id="instancesModalTitle"></h3>
-                    <button class="register-course-modal-close" onclick="document.getElementById('instancesModal').style.display='none'">×</button>
-                </div>
-                <div class="register-course-modal-body">
-                    <div id="collisionWarning"></div>
-                    <div class="register-course-instances-list" id="instancesList"></div>
-                </div>
+    <div class="register-course-instances-modal" id="instancesModal">
+        <div class="register-course-modal-content">
+            <div class="register-course-modal-header">
+                <h3 id="instancesModalTitle"></h3>
+                <button class="register-course-modal-close" onclick="document.getElementById('instancesModal').style.display='none'">×</button>
+            </div>
+            <div class="register-course-modal-body">
+                <div id="collisionWarning"></div>
+                <div class="register-course-instances-list" id="instancesList"></div>
             </div>
         </div>
+    </div>
 
-        <!-- Modal: Instance Details -->
-        <div class="register-course-schedule-modal" id="scheduleModal">
-            <div class="register-course-modal-content">
-                <div class="register-course-modal-header">
-                    <h3>Course Instance Details</h3>
-                    <button class="register-course-modal-close" onclick="document.getElementById('scheduleModal').style.display='none'">×</button>
-                </div>
-                <div class="register-course-modal-body">
-                    <div id="scheduleContent"></div>
-                </div>
+    <div class="register-course-schedule-modal" id="scheduleModal">
+        <div class="register-course-modal-content">
+            <div class="register-course-modal-header">
+                <h3>Course Instance Details</h3>
+                <button class="register-course-modal-close" onclick="document.getElementById('scheduleModal').style.display='none'">×</button>
+            </div>
+            <div class="register-course-modal-body">
+                <div id="scheduleContent"></div>
             </div>
         </div>
-    `,
-        afterRender: () => {
-            const curriculum = {
-                1: {
-                    fall: [
-                        { id: 'CS101', name: 'Introduction to Programming', credits: 3 },
-                        { id: 'MATH101', name: 'Calculus I', credits: 4 },
-                        { id: 'ENG101', name: 'English I', credits: 3 }
-                    ],
-                    spring: [
-                        { id: 'CS102', name: 'Programming II', credits: 3 },
-                        { id: 'MATH102', name: 'Calculus II', credits: 4 },
-                        { id: 'PHYS101', name: 'Physics I', credits: 4 }
-                    ]
-                },
-                2: {
-                    fall: [
-                        { id: 'CS201', name: 'Data Structures', credits: 3 },
-                        { id: 'CS202', name: 'Database Systems', credits: 4 },
-                        { id: 'MATH201', name: 'Discrete Math', credits: 3 }
-                    ],
-                    spring: [
-                        { id: 'CS203', name: 'Web Development', credits: 3 },
-                        { id: 'CS204', name: 'Software Engineering', credits: 4 }
-                    ]
-                },
-                3: {
-                    fall: [
-                        { id: 'CS301', name: 'Algorithms', credits: 3 },
-                        { id: 'CS302', name: 'Operating Systems', credits: 4 }
-                    ],
-                    spring: [
-                        { id: 'CS303', name: 'Computer Networks', credits: 3 },
-                        { id: 'CS304', name: 'Artificial Intelligence', credits: 4 }
-                    ]
-                },
-                4: {
-                    fall: [
-                        { id: 'CS401', name: 'Capstone Project I', credits: 3 },
-                        { id: 'CS402', name: 'Advanced Topics', credits: 3 }
-                    ],
-                    spring: [
-                        { id: 'CS403', name: 'Capstone Project II', credits: 4 }
-                    ]
+    </div>
+`,
+        afterRender: async () => {
+            const selectedCourses = new Map();
+            let currentYear = 1;
+            let currentSemester = 'fall';
+            let allCourses = [];
+            let courseInstances = {};
+
+            const getDayName = (dayNum) => {
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                return days[dayNum] || 'TBA';
+            };
+
+            const getDayAbbr = (dayNum) => {
+                const abbr = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+                return abbr[dayNum] || 'TBA';
+            };
+
+            const formatTime = (time) => {
+                if (!time) return 'TBA';
+                const [hours, minutes] = time.split(':');
+                const h = parseInt(hours);
+                const ampm = h >= 12 ? 'pm' : 'am';
+                const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+                return `${displayH}:${minutes}${ampm}`;
+            };
+
+            const formatSchedule = (day1, day2, startTime) => {
+                if (day1 === null || day1 === undefined || !startTime) return 'TBA';
+                const day1Str = getDayAbbr(day1);
+                const day2Str = day2 !== null && day2 !== undefined ? getDayAbbr(day2) : '';
+                const timeStr = formatTime(startTime);
+
+                if (day2Str && day2Str !== 'TBA') {
+                    return `${day1Str}/${day2Str} ${timeStr}`;
                 }
+                return `${day1Str} ${timeStr}`;
             };
 
-            const courseInstances = {
-                CS101: [
-                    { id: 'CS101-A', instructor: 'Dr. Smith', days: ['Monday'], startTime: '09:00', endTime: '11:00', room: '101', seats: '32/40' },
-                    { id: 'CS101-B', instructor: 'Dr. Smith', days: ['Tuesday'], startTime: '14:00', endTime: '16:00', room: '102', seats: '35/40' },
-                    { id: 'CS101-C', instructor: 'Prof. Jones', days: ['Wednesday'], startTime: '10:00', endTime: '12:00', room: '103', seats: '28/35' }
-                ],
-                MATH101: [
-                    { id: 'MATH101-A', instructor: 'Prof. Johnson', days: ['Monday', 'Wednesday'], startTime: '09:00', endTime: '10:30', room: '201', seats: '40/40' },
-                    { id: 'MATH101-B', instructor: 'Prof. Johnson', days: ['Tuesday', 'Thursday'], startTime: '14:00', endTime: '15:30', room: '202', seats: '35/40' }
-                ],
-                ENG101: [
-                    { id: 'ENG101-A', instructor: 'Dr. Williams', days: ['Friday'], startTime: '10:00', endTime: '12:00', room: '301', seats: '25/30' }
-                ],
-                CS102: [
-                    { id: 'CS102-A', instructor: 'Dr. Smith', days: ['Monday', 'Wednesday', 'Friday'], startTime: '10:00', endTime: '11:00', room: '101', seats: '30/40' },
-                    { id: 'CS102-B', instructor: 'Prof. Brown', days: ['Tuesday', 'Thursday'], startTime: '15:00', endTime: '16:30', room: '102', seats: '32/40' }
-                ],
-                MATH102: [
-                    { id: 'MATH102-A', instructor: 'Prof. Davis', days: ['Monday', 'Wednesday'], startTime: '10:00', endTime: '11:30', room: '201', seats: '38/40' },
-                    { id: 'MATH102-B', instructor: 'Prof. Johnson', days: ['Tuesday', 'Thursday'], startTime: '13:00', endTime: '14:30', room: '202', seats: '36/40' }
-                ],
-                PHYS101: [
-                    { id: 'PHYS101-A', instructor: 'Dr. Anderson', days: ['Monday', 'Wednesday'], startTime: '14:00', endTime: '15:30', room: '401', seats: '25/30' },
-                    { id: 'PHYS101-B', instructor: 'Dr. Anderson', days: ['Friday'], startTime: '09:00', endTime: '11:00', room: '402', seats: '28/30' }
-                ],
-                CS201: [
-                    { id: 'CS201-A', instructor: 'Dr. Brown', days: ['Tuesday', 'Thursday'], startTime: '09:00', endTime: '10:30', room: '101', seats: '30/35' }
-                ],
-                CS202: [
-                    { id: 'CS202-A', instructor: 'Prof. Harris', days: ['Monday', 'Wednesday', 'Friday'], startTime: '11:00', endTime: '12:00', room: '201', seats: '25/30' },
-                    { id: 'CS202-B', instructor: 'Prof. Harris', days: ['Tuesday', 'Thursday'], startTime: '13:00', endTime: '14:30', room: '202', seats: '28/35' }
-                ],
-                MATH201: [
-                    { id: 'MATH201-A', instructor: 'Prof. Wilson', days: ['Monday', 'Wednesday'], startTime: '10:00', endTime: '11:30', room: '203', seats: '32/40' }
-                ],
-                CS203: [
-                    { id: 'CS203-A', instructor: 'Dr. Anderson', days: ['Wednesday', 'Friday'], startTime: '14:00', endTime: '15:30', room: '301', seats: '28/35' },
-                    { id: 'CS203-B', instructor: 'Dr. Taylor', days: ['Monday', 'Wednesday'], startTime: '15:00', endTime: '16:30', room: '302', seats: '25/30' }
-                ],
-                CS204: [
-                    { id: 'CS204-A', instructor: 'Prof. White', days: ['Tuesday', 'Thursday'], startTime: '10:00', endTime: '11:30', room: '101', seats: '22/25' }
-                ],
-                CS301: [
-                    { id: 'CS301-A', instructor: 'Dr. Miller', days: ['Monday', 'Wednesday', 'Friday'], startTime: '09:00', endTime: '10:00', room: '101', seats: '20/25' }
-                ],
-                CS302: [
-                    { id: 'CS302-A', instructor: 'Prof. Davis', days: ['Tuesday', 'Thursday'], startTime: '11:00', endTime: '12:30', room: '102', seats: '18/22' },
-                    { id: 'CS302-B', instructor: 'Prof. Davis', days: ['Monday', 'Wednesday'], startTime: '14:00', endTime: '15:30', room: '103', seats: '20/22' }
-                ],
-                CS303: [
-                    { id: 'CS303-A', instructor: 'Dr. Garcia', days: ['Wednesday', 'Friday'], startTime: '10:00', endTime: '11:30', room: '201', seats: '19/25' }
-                ],
-                CS304: [
-                    { id: 'CS304-A', instructor: 'Prof. Rodriguez', days: ['Monday', 'Wednesday'], startTime: '13:00', endTime: '14:30', room: '301', seats: '16/20' },
-                    { id: 'CS304-B', instructor: 'Prof. Rodriguez', days: ['Tuesday', 'Thursday'], startTime: '15:00', endTime: '16:30', room: '302', seats: '18/20' }
-                ],
-                CS401: [
-                    { id: 'CS401-A', instructor: 'Dr. Lee', days: ['Friday'], startTime: '09:00', endTime: '12:00', room: '401', seats: '12/15' }
-                ],
-                CS402: [
-                    { id: 'CS402-A', instructor: 'Prof. Martin', days: ['Monday', 'Wednesday'], startTime: '10:00', endTime: '11:30', room: '402', seats: '14/15' }
-                ],
-                CS403: [
-                    { id: 'CS403-A', instructor: 'Dr. Martinez', days: ['Tuesday', 'Thursday'], startTime: '09:00', endTime: '10:30', room: '403', seats: '13/15' }
-                ]
+            const loadAcademicYear = async () => {
+                const response = await apiRequest('/academicYear/active');
+                if (!response.ok || !response.data) return false;
+                return true;
             };
 
-            // Collision detection function
-            function checkTimeConflict(instance1, instance2) {
-                const days1 = new Set(instance1.days);
-                const days2 = new Set(instance2.days);
+            const loadAllCourses = async () => {
+                const response = await apiRequest(`/courseInstance/available/1?pageIndex=1&pageSize=100`);
+                if (!response.ok || !response.data) return;
 
-                // Check if they share any days
+                const courses = response.data.data || response.data || [];
+
+                courseInstances = {};
+                courses.forEach(course => {
+                    if (!courseInstances[course.courseCode]) {
+                        courseInstances[course.courseCode] = [];
+                    }
+
+                    const days = [];
+                    if (course.day1 !== null && course.day1 !== undefined) {
+                        days.push(getDayName(course.day1));
+                    }
+                    if (course.day2 !== null && course.day2 !== undefined) {
+                        days.push(getDayName(course.day2));
+                    }
+
+                    courseInstances[course.courseCode].push({
+                        id: course.courseInstanceId,
+                        instructor: course.teacherName,
+                        day1: course.day1,
+                        day2: course.day2,
+                        days: days.length > 0 ? days : ['TBA'],
+                        startTime: course.startTime || '00:00',
+                        endTime: course.endTime || '00:00',
+                        room: course.location || 'TBA',
+                        seats: `${course.currentEnrollmentCount}/${course.capacity}`,
+                        credits: course.credits || 3
+                    });
+                });
+
+                allCourses = [...new Map(courses.map(item => [item.courseCode, item])).values()];
+                filterAndDisplayCourses();
+            };
+
+            const checkTimeConflict = (instance1, instance2) => {
+                const days1 = new Set(instance1.days || []);
+                const days2 = new Set(instance2.days || []);
+
                 let shareDay = false;
                 for (let day of days1) {
                     if (days2.has(day)) {
@@ -1089,26 +1052,75 @@ export const StudentPages = {
 
                 if (!shareDay) return false;
 
-                // Convert times to minutes for comparison
-                const time1Start = parseInt(instance1.startTime.replace(':', ''));
-                const time1End = parseInt(instance1.endTime.replace(':', ''));
-                const time2Start = parseInt(instance2.startTime.replace(':', ''));
-                const time2End = parseInt(instance2.endTime.replace(':', ''));
+                const time1Start = parseInt(instance1.startTime.replace(':', '') || 0);
+                const time1End = parseInt(instance1.endTime.replace(':', '') || 0);
+                const time2Start = parseInt(instance2.startTime.replace(':', '') || 0);
+                const time2End = parseInt(instance2.endTime.replace(':', '') || 0);
 
-                // Check if times overlap
                 return time1Start < time2End && time2Start < time1End;
-            }
+            };
 
-            let currentYear = 1;
-            let currentSemester = 'fall';
-            const selectedCourses = new Map();
+            const parseCourseCode = (courseCode) => {
+                const numericMatch = courseCode.match(/\d+/);
+                if (!numericMatch) return { year: 1, semester: 'fall' };
+
+                const numericPart = numericMatch[0];
+                const firstDigit = parseInt(numericPart.charAt(0));
+                const lastDigit = parseInt(numericPart.charAt(numericPart.length - 1));
+
+                const year = (firstDigit >= 1 && firstDigit <= 4) ? firstDigit : 1;
+                const semester = lastDigit === 2 ? 'spring' : 'fall';
+
+                return { year, semester };
+            };
+
+
+            const filterAndDisplayCourses = () => {
+                const coursesList = document.getElementById('coursesList');
+                const yearName = currentYear === 1 ? '1st' : currentYear === 2 ? '2nd' : currentYear === 3 ? '3rd' : '4th';
+                const semesterName = currentSemester === 'fall' ? 'Fall' : 'Spring';
+
+                document.getElementById('semesterInfo').textContent = `${yearName} Year - ${semesterName} Semester`;
+
+                if (allCourses.length === 0) {
+                    coursesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No courses available</div>';
+                    return;
+                }
+
+                const filtered = allCourses.filter(course => {
+                    const { year, semester } = parseCourseCode(course.courseCode);
+                    return year === currentYear && semester === currentSemester;
+                });
+
+                if (filtered.length === 0) {
+                    coursesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No courses available for this selection</div>';
+                    return;
+                }
+
+                coursesList.innerHTML = filtered.map(course => {
+                    const isSelected = selectedCourses.has(course.courseCode);
+                    return `
+            <div class="register-course-selection-item ${isSelected ? 'register-course-selection-item-selected' : ''}">
+                <div class="register-course-selection-item-info">
+                    <div class="register-course-selection-item-code">${course.courseCode}</div>
+                    <div class="register-course-selection-item-name">${course.courseName}</div>
+                    <div class="register-course-selection-item-credits">${course.credits || 3} Credits</div>
+                </div>
+                <div class="register-course-selection-item-actions">
+                    ${isSelected ? '<span class="register-course-selection-item-tick">✓</span>' : ''}
+                    <button class="register-course-selection-item-btn ${isSelected ? 'register-course-selection-item-btn-selected' : ''}" onclick="window.showInstancesModal('${course.courseCode}', '${course.courseName}', ${course.credits || 3})">${isSelected ? '✓' : '+'}</button>
+                </div>
+            </div>
+        `;
+                }).join('');
+            };
 
             document.querySelectorAll('.register-course-year-tab').forEach(tab => {
                 tab.addEventListener('click', function () {
                     document.querySelectorAll('.register-course-year-tab').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
                     currentYear = parseInt(this.dataset.year);
-                    loadCourses();
+                    filterAndDisplayCourses();
                 });
             });
 
@@ -1117,44 +1129,18 @@ export const StudentPages = {
                     document.querySelectorAll('.register-course-semester-tab').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
                     currentSemester = this.dataset.semester;
-                    loadCourses();
+                    filterAndDisplayCourses();
                 });
             });
 
-            function loadCourses() {
-                const courses = curriculum[currentYear][currentSemester];
-                const yearName = currentYear === 1 ? '1st' : currentYear === 2 ? '2nd' : currentYear === 3 ? '3rd' : '4th';
-                const semesterName = currentSemester === 'fall' ? 'Fall' : 'Spring';
-
-                document.getElementById('semesterInfo').textContent = `${yearName} Year - ${semesterName} Semester`;
-
-                const coursesList = document.getElementById('coursesList');
-                coursesList.innerHTML = courses.map(course => {
-                    const isSelected = selectedCourses.has(course.id);
-                    return `
-                    <div class="register-course-selection-item ${isSelected ? 'register-course-selection-item-selected' : ''}">
-                        <div class="register-course-selection-item-info">
-                            <div class="register-course-selection-item-code">${course.id}</div>
-                            <div class="register-course-selection-item-name">${course.name}</div>
-                            <div class="register-course-selection-item-credits">${course.credits} Credits</div>
-                        </div>
-                        <div class="register-course-selection-item-actions">
-                            ${isSelected ? '<span class="register-course-selection-item-tick">✓</span>' : ''}
-                            <button class="register-course-selection-item-btn ${isSelected ? 'register-course-selection-item-btn-selected' : ''}" onclick="window.showInstancesModal('${course.id}', '${course.name}', ${course.credits})">${isSelected ? '✓' : '+'}</button>
-                        </div>
-                    </div>
-                `;
-                }).join('');
-            }
-
-            window.showInstancesModal = function (courseId, courseName, credits) {
+            window.showInstancesModal = function (courseCode, courseName, credits) {
                 const modal = document.getElementById('instancesModal');
                 const title = document.getElementById('instancesModalTitle');
                 const list = document.getElementById('instancesList');
                 const warning = document.getElementById('collisionWarning');
 
-                title.textContent = `${courseId} - ${courseName}`;
-                const instances = courseInstances[courseId] || [];
+                title.textContent = `${courseCode} - ${courseName}`;
+                const instances = courseInstances[courseCode] || [];
 
                 warning.innerHTML = '';
 
@@ -1165,20 +1151,23 @@ export const StudentPages = {
                         let hasConflict = false;
                         let conflictCourse = '';
 
-                        for (let [selId, selData] of selectedCourses) {
-                            const selInstance = courseInstances[selId].find(i => i.id === selData.instance);
+                        for (let [selCode, selData] of selectedCourses) {
+                            const selInstances = courseInstances[selCode] || [];
+                            const selInstance = selInstances.find(i => i.id === selData.instance);
                             if (selInstance && checkTimeConflict(inst, selInstance)) {
                                 hasConflict = true;
-                                conflictCourse = selId;
+                                conflictCourse = selCode;
                                 break;
                             }
                         }
+
+                        const schedule = formatSchedule(inst.day1, inst.day2, inst.startTime);
 
                         return `
                         <div class="register-course-instance-card ${hasConflict ? 'register-course-instance-card-conflict' : ''}">
                             ${hasConflict ? `<div class="register-course-instance-conflict-badge">CONFLICT with ${conflictCourse}</div>` : ''}
                             <div class="register-course-instance-info">
-                                <div class="register-course-instance-id">${inst.id}</div>
+                                <div class="register-course-instance-id">Section ${inst.id}</div>
                                 <div class="register-course-instance-meta">
                                     <span>Instructor: ${inst.instructor}</span>
                                     <span>Room: ${inst.room}</span>
@@ -1186,12 +1175,12 @@ export const StudentPages = {
                                 </div>
                                 <div class="register-course-instance-time">
                                     <span class="register-course-instance-day">${inst.days.join(', ')}</span>
-                                    <span class="register-course-instance-hour">${inst.startTime}-${inst.endTime}</span>
+                                    <span class="register-course-instance-hour">${formatTime(inst.startTime)} - ${formatTime(inst.endTime)}</span>
                                 </div>
                             </div>
                             <div class="register-course-instance-actions">
-                                <button class="register-course-info-btn" onclick="window.showScheduleDetails('${inst.id}', '${courseName}', '${inst.days.join(', ')}', '${inst.startTime}-${inst.endTime}', '${inst.instructor}', '${inst.room}')">Info</button>
-                                <button class="register-course-select-btn ${hasConflict ? 'register-course-select-btn-disabled' : ''}" onclick="window.selectInstance('${courseId}', '${courseName}', ${credits}, '${inst.id}')" ${hasConflict ? 'disabled' : ''}>Select This</button>
+                                <button class="register-course-info-btn" onclick="window.showScheduleDetails('${inst.id}', '${courseName}', '${inst.days.join(', ')}', '${formatTime(inst.startTime)} - ${formatTime(inst.endTime)}', '${inst.instructor}', '${inst.room}')">Info</button>
+                                <button class="register-course-select-btn ${hasConflict ? 'register-course-select-btn-disabled' : ''}" onclick="window.selectInstance('${courseCode}', '${courseName}', ${credits}, '${inst.id}')" ${hasConflict ? 'disabled' : ''}>Select</button>
                             </div>
                         </div>
                     `;
@@ -1200,52 +1189,10 @@ export const StudentPages = {
                 modal.style.display = 'flex';
             };
 
-            window.selectInstance = function (courseId, courseName, credits, instanceId) {
-                selectedCourses.set(courseId, { name: courseName, credits, instance: instanceId });
+            window.selectInstance = function (courseCode, courseName, credits, instanceId) {
+                selectedCourses.set(courseCode, { name: courseName, credits, instance: instanceId });
                 document.getElementById('instancesModal').style.display = 'none';
-                loadCourses();
-                updateSelectedGrid();
-            };
-
-            function updateSelectedGrid() {
-                const grid = document.getElementById('selectedGrid');
-                const count = document.getElementById('selectedCount');
-                const creditsFill = document.getElementById('creditsFill');
-                const creditsText = document.getElementById('creditsText');
-                const confirmBtn = document.getElementById('confirmBtn');
-
-                const totalCredits = Array.from(selectedCourses.values()).reduce((sum, c) => sum + c.credits, 0);
-                const creditsPercent = (totalCredits / 25) * 100;
-
-                count.textContent = selectedCourses.size;
-                creditsText.textContent = `${totalCredits}/25 Credits`;
-                creditsFill.style.width = creditsPercent + '%';
-                creditsFill.style.background = totalCredits > 25 ? '#ff6b6b' : '#27ae60';
-
-                confirmBtn.disabled = selectedCourses.size === 0 || totalCredits > 25;
-
-                if (selectedCourses.size === 0) {
-                    grid.innerHTML = '<div class="register-course-selected-empty-state"><p>No courses selected yet. Click + to add courses from the curriculum above.</p></div>';
-                } else {
-                    grid.innerHTML = Array.from(selectedCourses.entries()).map(([courseId, data]) => `
-                    <div class="register-course-selected-card">
-                        <div class="register-course-selected-card-header">
-                            <div class="register-course-selected-card-code">${courseId}</div>
-                            <button class="register-course-selected-card-remove" onclick="window.removeSelected('${courseId}')">×</button>
-                        </div>
-                        <div class="register-course-selected-card-body">
-                            <div class="register-course-selected-card-name">${data.name}</div>
-                            <div class="register-course-selected-card-instance">${data.instance}</div>
-                            <div class="register-course-selected-card-credits">${data.credits} Credits</div>
-                        </div>
-                    </div>
-                `).join('');
-                }
-            }
-
-            window.removeSelected = function (courseId) {
-                selectedCourses.delete(courseId);
-                loadCourses();
+                filterAndDisplayCourses();
                 updateSelectedGrid();
             };
 
@@ -1275,7 +1222,7 @@ export const StudentPages = {
                     <div class="register-course-schedule-item">
                         <label>Schedule:</label>
                         <div class="register-course-schedule-days">
-                            ${dayArray.map(day => `<span class="register-course-schedule-day">${day}</span>`).join('')}
+                            ${dayArray.map(day => `<span style="display: inline-block; background: #f0f0f0; padding: 4px 8px; border-radius: 3px; font-size: 11px; margin-right: 6px;">${day}</span>`).join('')}
                         </div>
                     </div>
                     <div class="register-course-schedule-item">
@@ -1289,22 +1236,87 @@ export const StudentPages = {
                 modal.style.display = 'flex';
             };
 
+            const updateSelectedGrid = () => {
+                const grid = document.getElementById('selectedGrid');
+                const count = document.getElementById('selectedCount');
+                const creditsFill = document.getElementById('creditsFill');
+                const creditsText = document.getElementById('creditsText');
+                const confirmBtn = document.getElementById('confirmBtn');
+
+                const totalCredits = Array.from(selectedCourses.values()).reduce((sum, c) => sum + c.credits, 0);
+                const creditsPercent = (totalCredits / 25) * 100;
+
+                count.textContent = selectedCourses.size;
+                creditsText.textContent = `${totalCredits}/25 Credits`;
+                creditsFill.style.width = creditsPercent + '%';
+                creditsFill.style.background = totalCredits > 25 ? '#ff6b6b' : '#27ae60';
+
+                confirmBtn.disabled = selectedCourses.size === 0 || totalCredits > 25;
+
+                if (selectedCourses.size === 0) {
+                    grid.innerHTML = '<div class="register-course-selected-empty-state"><p>No courses selected yet. Click + to add courses from the curriculum above.</p></div>';
+                } else {
+                    grid.innerHTML = Array.from(selectedCourses.entries()).map(([courseCode, data]) => `
+                    <div class="register-course-selected-card">
+                        <div class="register-course-selected-card-header">
+                            <div class="register-course-selected-card-code">${courseCode}</div>
+                            <button class="register-course-selected-card-remove" onclick="window.removeSelected('${courseCode}')">×</button>
+                        </div>
+                        <div class="register-course-selected-card-body">
+                            <div class="register-course-selected-card-name">${data.name}</div>
+                            <div class="register-course-selected-card-instance">${data.instance}</div>
+                            <div class="register-course-selected-card-credits">${data.credits} Credits</div>
+                        </div>
+                    </div>
+                `).join('');
+                }
+            };
+
+            window.removeSelected = function (courseCode) {
+                selectedCourses.delete(courseCode);
+                filterAndDisplayCourses();
+                updateSelectedGrid();
+            };
+
             document.getElementById('instancesModal').addEventListener('click', function (e) {
                 if (e.target === this) this.style.display = 'none';
             });
+
             document.getElementById('scheduleModal').addEventListener('click', function (e) {
                 if (e.target === this) this.style.display = 'none';
             });
 
-            document.getElementById('confirmBtn').addEventListener('click', function () {
+            document.getElementById('confirmBtn').addEventListener('click', async function () {
+                const confirmBtn = this;
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Registering...';
+
+                let successCount = 0;
+                let failCount = 0;
+
+                for (let [courseCode, data] of selectedCourses) {
+                    const response = await apiRequest('/enrollment', 'POST', { courseInstanceId: data.instance });
+
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                }
+
                 const totalCredits = Array.from(selectedCourses.values()).reduce((sum, c) => sum + c.credits, 0);
-                alert(`Successfully registered for ${selectedCourses.size} courses (${totalCredits} credits)!`);
+                alert(`Successfully registered for ${successCount} courses (${totalCredits} credits)!`);
                 console.log('Selected courses:', Array.from(selectedCourses.entries()));
+
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Confirm Registration';
             });
 
-            loadCourses();
+            if (await loadAcademicYear()) {
+                await loadAllCourses();
+            }
         }
-    },  
+    },
 
     grades: {
         render: () => `

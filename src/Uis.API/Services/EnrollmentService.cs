@@ -70,18 +70,18 @@ public class EnrollmentService : IEnrollmentService
             $"Retrieved {dtos.Count} enrollments"
         );
     }
-    public async Task<ResultService<EnrollmentResponse>> EnrollStudentAsync(EnrollStudentRequest request)
+    public async Task<ResultService<EnrollmentResponse>> EnrollStudentAsync(int studentId, EnrollStudentRequest request)
     {
         _logger.LogInformation("Enrolling student {StudentId} in course instance {CourseInstanceId}",
-            request?.StudentId, request?.CourseInstanceId);
+           studentId, request?.CourseInstanceId);
 
         if (request == null)
             return ResultService<EnrollmentResponse>.Fail("Enrollment data required");
 
-        var student = await _unitOfWork.Users.GetByIdAsync(request.StudentId);
+        var student = await _unitOfWork.Users.GetByIdAsync(studentId);
         if (student == null)
         {
-            _logger.LogWarning("Student {StudentId} not found", request.StudentId);
+            _logger.LogWarning("Student {StudentId} not found", studentId);
             return ResultService<EnrollmentResponse>.Fail("Student not found");
         }
 
@@ -93,12 +93,12 @@ public class EnrollmentService : IEnrollmentService
         }
 
         var isEnrolled = await _unitOfWork.Enrollments.IsStudentEnrolledAsync(
-            request.StudentId,
+            studentId,
             request.CourseInstanceId);
         if (isEnrolled)
         {
             _logger.LogWarning("Student {StudentId} already enrolled in course {CourseInstanceId}",
-                request.StudentId, request.CourseInstanceId);
+                studentId, request.CourseInstanceId);
             return ResultService<EnrollmentResponse>.Fail("Already enrolled in this course", ResultErrorCode.Conflict);
         }
 
@@ -116,7 +116,7 @@ public class EnrollmentService : IEnrollmentService
             {
                 var enrollment = new Enrollment
                 {
-                    StudentId = request.StudentId,
+                    StudentId = studentId,
                     CourseInstanceId = request.CourseInstanceId,
                     AcademicYearId = courseInstance.AcademicYearId,
                     Status = EnrollmentStatus.Active,
@@ -133,7 +133,7 @@ public class EnrollmentService : IEnrollmentService
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation("Student {StudentId} enrolled in course {CourseInstanceId}",
-                    request.StudentId, request.CourseInstanceId);
+                    studentId, request.CourseInstanceId);
 
                 var dto = new EnrollmentResponse
                 {
@@ -160,28 +160,28 @@ public class EnrollmentService : IEnrollmentService
             return ResultService<EnrollmentResponse>.Fail("Enrollment failed. Please try again.");
         }
     }
-    public async Task<ResultService> DropCourseAsync(DropCourseRequest request)
+    public async Task<ResultService> DropCourseAsync(int studentId, DropCourseRequest request)
     {
         _logger.LogInformation("Dropping course for student {StudentId} from course {CourseInstanceId}",
-            request?.StudentId, request?.CourseInstanceId);
+            studentId, request?.CourseInstanceId);
 
         if (request == null)
             return ResultService.Fail("Drop request required");
 
         var enrollment = await _unitOfWork.Enrollments.GetEnrollmentAsync(
-            request.StudentId,
+            studentId,
             request.CourseInstanceId);
 
         if (enrollment == null)
         {
             _logger.LogWarning("Enrollment not found for student {StudentId} in course {CourseInstanceId}",
-                request.StudentId, request.CourseInstanceId);
+                studentId, request.CourseInstanceId);
             return ResultService.NotFound("Not enrolled in this course");
         }
 
         if (enrollment.Status == EnrollmentStatus.Dropped)
         {
-            _logger.LogWarning("Already dropped for student {StudentId}", request.StudentId);
+            _logger.LogWarning("Already dropped for student {StudentId}", studentId);
             return ResultService.Fail("Already dropped");
         }
 
@@ -206,7 +206,7 @@ public class EnrollmentService : IEnrollmentService
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                _logger.LogInformation("Course dropped for student {StudentId}", request.StudentId);
+                _logger.LogInformation("Course dropped for student {StudentId}", studentId);
                 return ResultService.Ok("Course dropped successfully");
             }
             catch (Exception ex)

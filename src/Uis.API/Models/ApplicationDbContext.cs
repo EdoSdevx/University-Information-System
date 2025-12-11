@@ -646,9 +646,9 @@ public class ApplicationDbContext : DbContext
             .HasColumnType("datetime2")
             .HasColumnName("UpdatedAt");
 
-        entity.HasIndex(a => new { a.EnrollmentId, a.Week })
+        entity.HasIndex(a => new { a.EnrollmentId, a.Week, a.Day })
             .IsUnique()
-            .HasDatabaseName("IX_Attendance_Enrollment_Week_Unique");
+            .HasDatabaseName("IX_Attendance_Enrollment_Week_Day_Unique");
 
         entity.HasIndex(a => a.Week)
             .HasDatabaseName("IX_Attendance_Week");

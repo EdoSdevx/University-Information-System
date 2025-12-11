@@ -628,72 +628,82 @@ export const TeacherPages = {
 
     attendance: {
         render: () => `
-  <div class="teacher-breadcrumb">Home / Attendance</div>
-  <div class="teacher-section-header">Mark Attendance</div>
-  
-  <div id="attendanceToast" class="teacher-attendance-toast"></div>
-  
-  <div class="teacher-attendance-container">
-      <div class="teacher-attendance-selector">
-          <div class="teacher-attendance-selector-group">
-              <label>Select Class:</label>
-              <select id="classSelect" class="teacher-attendance-class-select">
-                  <option value="">Loading classes...</option>
-              </select>
-          </div>
-      </div>
+<div class="teacher-breadcrumb">Home / Attendance</div>
+<div class="teacher-section-header">Mark Attendance</div>
 
-      <div class="teacher-attendance-info">
-          <p id="classInfo">Select a class to mark attendance</p>
-      </div>
+<div id="attendanceToast" class="teacher-attendance-toast"></div>
 
-      <div class="teacher-attendance-weeks">
-          <div class="teacher-attendance-weeks-header">
-              <h4>Select Week</h4>
-          </div>
-          <div class="teacher-attendance-weeks-grid" id="weeksGrid"></div>
-      </div>
+<div class="teacher-attendance-container">
+    <div class="teacher-attendance-selector">
+        <div class="teacher-attendance-selector-group">
+            <label>Select Class:</label>
+            <select id="classSelect" class="teacher-attendance-class-select">
+                <option value="">Loading classes...</option>
+            </select>
+        </div>
+    </div>
 
-      <div class="teacher-attendance-list">
-          <div class="teacher-attendance-list-header">
-              <label class="teacher-attendance-select-all">
-                  <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll()">
-                  <span>Select All Students</span>
-              </label>
-          </div>
-          <table class="teacher-attendance-table">
-              <thead>
-                  <tr>
-                      <th class="teacher-attendance-col-select"></th>
-                      <th class="teacher-attendance-col-name">Student Name</th>
-                      <th class="teacher-attendance-col-id">Student ID</th>
-                      <th class="teacher-attendance-col-status">Mark Status</th>
-                  </tr>
-              </thead>
-              <tbody id="attendanceTable"></tbody>
-          </table>
-      </div>
+    <div class="teacher-attendance-info">
+        <p id="classInfo">Select a class to mark attendance</p>
+    </div>
 
-      <div class="teacher-attendance-actions">
-          <button class="teacher-attendance-btn-mark teacher-attendance-btn-present" onclick="window.markSelected('Present')">Mark Selected as Present</button>
-          <button class="teacher-attendance-btn-mark teacher-attendance-btn-absent" onclick="window.markSelected('Absent')">Mark Selected as Absent</button>
-      </div>
+    <div class="teacher-attendance-weeks">
+        <div class="teacher-attendance-weeks-header">
+            <h4>Select Week</h4>
+        </div>
+        <div class="teacher-attendance-weeks-grid" id="weeksGrid"></div>
+    </div>
 
-      <button class="teacher-attendance-save-btn" id="saveBtn">Save Attendance</button>
-  </div>
-  `,
+    <div class="teacher-attendance-days" id="daysContainer" style="display: none; margin-bottom: 20px;">
+        <div class="teacher-attendance-weeks-header">
+            <h4>Select Day</h4>
+        </div>
+        <div id="daysGrid"></div>
+    </div>
+
+    <div class="teacher-attendance-list">
+        <div class="teacher-attendance-list-header">
+            <label class="teacher-attendance-select-all">
+                <input type="checkbox" id="selectAllCheckbox" onchange="window.toggleSelectAll()">
+                <span>Select All Students</span>
+            </label>
+        </div>
+        <table class="teacher-attendance-table">
+            <thead>
+                <tr>
+                    <th class="teacher-attendance-col-select"></th>
+                    <th class="teacher-attendance-col-name">Student Name</th>
+                    <th class="teacher-attendance-col-id">Student ID</th>
+                    <th class="teacher-attendance-col-status">Mark Status</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTable"></tbody>
+        </table>
+    </div>
+
+    <div class="teacher-attendance-actions">
+        <button class="teacher-attendance-btn-mark teacher-attendance-btn-present" onclick="window.markSelected('Present')">Mark Selected as Present</button>
+        <button class="teacher-attendance-btn-mark teacher-attendance-btn-absent" onclick="window.markSelected('Absent')">Mark Selected as Absent</button>
+    </div>
+
+    <button class="teacher-attendance-save-btn" id="saveBtn">Save Attendance</button>
+</div>
+`,
         afterRender: async () => {
             const classSelect = document.getElementById('classSelect');
             const classInfo = document.getElementById('classInfo');
             const attendanceTable = document.getElementById('attendanceTable');
             const saveBtn = document.getElementById('saveBtn');
             const weeksGrid = document.getElementById('weeksGrid');
+            const daysContainer = document.getElementById('daysContainer');
+            const daysGrid = document.getElementById('daysGrid').parentElement;
 
             let courses = [];
             let loadedAttendance = {};
             let currentCourseId = null;
             let currentCourseData = null;
             let selectedWeek = 1;
+            let selectedDay = null;
             const selectedStudents = new Set();
             const attendanceData = {};
 
@@ -705,6 +715,8 @@ export const TeacherPages = {
                     toast.classList.remove('teacher-attendance-toast-show');
                 }, 4000);
             };
+
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
             const loadStudents = async (courseInstanceId) => {
                 try {
@@ -725,6 +737,8 @@ export const TeacherPages = {
 
                     currentCourseData = {
                         courseInstanceId,
+                        day1: course.day1,
+                        day2: course.day2,
                         students: enrollments.map(e => ({
                             enrollmentId: e.enrollmentId,
                             studentId: e.studentId,
@@ -732,21 +746,9 @@ export const TeacherPages = {
                         }))
                     };
 
-                    attendanceTable.innerHTML = currentCourseData.students.map(student => `
-                  <tr class="teacher-attendance-row">
-                      <td class="teacher-attendance-col-select">
-                          <input type="checkbox" class="teacher-attendance-checkbox" value="${student.enrollmentId}" onchange="window.updateSelectedStudents()">
-                      </td>
-                      <td class="teacher-attendance-col-name">${student.studentName}</td>
-                      <td class="teacher-attendance-col-id">${student.studentId}</td>
-                      <td class="teacher-attendance-col-status">
-                          <span class="teacher-attendance-status-display" id="status-${student.enrollmentId}">-</span>
-                      </td>
-                  </tr>
-              `).join('');
-
-                    selectedStudents.clear();
-                    document.getElementById('selectAllCheckbox').checked = false;
+                    loadDays();
+                    selectedDay = course.day1;
+                    loadStudentTable();
 
                     await loadWeekAttendance(selectedWeek);
                 } catch (error) {
@@ -755,8 +757,47 @@ export const TeacherPages = {
                 }
             };
 
+            const loadDays = () => {
+                if (!currentCourseData) return;
+
+                let html = `
+                <button class="teacher-attendance-week-btn teacher-attendance-week-btn-active" data-day="${currentCourseData.day1}" onclick="window.selectDay(${currentCourseData.day1})">
+                    ${daysOfWeek[currentCourseData.day1]}
+                </button>
+            `;
+
+                if (currentCourseData.day2 !== null && currentCourseData.day2 !== undefined) {
+                    html += `
+                    <button class="teacher-attendance-week-btn" data-day="${currentCourseData.day2}" onclick="window.selectDay(${currentCourseData.day2})">
+                        ${daysOfWeek[currentCourseData.day2]}
+                    </button>
+                `;
+                }
+
+                document.getElementById('daysGrid').innerHTML = html;
+                daysContainer.style.display = 'block';
+            };
+
+            const loadStudentTable = () => {
+                attendanceTable.innerHTML = currentCourseData.students.map(student => `
+                <tr class="teacher-attendance-row">
+                    <td class="teacher-attendance-col-select">
+                        <input type="checkbox" class="teacher-attendance-checkbox" value="${student.enrollmentId}" onchange="window.updateSelectedStudents()">
+                    </td>
+                    <td class="teacher-attendance-col-name">${student.studentName}</td>
+                    <td class="teacher-attendance-col-id">${student.studentId}</td>
+                    <td class="teacher-attendance-col-status">
+                        <span class="teacher-attendance-status-display" id="status-${student.enrollmentId}">-</span>
+                    </td>
+                </tr>
+            `).join('');
+
+                selectedStudents.clear();
+                document.getElementById('selectAllCheckbox').checked = false;
+            };
+
             const loadWeekAttendance = async (week) => {
-                if (!currentCourseId || !currentCourseData) return;
+                if (!currentCourseId || !currentCourseData || !selectedDay) return;
 
                 try {
                     const response = await apiRequest(
@@ -766,11 +807,13 @@ export const TeacherPages = {
                     if (response.ok && response.data && Array.isArray(response.data)) {
                         const attendanceMap = {};
                         response.data.forEach(record => {
-                            attendanceMap[record.enrollmentId] = record.status;
-                            loadedAttendance[`${record.enrollmentId}-${week}`] = {
-                                id: record.id,
-                                status: record.status
-                            };
+                            if (record.day === selectedDay) {
+                                attendanceMap[record.enrollmentId] = record.status;
+                                loadedAttendance[`${record.enrollmentId}-${week}-${selectedDay}`] = {
+                                    id: record.id,
+                                    status: record.status
+                                };
+                            }
                         });
 
                         currentCourseData.students.forEach(student => {
@@ -785,7 +828,7 @@ export const TeacherPages = {
                                     if (!attendanceData[student.enrollmentId]) {
                                         attendanceData[student.enrollmentId] = {};
                                     }
-                                    attendanceData[student.enrollmentId][week] = status;
+                                    attendanceData[student.enrollmentId][`${week}-${selectedDay}`] = status;
                                 } else {
                                     statusDisplay.textContent = '-';
                                     statusDisplay.className = 'teacher-attendance-status-display';
@@ -802,21 +845,34 @@ export const TeacherPages = {
                 let html = '';
                 for (let i = 1; i <= 16; i++) {
                     html += `
-                  <button class="teacher-attendance-week-btn ${i === 1 ? 'teacher-attendance-week-btn-active' : ''}" onclick="window.selectWeek(${i})">
-                      Week ${i}
-                  </button>
-              `;
+                    <button class="teacher-attendance-week-btn ${i === 1 ? 'teacher-attendance-week-btn-active' : ''}" onclick="window.selectWeek(${i})">
+                        Week ${i}
+                    </button>
+                `;
                 }
                 weeksGrid.innerHTML = html;
             };
 
             window.selectWeek = function (week) {
                 selectedWeek = week;
-                document.querySelectorAll('.teacher-attendance-week-btn').forEach((btn) => {
+                document.querySelectorAll('#weeksGrid .teacher-attendance-week-btn').forEach((btn) => {
                     btn.classList.remove('teacher-attendance-week-btn-active');
                 });
-                document.querySelectorAll('.teacher-attendance-week-btn')[week - 1].classList.add('teacher-attendance-week-btn-active');
+                document.querySelectorAll('#weeksGrid .teacher-attendance-week-btn')[week - 1].classList.add('teacher-attendance-week-btn-active');
                 loadWeekAttendance(week);
+            };
+
+            window.selectDay = function (day) {
+                selectedDay = day;
+                document.querySelectorAll('#daysGrid .teacher-attendance-week-btn').forEach((btn) => {
+                    btn.classList.remove('teacher-attendance-week-btn-active');
+                });
+                document.querySelectorAll('#daysGrid .teacher-attendance-week-btn').forEach((btn) => {
+                    if (parseInt(btn.getAttribute('data-day')) === day) {
+                        btn.classList.add('teacher-attendance-week-btn-active');
+                    }
+                });
+                loadWeekAttendance(selectedWeek);
             };
 
             window.toggleSelectAll = function () {
@@ -861,7 +917,7 @@ export const TeacherPages = {
                     if (!attendanceData[enrollmentId]) {
                         attendanceData[enrollmentId] = {};
                     }
-                    attendanceData[enrollmentId][selectedWeek] = status;
+                    attendanceData[enrollmentId][`${selectedWeek}-${selectedDay}`] = status;
                 });
 
                 showToast(`✓ Marked ${selectedStudents.size} students as ${statusText} for Week ${selectedWeek}`);
@@ -892,47 +948,60 @@ export const TeacherPages = {
                 let failCount = 0;
 
                 try {
-                    for (const [enrollmentId, weeks] of Object.entries(attendanceData)) {
-                        for (const [week, status] of Object.entries(weeks)) {
-                            try {
-                                const intEnrollmentId = parseInt(enrollmentId);
-                                const intWeek = parseInt(week);
-                                const key = `${intEnrollmentId}-${intWeek}`;
+                    const weekDayKey = `${selectedWeek}-${selectedDay}`;
 
-                                if (loadedAttendance[key]) {
-                                    const attendanceId = loadedAttendance[key].id;
-                                    const response = await apiRequest(
-                                        `/attendance/${attendanceId}`,
-                                        'PUT',
-                                        { status: status }
-                                    );
+                    for (const [enrollmentId, weekDays] of Object.entries(attendanceData)) {
+                        const status = weekDays[weekDayKey];
 
-                                    if (response.ok) {
-                                        successCount++;
-                                    } else {
-                                        failCount++;
-                                    }
-                                } else {
-                                    const response = await apiRequest(
-                                        '/attendance/mark',
-                                        'POST',
-                                        {
-                                            enrollmentId: intEnrollmentId,
-                                            week: intWeek,
-                                            status: status
-                                        }
-                                    );
+                        // Skip if no data for this week-day combination
+                        if (!status) continue;
 
-                                    if (response.ok) {
-                                        successCount++;
-                                    } else {
-                                        failCount++;
-                                    }
-                                }
-                            } catch (error) {
-                                failCount++;
-                                console.error('Error saving attendance:', error);
+                        try {
+                            const intEnrollmentId = parseInt(enrollmentId);
+                            const key = `${intEnrollmentId}-${selectedWeek}-${selectedDay}`;
+
+                            // Check if value actually changed from loaded state
+                            const loadedRecord = loadedAttendance[key];
+                            if (loadedRecord && loadedRecord.status === status) {
+                                continue;  // Skip unchanged records
                             }
+
+                            if (loadedRecord) {
+                                // Update existing record
+                                const attendanceId = loadedRecord.id;
+                                const response = await apiRequest(
+                                    `/attendance/${attendanceId}`,
+                                    'PUT',
+                                    { status: status }
+                                );
+
+                                if (response.ok) {
+                                    successCount++;
+                                } else {
+                                    failCount++;
+                                }
+                            } else {
+                                // Create new record
+                                const response = await apiRequest(
+                                    '/attendance/mark',
+                                    'POST',
+                                    {
+                                        enrollmentId: intEnrollmentId,
+                                        week: selectedWeek,
+                                        day: selectedDay,
+                                        status: status
+                                    }
+                                );
+
+                                if (response.ok) {
+                                    successCount++;
+                                } else {
+                                    failCount++;
+                                }
+                            }
+                        } catch (error) {
+                            failCount++;
+                            console.error('Error saving attendance:', error);
                         }
                     }
 
@@ -942,12 +1011,14 @@ export const TeacherPages = {
                         cb.checked = false;
                     });
                     document.getElementById('selectAllCheckbox').checked = false;
-                    document.querySelectorAll('.teacher-attendance-status-display').forEach(el => {
-                        el.textContent = '-';
-                        el.className = 'teacher-attendance-status-display';
-                    });
 
-                    Object.keys(attendanceData).forEach(key => delete attendanceData[key]);
+                    // Clear data only for current week-day
+                    for (const enrollmentId of Object.keys(attendanceData)) {
+                        delete attendanceData[enrollmentId][weekDayKey];
+                        if (Object.keys(attendanceData[enrollmentId]).length === 0) {
+                            delete attendanceData[enrollmentId];
+                        }
+                    }
 
                     await loadWeekAttendance(selectedWeek);
                 } catch (error) {
@@ -970,10 +1041,10 @@ export const TeacherPages = {
 
                 courses = response.data;
                 classSelect.innerHTML = courses.map(course => `
-              <option value="${course.courseInstanceId}">
-                  ${course.courseCode} - ${course.courseName} (${course.section})
-              </option>
-          `).join('');
+                <option value="${course.courseInstanceId}">
+                    ${course.courseCode} - ${course.courseName} (${course.section})
+                </option>
+            `).join('');
 
                 if (courses.length > 0) {
                     classSelect.value = courses[0].courseInstanceId;
@@ -990,302 +1061,140 @@ export const TeacherPages = {
   
     roster: {
         render: () => `
-        <div class="teacher-breadcrumb">Home / Class Roster</div>
-        <div class="teacher-section-header">Student Roster</div>
-        
-        <div class="teacher-roster-container">
-            <div class="teacher-roster-selector">
-                <label>Select Class:</label>
-                <select id="classSelect" class="teacher-roster-class-select">
-                    <option value="CS101-A">CS101-A - Introduction to Programming (32 students)</option>
-                    <option value="CS101-B">CS101-B - Introduction to Programming (35 students)</option>
-                    <option value="MATH101-A">MATH101-A - Calculus I (40 students)</option>
-                    <option value="ENG101-A">ENG101-A - English I (25 students)</option>
-                </select>
-                <input type="text" id="searchInput" class="teacher-roster-search" placeholder="Search by name or ID...">
-            </div>
-
-            <div class="teacher-roster-info">
-                <p id="classInfo">CS101-A - Introduction to Programming</p>
-                <span id="rosterCount">32 students enrolled</span>
-            </div>
-
-            <div class="teacher-roster-table-wrapper">
-                <table class="teacher-roster-table">
-                    <thead>
-                        <tr>
-                            <th class="teacher-roster-col-id">Student ID</th>
-                            <th class="teacher-roster-col-name">Student Name</th>
-                            <th class="teacher-roster-col-email">Email</th>
-                            <th class="teacher-roster-col-status">Status</th>
-                            <th class="teacher-roster-col-enrolled">Enrollment Date</th>
-                            <th class="teacher-roster-col-action">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rosterTable"></tbody>
-                </table>
-            </div>
+    <div class="teacher-breadcrumb">Home / Class Roster</div>
+    <div class="teacher-section-header">Student Roster</div>
+    
+    <div class="teacher-roster-container">
+        <div class="teacher-roster-selector">
+            <label>Select Class:</label>
+            <select id="classSelect" class="teacher-roster-class-select">
+                <option value="">Loading classes...</option>
+            </select>
+            <input type="text" id="searchInput" class="teacher-roster-search" placeholder="Search by name or ID...">
         </div>
+
+        <div class="teacher-roster-info">
+            <p id="classInfo">Select a class to view roster</p>
+            <span id="rosterCount">0 students enrolled</span>
+        </div>
+
+        <div class="teacher-roster-table-wrapper">
+            <table class="teacher-roster-table">
+                <thead>
+                    <tr>
+                        <th class="teacher-roster-col-id">Student ID</th>
+                        <th class="teacher-roster-col-name">Student Name</th>
+                        <th class="teacher-roster-col-email">Email</th>
+                        <th class="teacher-roster-col-enrolled">Enrollment Date</th>
+                        <th class="teacher-roster-col-action">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="rosterTable"></tbody>
+            </table>
+        </div>
+    </div>
     `,
-        afterRender: () => {
-            const classesData = {
-                'CS101-A': {
-                    name: 'CS101-A - Introduction to Programming',
-                    count: 32,
-                    students: [
-                        { id: 'STU001', name: 'Ahmed Hassan', email: 'ahmed.hassan@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 92 },
-                        { id: 'STU002', name: 'Fatima Khan', email: 'fatima.khan@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 95 },
-                        { id: 'STU003', name: 'Ali Yilmaz', email: 'ali.yilmaz@university.edu', status: 'Active', enrolled: '2024-09-16', attendance: 85 },
-                        { id: 'STU004', name: 'Zeynep Demir', email: 'zeynep.demir@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 98 },
-                        { id: 'STU005', name: 'Mustafa Ozer', email: 'mustafa.ozer@university.edu', status: 'Inactive', enrolled: '2024-09-20', attendance: 60 }
-                    ]
-                },
-                'CS101-B': {
-                    name: 'CS101-B - Introduction to Programming',
-                    count: 35,
-                    students: [
-                        { id: 'STU006', name: 'Layla Ahmed', email: 'layla.ahmed@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 94 },
-                        { id: 'STU007', name: 'Omar Hassan', email: 'omar.hassan@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 88 },
-                        { id: 'STU008', name: 'Noor Ibrahim', email: 'noor.ibrahim@university.edu', status: 'Active', enrolled: '2024-09-17', attendance: 91 },
-                        { id: 'STU009', name: 'Hana Malik', email: 'hana.malik@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 96 },
-                        { id: 'STU010', name: 'Karim Saleh', email: 'karim.saleh@university.edu', status: 'Active', enrolled: '2024-09-18', attendance: 75 }
-                    ]
-                },
-                'MATH101-A': {
-                    name: 'MATH101-A - Calculus I',
-                    count: 40,
-                    students: [
-                        { id: 'STU011', name: 'Aisha Mohammed', email: 'aisha.mohammed@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 93 },
-                        { id: 'STU012', name: 'Ibrahim Rahman', email: 'ibrahim.rahman@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 89 },
-                        { id: 'STU013', name: 'Sara Ahmed', email: 'sara.ahmed@university.edu', status: 'Active', enrolled: '2024-09-16', attendance: 97 },
-                        { id: 'STU014', name: 'Hassan Ali', email: 'hassan.ali@university.edu', status: 'Inactive', enrolled: '2024-09-19', attendance: 55 },
-                        { id: 'STU015', name: 'Maryam Hassan', email: 'maryam.hassan@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 90 }
-                    ]
-                },
-                'ENG101-A': {
-                    name: 'ENG101-A - English I',
-                    count: 25,
-                    students: [
-                        { id: 'STU016', name: 'Leila Farrokhi', email: 'leila.farrokhi@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 95 },
-                        { id: 'STU017', name: 'Reza Pakzad', email: 'reza.pakzad@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 92 },
-                        { id: 'STU018', name: 'Nastaran Salaem', email: 'nastaran.salaem@university.edu', status: 'Active', enrolled: '2024-09-17', attendance: 88 },
-                        { id: 'STU019', name: 'Dariush Karim', email: 'dariush.karim@university.edu', status: 'Active', enrolled: '2024-09-15', attendance: 86 },
-                        { id: 'STU020', name: 'Parisa Ahmadi', email: 'parisa.ahmadi@university.edu', status: 'Active', enrolled: '2024-09-18', attendance: 94 }
-                    ]
-                }
-            };
+        afterRender: async () => {
+            const classSelect = document.getElementById('classSelect');
+            const classInfo = document.getElementById('classInfo');
+            const rosterCount = document.getElementById('rosterCount');
+            const rosterTable = document.getElementById('rosterTable');
+            const searchInput = document.getElementById('searchInput');
 
-            let currentClassId = 'CS101-A';
+            let courses = [];
+            let currentCourseId = null;
+            let allStudents = [];
 
-            function loadRoster(classId) {
-                const classData = classesData[classId];
-                currentClassId = classId;
-
-                document.getElementById('classInfo').textContent = classData.name;
-                document.getElementById('rosterCount').textContent = `${classData.count} students enrolled`;
-
-                renderRoster(classData.students);
-            }
-
-            function renderRoster(students) {
-                const table = document.getElementById('rosterTable');
-                table.innerHTML = students.map(student => `
+            const renderRoster = (students) => {
+                rosterTable.innerHTML = students.map(student => `
                 <tr class="teacher-roster-row">
-                    <td class="teacher-roster-col-id">${student.id}</td>
-                    <td class="teacher-roster-col-name">${student.name}</td>
-                    <td class="teacher-roster-col-email">${student.email}</td>
-                    <td class="teacher-roster-col-status">
-                        <span class="teacher-roster-status ${student.status === 'Active' ? 'teacher-roster-status-active' : 'teacher-roster-status-inactive'}">
-                            ${student.status}
-                        </span>
-                    </td>
-                    <td class="teacher-roster-col-enrolled">${student.enrolled}</td>
+                    <td class="teacher-roster-col-id">${student.studentId}</td>
+                    <td class="teacher-roster-col-name">${student.studentName}</td>
+                    <td class="teacher-roster-col-email">${student.studentEmail || 'N/A'}</td>
+                    <td class="teacher-roster-col-enrolled">${new Date(student.enrolledAt).toLocaleDateString()}</td>
                     <td class="teacher-roster-col-action">
                         <div class="teacher-roster-dropdown">
                             <button class="teacher-roster-dropdown-btn">⋮</button>
                             <div class="teacher-roster-dropdown-menu">
-                                <button class="teacher-roster-dropdown-item teacher-roster-dropdown-message" onclick="window.sendMessage('${student.id}', '${student.name}')">
+                                <button class="teacher-roster-dropdown-item teacher-roster-dropdown-message" onclick="window.sendMessage('${student.enrollmentId}', '${student.studentName}')">
                                     <span>✉</span> Message
-                                </button>
-                                <button class="teacher-roster-dropdown-item teacher-roster-dropdown-grade" onclick="window.changeGrade('${student.id}', '${student.name}')">
-                                    <span>📝</span> Change Grade
-                                </button>
-                                <button class="teacher-roster-dropdown-item teacher-roster-dropdown-attendance" onclick="window.changeAttendance('${student.id}', '${student.name}', '${student.attendance}')">
-                                    <span>📋</span> Change Attendance
                                 </button>
                             </div>
                         </div>
                     </td>
                 </tr>
             `).join('');
-            }
-
-            window.sendMessage = function (studentId, studentName) {
-                alert(`Send message to ${studentName} (${studentId})`);
             };
 
-            window.changeGrade = function (studentId, studentName) {
-                const modal = document.getElementById('changeGradeModal');
-                if (!modal) {
-                    // Create modal if it doesn't exist
-                    const body = document.body;
-                    const modalHTML = `
-            <div id="changeGradeModal" class="teacher-change-grade-modal">
-                <div class="teacher-change-grade-modal-content">
-                    <div class="teacher-change-grade-modal-header">
-                        <h3>Change Grade - <span id="modalStudentName"></span></h3>
-                        <button class="teacher-change-grade-modal-close" onclick="document.getElementById('changeGradeModal').style.display='none'">×</button>
-                    </div>
-                    <div class="teacher-change-grade-modal-body">
-                        <div class="teacher-change-grade-form">
-                            <div class="teacher-change-grade-form-group">
-                                <label>Exam 1:</label>
-                                <input type="number" id="gradeExam1" min="0" max="100" placeholder="0">
-                                <span class="teacher-change-grade-max">/100</span>
-                            </div>
-                            <div class="teacher-change-grade-form-group">
-                                <label>Exam 2:</label>
-                                <input type="number" id="gradeExam2" min="0" max="100" placeholder="0">
-                                <span class="teacher-change-grade-max">/100</span>
-                            </div>
-                            <div class="teacher-change-grade-form-group">
-                                <label>Final:</label>
-                                <input type="number" id="gradeFinal" min="0" max="100" placeholder="0">
-                                <span class="teacher-change-grade-max">/100</span>
-                            </div>
-                            <div class="teacher-change-grade-form-group">
-                                <label>Project:</label>
-                                <input type="number" id="gradeProject" min="0" max="100" placeholder="Leave empty if no project">
-                                <span class="teacher-change-grade-max"></span>
-                            </div>
-                        </div>
+            const loadRoster = async (courseInstanceId) => {
+                try {
+                    const response = await apiRequest(
+                        `/enrollment/course/${courseInstanceId}?pageIndex=1&pageSize=1000`
+                    );
 
-                        <div class="teacher-change-grade-preview">
-                            <div class="teacher-change-grade-preview-item">
-                                <span>Current Average:</span>
-                                <span class="teacher-change-grade-preview-value" id="gradeAverage">-</span>
-                            </div>
-                            <div class="teacher-change-grade-preview-item">
-                                <span>Estimated Grade:</span>
-                                <span class="teacher-change-grade-preview-letter" id="gradeLetter">-</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="teacher-change-grade-modal-footer">
-                        <button class="teacher-change-grade-btn-cancel" onclick="document.getElementById('changeGradeModal').style.display='none'">Cancel</button>
-                        <button class="teacher-change-grade-btn-save" onclick="window.saveGrade()">Save Grade</button>
-                    </div>
-                </div>
-            </div>
-        `;
-                    body.insertAdjacentHTML('beforeend', modalHTML);
+                    if (!response.ok || !response.data) {
+                        rosterTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: red;">Failed to load roster</td></tr>';
+                        return;
+                    }
 
-                    // Add event listeners for real-time calculation
-                    document.getElementById('gradeExam1').addEventListener('change', window.updateGradePreview);
-                    document.getElementById('gradeExam2').addEventListener('change', window.updateGradePreview);
-                    document.getElementById('gradeFinal').addEventListener('change', window.updateGradePreview);
-                    document.getElementById('gradeProject').addEventListener('change', window.updateGradePreview);
+                    currentCourseId = courseInstanceId;
+                    allStudents = response.data;
 
-                    // Close modal on background click
-                    document.getElementById('changeGradeModal').addEventListener('click', function (e) {
-                        if (e.target === this) this.style.display = 'none';
-                    });
-                }
+                    const course = courses.find(c => c.courseInstanceId === courseInstanceId);
+                    classInfo.textContent = `${course.courseCode}: ${course.courseName} (${course.section})`;
+                    rosterCount.textContent = `${allStudents.length} students enrolled`;
 
-                document.getElementById('modalStudentName').textContent = studentName;
-                document.getElementById('gradeExam1').value = '';
-                document.getElementById('gradeExam2').value = '';
-                document.getElementById('gradeFinal').value = '';
-                document.getElementById('gradeProject').value = '';
-                document.getElementById('gradeAverage').textContent = '-';
-                document.getElementById('gradeLetter').textContent = '-';
-
-                document.getElementById('changeGradeModal').style.display = 'flex';
-            };
-
-            window.updateGradePreview = function () {
-                const exam1 = parseFloat(document.getElementById('gradeExam1').value) || 0;
-                const exam2 = parseFloat(document.getElementById('gradeExam2').value) || 0;
-                const final = parseFloat(document.getElementById('gradeFinal').value) || 0;
-                const project = document.getElementById('gradeProject').value ? parseFloat(document.getElementById('gradeProject').value) : null;
-
-                let average = exam1 * 0.2 + exam2 * 0.2 + final * 0.4;
-                if (project !== null) {
-                    average += project * 0.2;
-                }
-
-                let letterGrade = '-';
-                if (average >= 90) letterGrade = 'A';
-                else if (average >= 85) letterGrade = 'A-';
-                else if (average >= 80) letterGrade = 'B+';
-                else if (average >= 75) letterGrade = 'B';
-                else if (average >= 70) letterGrade = 'B-';
-                else if (average >= 65) letterGrade = 'C+';
-                else if (average >= 60) letterGrade = 'C';
-                else if (average >= 55) letterGrade = 'C-';
-                else if (average >= 50) letterGrade = 'D';
-                else if (average > 0) letterGrade = 'F';
-
-                function getLetterClass(letter) {
-                    if (letter.startsWith('A')) return 'teacher-change-grade-letter-a';
-                    if (letter.startsWith('B')) return 'teacher-change-grade-letter-b';
-                    if (letter.startsWith('C')) return 'teacher-change-grade-letter-c';
-                    if (letter === 'D') return 'teacher-change-grade-letter-d';
-                    if (letter === 'F') return 'teacher-change-grade-letter-f';
-                    return '';
-                }
-
-                document.getElementById('gradeAverage').textContent = average.toFixed(2);
-                const letterEl = document.getElementById('gradeLetter');
-                letterEl.textContent = letterGrade;
-                letterEl.className = `teacher-change-grade-preview-letter ${getLetterClass(letterGrade)}`;
-            };
-
-            window.saveGrade = function () {
-                const exam1 = document.getElementById('gradeExam1').value;
-                const exam2 = document.getElementById('gradeExam2').value;
-                const final = document.getElementById('gradeFinal').value;
-                const studentName = document.getElementById('modalStudentName').textContent;
-
-                if (!exam1 || !exam2 || !final) {
-                    alert('Please fill in Exam 1, Exam 2, and Final grades');
-                    return;
-                }
-
-                alert(`Grade saved for ${studentName}`);
-                document.getElementById('changeGradeModal').style.display = 'none';
-            };
-
-            window.changeAttendance = function (studentId, studentName, currentAttendance) {
-                const newAttendance = prompt(`Change attendance for ${studentName}\nCurrent: ${currentAttendance}%\nNew attendance (0-100):`, currentAttendance);
-                if (newAttendance !== null) {
-                    alert(`Attendance updated to ${newAttendance}% for ${studentName}`);
+                    renderRoster(allStudents);
+                } catch (error) {
+                    console.error('Failed to load roster:', error);
+                    rosterTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: red;">Failed to load roster</td></tr>';
                 }
             };
 
-            window.changeAttendance = function (studentId, studentName, currentAttendance) {
-                const newAttendance = prompt(`Change attendance for ${studentName}\nCurrent: ${currentAttendance}%\nNew attendance (0-100):`, currentAttendance);
-                if (newAttendance !== null) {
-                    alert(`Attendance updated to ${newAttendance}% for ${studentName}`);
+            classSelect.addEventListener('change', function () {
+                if (this.value) {
+                    loadRoster(parseInt(this.value));
+                    searchInput.value = '';
                 }
-            };
-
-            document.getElementById('classSelect').addEventListener('change', function () {
-                loadRoster(this.value);
-                document.getElementById('searchInput').value = '';
             });
 
-            document.getElementById('searchInput').addEventListener('keyup', function () {
+            searchInput.addEventListener('keyup', function () {
                 const searchTerm = this.value.toLowerCase();
-                const classData = classesData[currentClassId];
-                const filtered = classData.students.filter(student =>
-                    student.name.toLowerCase().includes(searchTerm) ||
-                    student.id.toLowerCase().includes(searchTerm)
+                const filtered = allStudents.filter(student =>
+                    student.studentName.toLowerCase().includes(searchTerm) ||
+                    student.studentId.toString().includes(searchTerm)
                 );
                 renderRoster(filtered);
             });
 
-            loadRoster('CS101-A');
+            window.sendMessage = function (enrollmentId, studentName) {
+                alert(`Send message to ${studentName}`);
+            };
+
+            try {
+                const response = await apiRequest('/courseInstance/my-courses?pageIndex=1&pageSize=100');
+
+                if (!response.ok || !response.data || response.data.length === 0) {
+                    classSelect.innerHTML = '<option value="">No classes assigned</option>';
+                    classInfo.textContent = 'No classes assigned';
+                    return;
+                }
+
+                courses = response.data;
+                classSelect.innerHTML = courses.map(course => `
+                <option value="${course.courseInstanceId}">
+                    ${course.courseCode} - ${course.courseName} (${course.section})
+                </option>
+            `).join('');
+
+                if (courses.length > 0) {
+                    classSelect.value = courses[0].courseInstanceId;
+                    await loadRoster(courses[0].courseInstanceId);
+                }
+            } catch (error) {
+                console.error('Failed to load courses:', error);
+                classSelect.innerHTML = '<option value="">Error loading classes</option>';
+            }
         }
     },
 
@@ -1941,75 +1850,97 @@ export const TeacherPages = {
 
     schedule: {
         render: () => `
-            <div class="teacher-breadcrumb">Home / Schedule</div>
-            <div class="teacher-section-header">My Teaching Schedule</div>
-            <div class="schedule-container">
-                <div class="schedule-day-card teacher-schedule-card">
-                    <div class="schedule-day-header teacher-day-header">Monday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">09:00 - 12:00</div>
-                        <div class="schedule-course">Introduction to Programming</div>
-                        <div class="schedule-meta">32 Students | Lab 101 | CS101-A</div>
-                    </div>
-                </div>
+        <div class="teacher-breadcrumb">Home / Schedule</div>
+        <div class="teacher-section-header">My Teaching Schedule</div>
+        <div class="schedule-container" id="scheduleContainer">
+            <div style="text-align: center; padding: 40px; color: #999;">Loading schedule...</div>
+        </div>
+    `,
+        afterRender: async () => {
+            const scheduleContainer = document.getElementById('scheduleContainer');
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-                <div class="schedule-day-card teacher-schedule-card">
-                    <div class="schedule-day-header teacher-day-header">Tuesday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">14:00 - 17:00</div>
-                        <div class="schedule-course">Calculus II</div>
-                        <div class="schedule-meta">28 Students | Room 205 | MATH201-B</div>
-                    </div>
-                </div>
+            try {
+                const response = await apiRequest('/courseInstance/my-courses?pageIndex=1&pageSize=100');
 
-                <div class="schedule-day-card teacher-schedule-card">
-                    <div class="schedule-day-header teacher-day-header">Wednesday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">10:00 - 13:00</div>
-                        <div class="schedule-course">Academic Writing</div>
-                        <div class="schedule-meta">25 Students | Room 304 | ENG102-C</div>
-                    </div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">15:00 - 17:00</div>
-                        <div class="schedule-course">Data Structures</div>
-                        <div class="schedule-meta">30 Students | Lab 102 | CS201-A</div>
-                    </div>
-                </div>
+                if (!response.ok || !response.data || response.data.length === 0) {
+                    scheduleContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No courses assigned</div>';
+                    return;
+                }
 
-                <div class="schedule-day-card teacher-schedule-card">
-                    <div class="schedule-day-header teacher-day-header">Thursday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">09:00 - 12:00</div>
-                        <div class="schedule-course">Physics I</div>
-                        <div class="schedule-meta">30 Students | Room 401 | PHY101-B</div>
-                    </div>
-                </div>
+                const courses = response.data;
 
-                <div class="schedule-day-card teacher-schedule-card">
-                    <div class="schedule-day-header teacher-day-header">Friday</div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">10:00 - 12:00</div>
-                        <div class="schedule-course">Introduction to Programming</div>
-                        <div class="schedule-meta">32 Students | Lab 101 | CS101-A</div>
-                    </div>
-                    <div class="schedule-class-item">
-                        <div class="schedule-time">13:00 - 16:00</div>
-                        <div class="schedule-course">Calculus II</div>
-                        <div class="schedule-meta">28 Students | Room 205 | MATH201-B</div>
-                    </div>
-                </div>
+                const scheduleByDay = {};
+                daysOfWeek.forEach(day => {
+                    scheduleByDay[day] = [];
+                });
 
-                <div class="schedule-day-card teacher-schedule-card empty">
-                    <div class="schedule-day-header teacher-day-header">Saturday</div>
-                    <div class="schedule-no-classes">No Classes</div>
-                </div>
+                courses.forEach(course => {
+                    const courseData = {
+                        code: course.courseCode,
+                        name: course.courseName,
+                        section: course.section,
+                        location: course.location || 'TBA',
+                        enrollment: course.currentEnrollmentCount || 0,
+                        capacity: course.capacity || 0,
+                        startTime: course.startTime,
+                        endTime: course.endTime
+                    };
 
-                <div class="schedule-day-card teacher-schedule-card empty">
-                    <div class="schedule-day-header teacher-day-header">Sunday</div>
-                    <div class="schedule-no-classes">No Classes</div>
-                </div>
-            </div>
-        `,
-        afterRender: () => { }
+                    if (course.day1) {
+                        const dayName = daysOfWeek[course.day1];
+                        scheduleByDay[dayName].push({
+                            ...courseData,
+                            start: course.startTime,
+                            end: course.endTime
+                        });
+                    }
+
+                    if (course.day2) {
+                        const dayName = daysOfWeek[course.day2];
+                        scheduleByDay[dayName].push({
+                            ...courseData,
+                            start: course.startTime,
+                            end: course.endTime
+                        });
+                    }
+                });
+
+                Object.keys(scheduleByDay).forEach(day => {
+                    scheduleByDay[day].sort((a, b) => {
+                        if (!a.start || !b.start) return 0;
+                        return a.start.localeCompare(b.start);
+                    });
+                });
+
+                const formatTime = (timeString) => {
+                    if (!timeString) return 'TBA';
+                    // timeString is HH:mm format
+                    return timeString.substring(0, 5);
+                };
+
+                let html = '';
+                daysOfWeek.forEach(day => {
+                    const dayCourses = scheduleByDay[day];
+                    html += `
+                    <div class="schedule-day-card teacher-schedule-card ${dayCourses.length === 0 ? 'empty' : ''}">
+                        <div class="schedule-day-header teacher-day-header">${day}</div>
+                        ${dayCourses.length > 0 ? dayCourses.map(course => `
+                            <div class="schedule-class-item">
+                                <div class="schedule-time">${formatTime(course.start)} - ${formatTime(course.end)}</div>
+                                <div class="schedule-course">${course.name}</div>
+                                <div class="schedule-meta">${course.enrollment} Students | ${course.location} | ${course.code}-${course.section}</div>
+                            </div>
+                        `).join('') : '<div class="schedule-no-classes">No Classes</div>'}
+                    </div>
+                `;
+                });
+
+                scheduleContainer.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to load schedule:', error);
+                scheduleContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: red;">Failed to load schedule</div>';
+            }
+        }
     }
 };

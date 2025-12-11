@@ -549,16 +549,20 @@ public static class SeedData
         await context.SaveChangesAsync();
 
         // Attendances
+        // Attendances
         var attendances = new List<Attendance>();
         var random = new Random();
 
         // Create attendance records for each enrollment (weeks 1-12)
         foreach (var enrollment in enrollments)
         {
-            for (int week = 1; week <= 16; week++)
+            var courseInstance = courseInstances.FirstOrDefault(ci => ci.Id == enrollment.CourseInstanceId);
+            if (courseInstance == null) continue;
+
+            for (int week = 1; week <= 12; week++)
             {
-                var statusValue = random.Next(0, 100);
-                var status = statusValue switch
+                // Create record for Day1
+                var day1Status = random.Next(0, 100) switch
                 {
                     >= 90 => "Absent",         // 10% chance Absent
                     _ => "Present"             // 90% chance Present
@@ -568,9 +572,29 @@ public static class SeedData
                 {
                     EnrollmentId = enrollment.Id,
                     Week = week,
-                    Status = status,
+                    Day = courseInstance.Day1,
+                    Status = day1Status,
                     CreatedAt = DateTime.UtcNow
                 });
+
+                // Create record for Day2 if it exists
+                if (courseInstance.Day2.HasValue)
+                {
+                    var day2Status = random.Next(0, 100) switch
+                    {
+                        >= 90 => "Absent",
+                        _ => "Present"
+                    };
+
+                    attendances.Add(new Attendance
+                    {
+                        EnrollmentId = enrollment.Id,
+                        Week = week,
+                        Day = courseInstance.Day2.Value,
+                        Status = day2Status,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
             }
         }
 

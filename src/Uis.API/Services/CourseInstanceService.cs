@@ -159,6 +159,8 @@ public class CourseInstanceService : ICourseInstanceService
             Capacity = ci.Capacity,
             CurrentEnrollmentCount = ci.Enrollments?.Count(e => e.Status == EnrollmentStatus.Active) ?? 0,
             AcademicYear = ci.AcademicYear?.Year ?? null,
+            Day1 = ci.Day1,
+            Day2 = ci.Day2,
             StartTime = ci.StartTime,
             EndTime = ci.EndTime,
             Location = ci.Location

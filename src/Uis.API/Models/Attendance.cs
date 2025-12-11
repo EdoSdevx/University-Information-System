@@ -11,6 +11,7 @@ public class Attendance : BaseEntity
 {
     public int EnrollmentId { get; set; }
     public int Week { get; set; }
+    public DayOfWeek? Day { get; set; }
     public string Status { get; set; } = string.Empty;
 
     public Enrollment? Enrollment { get; set; }

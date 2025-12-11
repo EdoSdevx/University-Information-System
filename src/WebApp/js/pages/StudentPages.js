@@ -129,7 +129,7 @@ export const StudentPages = {
 
             const gpa = StudentDashboardService.calculateGPA(data.grades);
             const enrollmentCount = data.enrollments.length;
-            const creditsEarned = enrollmentCount * 3;
+            const creditsEarned = data.enrollments.reduce((sum, e) => sum + (e.creditHours || 3), 0);
 
             const summaryHTML = `
                 <div class="student-stat-card">
@@ -685,55 +685,43 @@ export const StudentPages = {
 
                 const weeks = {};
                 course.records.forEach(record => {
-                    const date = new Date(record.attendanceDate);
-                    const weekStart = new Date(date);
-                    weekStart.setDate(date.getDate() - date.getDay());
-                    const weekKey = weekStart.toLocaleDateString();
-
-                    if (!weeks[weekKey]) {
-                        weeks[weekKey] = {
-                            start: weekStart,
-                            days: {}
-                        };
+                    const weekNum = record.week;
+                    if (!weeks[weekNum]) {
+                        weeks[weekNum] = [];
                     }
-
-                    const dateStr = record.attendanceDate;
-                    if (!weeks[weekKey].days[dateStr]) {
-                        weeks[weekKey].days[dateStr] = record;
-                    }
+                    weeks[weekNum].push(record);
                 });
 
-                const sorted = Object.values(weeks).sort((a, b) => b.start - a.start);
+                const sortedWeeks = Object.keys(weeks).map(Number).sort((a, b) => a - b);
 
                 const html = `
-                ${sorted.map((week, weekIdx) => {
-                    const daysWithRecords = Object.keys(week.days).sort();
+            ${sortedWeeks.map(weekNum => {
+                    const records = weeks[weekNum];
 
                     return `
-                        <div class="student-attendance-week">
-                            <div class="student-attendance-week-title">
-                                Week ${sorted.length - weekIdx}
-                            </div>
-                            <div class="student-attendance-week-grid">
-                                ${daysWithRecords.map(dateStr => {
-                        const record = week.days[dateStr];
-                        const day = new Date(dateStr);
-                        const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
-                        const dayDate = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    <div class="student-attendance-week">
+                        <div class="student-attendance-week-title">
+                            Week ${weekNum}
+                        </div>
+                        <div class="student-attendance-week-grid">
+                            ${records.map(record => {
+                        const date = new Date(record.createdAt);
+                        const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                        const dayDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
                         return `
-                                        <div class="student-attendance-day-box student-attendance-day-${statusClass(record.status)}">
-                                            <div class="student-attendance-day-name">${dayName}</div>
-                                            <div class="student-attendance-day-date">${dayDate}</div>
-                                            <div class="student-attendance-day-status">${record.status}</div>                                          
-                                        </div>
-                                    `;
+                                    <div class="student-attendance-day-box student-attendance-day-${statusClass(record.status)}">
+                                        <div class="student-attendance-day-name">${dayName}</div>
+                                        <div class="student-attendance-day-date">${dayDate}</div>
+                                        <div class="student-attendance-day-status">${record.status}</div>                                          
+                                    </div>
+                                `;
                     }).join('')}
-                            </div>
                         </div>
-                    `;
+                    </div>
+                `;
                 }).join('')}
-            `;
+        `;
 
                 document.getElementById('weeklyContainer').innerHTML = html;
                 document.getElementById('attendanceModal').style.display = 'flex';

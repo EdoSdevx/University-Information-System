@@ -31,6 +31,7 @@ public class StudentAttendanceResponse
     public int Id { get; set; }
     public int EnrollmentId { get; set; }
     public string? StudentName { get; set; }
+    public DayOfWeek? Day { get; set; }
     public int Week { get; set; }
     public string? Status { get; set; }
 }

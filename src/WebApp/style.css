@@ -4586,6 +4586,15 @@ body {
     color: white;
     border-color: #8b5cf6;
 }
+.teacher-attendance-days {
+    margin: 20px;
+}
+
+#daysGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 185px));
+    gap: 8px;
+}
 /* List */
 .teacher-attendance-list {
     padding: 20px;

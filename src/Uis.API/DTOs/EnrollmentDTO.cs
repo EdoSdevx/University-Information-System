@@ -36,6 +36,7 @@ public class EnrollmentResponse
 public class StudentEnrollmentResponse
 {
     public int Id { get; set; }
+    public int EnrollmentId { get; set; }
     public int StudentId { get; set; }
     public string? StudentName { get; set; }
     public string? StudentEmail { get; set; }

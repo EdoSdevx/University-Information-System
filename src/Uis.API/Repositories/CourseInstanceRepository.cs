@@ -61,6 +61,7 @@ namespace Uis.API.Repositories
             return await DbSet
                 .Where(ci => ci.TeacherId == teacherId)
                 .Include(ci => ci.Course)
+                .Include(ci => ci.Enrollments)
                 .Include(ci => ci.AcademicYear)
                 .AsNoTracking()
                 .OrderByDescending(ci => ci.AcademicYear.StartYear)

@@ -20,24 +20,24 @@ public class AttendanceRepository : BaseRepository<Attendance>, IAttendanceRepos
             .Include(a => a.Enrollment)
                 .ThenInclude(e => e.CourseInstance)
                     .ThenInclude(ci => ci.Course)
-            .OrderByDescending(a => a.AttendanceDate)
+            .OrderByDescending(a => a.Week)
             .ToListAsync();
     }
 
-    public async Task<List<Attendance>> GetCourseAttendanceAsync(int courseInstanceId, DateTime date)
+    public async Task<List<Attendance>> GetCourseAttendanceAsync(int courseInstanceId, int week)
     {
         return await DbSet
             .Where(a => a.Enrollment!.CourseInstanceId == courseInstanceId &&
-                       a.AttendanceDate.Date == date.Date)
+                       a.Week == week)
             .Include(a => a.Enrollment)
                 .ThenInclude(e => e.Student)
             .OrderBy(a => a.Enrollment!.Student!.FirstName)
             .ToListAsync();
     }
 
-    public async Task<Attendance?> GetAttendanceAsync(int enrollmentId, DateTime date)
+    public async Task<Attendance?> GetAttendanceAsync(int enrollmentId, int week)
     {
         return await DbSet
-            .FirstOrDefaultAsync(a => a.EnrollmentId == enrollmentId && a.AttendanceDate.Date == date.Date);
+            .FirstOrDefaultAsync(a => a.EnrollmentId == enrollmentId && a.Week == week);
     }
 }

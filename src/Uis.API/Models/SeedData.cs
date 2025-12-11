@@ -551,33 +551,23 @@ public static class SeedData
         // Attendances
         var attendances = new List<Attendance>();
         var random = new Random();
-        var startDate = DateTime.UtcNow.AddDays(-60);
 
-        // Create attendance records for each enrollment
+        // Create attendance records for each enrollment (weeks 1-12)
         foreach (var enrollment in enrollments)
         {
-            // Create 12 attendance records (representing ~3 weeks of classes, 3 days per week)
-            for (int day = 0; day < 12; day++)
+            for (int week = 1; week <= 16; week++)
             {
-                var attendanceDate = startDate.AddDays(day);
-
-                // Skip weekends
-                if (attendanceDate.DayOfWeek == DayOfWeek.Saturday || attendanceDate.DayOfWeek == DayOfWeek.Sunday)
-                    continue;
-
                 var statusValue = random.Next(0, 100);
                 var status = statusValue switch
                 {
-                    >= 85 => "Present",        // 15% chance
-                    >= 80 => "Late",           // 5% chance
-                    >= 75 => "Absent",         // 5% chance
-                    _ => "Present"             // 75% chance
+                    >= 90 => "Absent",         // 10% chance Absent
+                    _ => "Present"             // 90% chance Present
                 };
 
                 attendances.Add(new Attendance
                 {
                     EnrollmentId = enrollment.Id,
-                    AttendanceDate = attendanceDate,
+                    Week = week,
                     Status = status,
                     CreatedAt = DateTime.UtcNow
                 });

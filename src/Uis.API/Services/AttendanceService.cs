@@ -32,17 +32,17 @@ public class AttendanceService : IAttendanceService
             }
 
             // Check if attendance already exists for this date
-            var existing = await _unitOfWork.Attendances.GetAttendanceAsync(enrollmentId, request.AttendanceDate);
+            var existing = await _unitOfWork.Attendances.GetAttendanceAsync(enrollmentId, request.Week);
             if (existing != null)
             {
-                _logger.LogWarning($"Attendance already exists for enrollment {enrollmentId} on {request.AttendanceDate}");
+                _logger.LogWarning($"Attendance already exists for enrollment {enrollmentId} on {request.Week}");
                 return new ResultService { Success = false, Message = "Attendance already recorded for this date" };
             }
 
             var attendance = new Attendance
             {
                 EnrollmentId = enrollmentId,
-                AttendanceDate = request.AttendanceDate,
+                Week = request.Week,
                 Status = request.Status,
                 CreatedAt = DateTime.UtcNow
             };
@@ -80,7 +80,7 @@ public class AttendanceService : IAttendanceService
                 Id = a.Id,
                 CourseCode = a.Enrollment?.CourseInstance?.Course?.Code ?? "N/A",
                 CourseName = a.Enrollment?.CourseInstance?.Course?.Name ?? "N/A",
-                AttendanceDate = a.AttendanceDate,
+                Week = a.Week,
                 Status = a.Status.ToString(),
                 CreatedAt = a.CreatedAt
             }).ToList();
@@ -105,14 +105,14 @@ public class AttendanceService : IAttendanceService
         }
     }
 
-    public async Task<PagedResultService<StudentAttendanceResponse>> GetCourseAttendanceAsync(int courseInstanceId, DateTime date, int pageIndex, int pageSize)
+    public async Task<PagedResultService<StudentAttendanceResponse>> GetCourseAttendanceAsync(int courseInstanceId, int week , int pageIndex, int pageSize)
     {
         try
         {
             if (pageIndex < 1) pageIndex = 1;
             if (pageSize < 1) pageSize = 10;
 
-            var attendances = await _unitOfWork.Attendances.GetCourseAttendanceAsync(courseInstanceId, date);
+            var attendances = await _unitOfWork.Attendances.GetCourseAttendanceAsync(courseInstanceId, week);
 
             var total = attendances.Count;
             var paginated = attendances
@@ -123,8 +123,9 @@ public class AttendanceService : IAttendanceService
             var dtos = paginated.Select(a => new StudentAttendanceResponse
             {
                 Id = a.Id,
+                EnrollmentId = a.EnrollmentId,
                 StudentName = $"{a.Enrollment?.Student?.FirstName} {a.Enrollment?.Student?.LastName}",
-                AttendanceDate = a.AttendanceDate,
+                Week = a.Week,
                 Status = a.Status
             }).ToList();
 
@@ -153,6 +154,7 @@ public class AttendanceService : IAttendanceService
         try
         {
             var attendance = await _unitOfWork.Attendances.GetByIdAsync(attendanceId);
+
             if (attendance == null)
             {
                 _logger.LogWarning($"Attendance {attendanceId} not found");

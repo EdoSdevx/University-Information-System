@@ -15,7 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Announcement> Announcements => Set<Announcement>();
     public DbSet<Attendance> Attendances { get; set; }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) {}
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -627,10 +627,9 @@ public class ApplicationDbContext : DbContext
             .IsRequired()
             .HasColumnName("EnrollmentId");
 
-        entity.Property(a => a.AttendanceDate)
+        entity.Property(a => a.Week)
             .IsRequired()
-            .HasColumnType("datetime2")
-            .HasColumnName("AttendanceDate");
+            .HasColumnName("Week");
 
         entity.Property(a => a.Status)
             .IsRequired()
@@ -647,12 +646,12 @@ public class ApplicationDbContext : DbContext
             .HasColumnType("datetime2")
             .HasColumnName("UpdatedAt");
 
-        entity.HasIndex(a => new { a.EnrollmentId, a.AttendanceDate })
+        entity.HasIndex(a => new { a.EnrollmentId, a.Week })
             .IsUnique()
-            .HasDatabaseName("IX_Attendance_Enrollment_Date_Unique");
+            .HasDatabaseName("IX_Attendance_Enrollment_Week_Unique");
 
-        entity.HasIndex(a => a.AttendanceDate)
-            .HasDatabaseName("IX_Attendance_Date");
+        entity.HasIndex(a => a.Week)
+            .HasDatabaseName("IX_Attendance_Week");
 
         entity.HasOne(a => a.Enrollment)
             .WithMany(e => e.Attendances)

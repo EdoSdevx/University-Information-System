@@ -12,8 +12,8 @@ using Uis.API.Models;
 namespace Uis.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251210120947_Attendances")]
-    partial class Attendances
+    [Migration("20251211152958_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,10 +158,6 @@ namespace Uis.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AttendanceDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("AttendanceDate");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -182,14 +178,18 @@ namespace Uis.API.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("UpdatedAt");
 
+                    b.Property<int>("Week")
+                        .HasColumnType("int")
+                        .HasColumnName("Week");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AttendanceDate")
-                        .HasDatabaseName("IX_Attendance_Date");
+                    b.HasIndex("Week")
+                        .HasDatabaseName("IX_Attendance_Week");
 
-                    b.HasIndex("EnrollmentId", "AttendanceDate")
+                    b.HasIndex("EnrollmentId", "Week")
                         .IsUnique()
-                        .HasDatabaseName("IX_Attendance_Enrollment_Date_Unique");
+                        .HasDatabaseName("IX_Attendance_Enrollment_Week_Unique");
 
                     b.ToTable("Attendances", (string)null);
                 });

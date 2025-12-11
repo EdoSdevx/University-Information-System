@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Uis.API.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -249,6 +249,10 @@ namespace Uis.API.Migrations
                     StudentId = table.Column<int>(type: "int", nullable: false),
                     CourseInstanceId = table.Column<int>(type: "int", nullable: false),
                     SubmittedByTeacherId = table.Column<int>(type: "int", nullable: false),
+                    Exam1 = table.Column<int>(type: "int", nullable: true),
+                    Exam2 = table.Column<int>(type: "int", nullable: true),
+                    Final = table.Column<int>(type: "int", nullable: true),
+                    Project = table.Column<int>(type: "int", nullable: true),
                     Score = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     LetterGrade = table.Column<string>(type: "nvarchar(2)", maxLength: 2, nullable: false),
                     SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -285,6 +289,29 @@ namespace Uis.API.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Attendances",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EnrollmentId = table.Column<int>(type: "int", nullable: false),
+                    Week = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Attendances", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Attendances_Enrollments_EnrollmentId",
+                        column: x => x.EnrollmentId,
+                        principalTable: "Enrollments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AcademicYear_IsActive",
                 table: "AcademicYears",
@@ -315,6 +342,17 @@ namespace Uis.API.Migrations
                 name: "IX_Announcements_TargetDepartmentId",
                 table: "Announcements",
                 column: "TargetDepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Attendance_Enrollment_Week_Unique",
+                table: "Attendances",
+                columns: new[] { "EnrollmentId", "Week" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Attendance_Week",
+                table: "Attendances",
+                column: "Week");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CourseInstance_AcademicYear_Department",
@@ -446,10 +484,13 @@ namespace Uis.API.Migrations
                 name: "Announcements");
 
             migrationBuilder.DropTable(
-                name: "Enrollments");
+                name: "Attendances");
 
             migrationBuilder.DropTable(
                 name: "Grades");
+
+            migrationBuilder.DropTable(
+                name: "Enrollments");
 
             migrationBuilder.DropTable(
                 name: "CourseInstances");

@@ -242,6 +242,7 @@ public class EnrollmentService : IEnrollmentService
         var dtos = pagedEnrollments.Select(e => new StudentEnrollmentResponse
         {
             Id = e.Id,
+            EnrollmentId = e.Id,
             StudentId = e.StudentId,
             StudentName = $"{e.Student?.FirstName} {e.Student?.LastName}",
             StudentEmail = e.Student?.Email ?? null,

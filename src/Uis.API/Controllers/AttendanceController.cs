@@ -53,12 +53,11 @@ public class AttendanceController : ControllerBase
     [Authorize(Roles = "Teacher")]
     public async Task<IActionResult> GetCourseAttendance(
         int courseInstanceId,
-        [FromQuery] DateTime? date = null,
+        [FromQuery] int week,
         [FromQuery] int pageIndex = 1,
         [FromQuery] int pageSize = 10)
     {
-        date ??= DateTime.UtcNow.Date;
-        var result = await _attendanceService.GetCourseAttendanceAsync(courseInstanceId, date.Value, pageIndex, pageSize);
+        var result = await _attendanceService.GetCourseAttendanceAsync(courseInstanceId, week, pageIndex, pageSize);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 

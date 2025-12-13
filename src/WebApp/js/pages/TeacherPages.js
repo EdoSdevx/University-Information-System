@@ -1200,130 +1200,207 @@ export const TeacherPages = {
 
     assignments: {
         render: () => `
-        <div class="teacher-breadcrumb">Home / Assignments</div>
-        <div class="teacher-section-header">Manage Assignments</div>
-        
-        <div id="assignmentToast" class="teacher-assignment-toast"></div>
-        
-        <div class="teacher-assignment-container">
-            <div class="teacher-assignment-header">
-                <div class="teacher-assignment-info">
-                    <p id="classInfo">Select a class to manage assignments</p>
-                </div>
-                <button class="teacher-assignment-new-btn" onclick="window.openNewAssignment()">+ New Assignment</button>
+    <div class="teacher-breadcrumb">Home / Assignments</div>
+    <div class="teacher-section-header">Manage Assignments</div>
+    
+    <div id="assignmentToast" class="teacher-assignment-toast"></div>
+    
+    <div class="teacher-assignment-container">
+        <div class="teacher-assignment-header">
+            <div class="teacher-assignment-info">
+                <p id="classInfo">Select a class to manage assignments</p>
             </div>
-
-            <div class="teacher-assignment-selector">
-                <label>Select Class:</label>
-                <select id="classSelect" class="teacher-assignment-class-select">
-                    <option value="CS101-A">CS101-A - Introduction to Programming</option>
-                    <option value="CS101-B">CS101-B - Introduction to Programming</option>
-                    <option value="MATH101-A">MATH101-A - Calculus I</option>
-                    <option value="ENG101-A">ENG101-A - English I</option>
-                </select>
-            </div>
-
-            <div class="teacher-assignment-list" id="assignmentsList"></div>
+            <button class="teacher-assignment-new-btn" onclick="window.openNewAssignment()">+ New Assignment</button>
         </div>
 
-       <!-- Modal: New Assignment -->
-        <div class="teacher-assignment-modal" id="assignmentModal" style="display: none;">
-            <div class="teacher-assignment-modal-content">
-                <div class="teacher-assignment-modal-header">
-                    <h3>Create New Assignment</h3>
-                    <button class="teacher-assignment-modal-close" onclick="document.getElementById('assignmentModal').style.display='none'">×</button>
-                </div>
-                <div class="teacher-assignment-modal-body">
-                    <div class="teacher-assignment-form-group">
-                        <label>Class:</label>
-                        <span id="modalClassName" class="teacher-assignment-class-display"></span>
-                    </div>
-                    <div class="teacher-assignment-form-group">
-                        <label>Title *</label>
-                        <input type="text" id="assignmentTitle" class="teacher-assignment-input" placeholder="Assignment title">
-                    </div>
-                    <div class="teacher-assignment-form-group">
-                        <label>Description *</label>
-                        <textarea id="assignmentDescription" class="teacher-assignment-textarea" placeholder="Assignment description..." rows="6"></textarea>
-                    </div>
-                    <div class="teacher-assignment-form-group">
-                        <label>Due Date *</label>
-                        <input type="date" id="assignmentDueDate" class="teacher-assignment-input">
-                    </div>
-                    <div class="teacher-assignment-form-group">
-                        <label>Total Points *</label>
-                        <input type="number" id="assignmentPoints" class="teacher-assignment-input" placeholder="100" min="1">
-                    </div>
-                </div>
-                <div class="teacher-assignment-modal-footer">
-                    <button class="teacher-assignment-btn-cancel" onclick="document.getElementById('assignmentModal').style.display='none'">Cancel</button>
-                    <button class="teacher-assignment-btn-create" onclick="window.createAssignment()">Create Assignment</button>
-                </div>
-            </div>
+        <div class="teacher-assignment-selector">
+            <label>Select Class:</label>
+            <select id="classSelect" class="teacher-assignment-class-select">
+                <option value="">Loading courses...</option>
+            </select>
         </div>
 
-        <!-- Modal: Submissions -->
-        <div class="teacher-assignment-submissions-modal" id="submissionsModal" style="display: none;">
-            <div class="teacher-assignment-modal-content">
-                <div class="teacher-assignment-modal-header">
-                    <h3 id="submissionsTitle"></h3>
-                    <button class="teacher-assignment-modal-close" onclick="document.getElementById('submissionsModal').style.display='none'">×</button>
+        <div class="teacher-assignment-list" id="assignmentsList">
+            <div style="text-align: center; padding: 40px;">Loading assignments...</div>
+        </div>
+    </div>
+
+    <div class="teacher-assignment-modal" id="assignmentModal" style="display: none;">
+        <div class="teacher-assignment-modal-content">
+            <div class="teacher-assignment-modal-header">
+                <h3 id="assignmentModalTitle">Create New Assignment</h3>
+                <button class="teacher-assignment-modal-close" onclick="document.getElementById('assignmentModal').style.display='none'">×</button>
+            </div>
+            <div class="teacher-assignment-modal-body">
+                <div class="teacher-assignment-form-group">
+                    <label>Class:</label>
+                    <span id="modalClassName" class="teacher-assignment-class-display"></span>
                 </div>
-                <div class="teacher-assignment-modal-body">
-                    <table class="teacher-assignment-submissions-table">
-                        <thead>
-                            <tr>
-                                <th>Student Name</th>
-                                <th>Status</th>
-                                <th>Submitted</th>
-                                <th>Grade</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="submissionsTable"></tbody>
-                    </table>
+                <div class="teacher-assignment-form-group">
+                    <label>Title *</label>
+                    <input type="text" id="assignmentTitle" class="teacher-assignment-input" placeholder="Assignment title">
+                </div>
+                <div class="teacher-assignment-form-group">
+                    <label>Description *</label>
+                    <textarea id="assignmentDescription" class="teacher-assignment-textarea" placeholder="Assignment description..." rows="6"></textarea>
+                </div>
+                <div class="teacher-assignment-form-group">
+                    <label>Due Date * (MM/DD/YYYY)</label>
+                    <input type="text" id="assignmentDueDate" class="teacher-assignment-input" placeholder="MM/DD/YYYY" maxlength="10">
+                </div>
+                <div class="teacher-assignment-form-group">
+                    <label>Total Points *</label>
+                    <input type="number" id="assignmentPoints" class="teacher-assignment-input" placeholder="100" min="1">
                 </div>
             </div>
+            <div class="teacher-assignment-modal-footer">
+                <button class="teacher-assignment-btn-cancel" onclick="document.getElementById('assignmentModal').style.display='none'">Cancel</button>
+                <button class="teacher-assignment-btn-create" onclick="window.createAssignment()">Create Assignment</button>
+            </div>
         </div>
-    `,
-        afterRender: () => {
-            const classesData = {
-                'CS101-A': {
-                    name: 'CS101-A - Introduction to Programming',
-                    assignments: [
-                        { id: 1, title: 'Variables and Data Types', description: 'Write a program using different data types', dueDate: '2024-10-15', points: 100, submissions: 4, graded: 2 },
-                        { id: 2, title: 'Functions and Loops', description: 'Implement functions and loop structures', dueDate: '2024-10-22', points: 100, submissions: 3, graded: 1 }
-                    ]
-                },
-                'CS101-B': {
-                    name: 'CS101-B - Introduction to Programming',
-                    assignments: [
-                        { id: 3, title: 'Array Operations', description: 'Work with arrays and lists', dueDate: '2024-10-18', points: 100, submissions: 5, graded: 3 }
-                    ]
-                },
-                'MATH101-A': {
-                    name: 'MATH101-A - Calculus I',
-                    assignments: [
-                        { id: 4, title: 'Derivatives Practice', description: 'Solve 20 derivative problems', dueDate: '2024-10-20', points: 50, submissions: 4, graded: 4 }
-                    ]
-                },
-                'ENG101-A': {
-                    name: 'ENG101-A - English I',
-                    assignments: []
+    </div>
+
+    <div class="teacher-assignment-submissions-modal" id="submissionsModal" style="display: none;">
+        <div class="teacher-assignment-modal-content">
+            <div class="teacher-assignment-modal-header">
+                <h3 id="submissionsTitle"></h3>
+                <button class="teacher-assignment-modal-close" onclick="document.getElementById('submissionsModal').style.display='none'">×</button>
+            </div>
+            <div class="teacher-assignment-modal-body">
+                <table class="teacher-assignment-submissions-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Grade</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="teacher-assignment-modal" id="gradeModal" style="display: none;">
+        <div class="teacher-assignment-modal-content">
+            <div class="teacher-assignment-modal-header">
+                <h3>Grade Submission</h3>
+                <button class="teacher-assignment-modal-close" onclick="document.getElementById('gradeModal').style.display='none'">×</button>
+            </div>
+            <div class="teacher-assignment-modal-body">
+                <div class="teacher-assignment-form-group">
+                    <label>Student:</label>
+                    <p id="gradeStudentName" style="margin: 0; font-size: 13px; color: #2c2c2c;"></p>
+                </div>
+                <div class="teacher-assignment-form-group">
+                    <label>Grade (out of <span id="gradeMaxPoints"></span>) *</label>
+                    <input type="number" id="gradePoints" class="teacher-assignment-input" placeholder="0" min="0">
+                </div>
+                <div class="teacher-assignment-form-group">
+                    <label>Feedback</label>
+                    <textarea id="gradeFeedback" class="teacher-assignment-textarea" placeholder="Optional feedback..." rows="4"></textarea>
+                </div>
+            </div>
+            <div class="teacher-assignment-modal-footer">
+                <button class="teacher-assignment-btn-cancel" onclick="document.getElementById('gradeModal').style.display='none'">Cancel</button>
+                <button class="teacher-assignment-btn-create" onclick="window.submitGrade()">Submit Grade</button>
+            </div>
+        </div>
+    </div>
+`,
+        afterRender: async () => {
+            let courses = [];
+            let currentCourseInstanceId = null;
+            let currentCourseName = '';
+            let currentAssignmentId = null;
+            let currentSubmissionId = null;
+            let currentEditingAssignmentId = null;
+            let isEditMode = false;
+
+            function formatDateInput(input) {
+                let value = input.value.replace(/\D/g, '');
+
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2);
                 }
-            };
+                if (value.length >= 5) {
+                    value = value.substring(0, 5) + '/' + value.substring(5, 9);
+                }
 
-            let currentClassId = 'CS101-A';
+                input.value = value;
+            }
 
-            function loadAssignments(classId) {
-                const classData = classesData[classId];
-                currentClassId = classId;
+            function parseDate(dateString) {
+                const parts = dateString.split('/');
+                if (parts.length !== 3) return null;
 
-                document.getElementById('classInfo').textContent = classData.name;
+                const month = parseInt(parts[0]);
+                const day = parseInt(parts[1]);
+                const year = parseInt(parts[2]);
 
-                const list = document.getElementById('assignmentsList');
-                if (classData.assignments.length === 0) {
-                    list.innerHTML = `
+                if (month < 1 || month > 12 || day < 1 || day > 31 || year < 2000) {
+                    return null;
+                }
+
+                return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            }
+
+            async function loadCourses() {
+                const response = await apiRequest('/courseInstance/my-courses?pageIndex=1&pageSize=100');
+
+                if (!response.ok || !response.data) {
+                    document.getElementById('classSelect').innerHTML = '<option value="">No courses available</option>';
+                    return;
+                }
+
+                const responseData = response.data.data || response.data;
+                courses = responseData;
+
+                if (courses.length === 0) {
+                    document.getElementById('classSelect').innerHTML = '<option value="">No courses assigned</option>';
+                    document.getElementById('assignmentsList').innerHTML = `
+                    <div class="teacher-assignment-empty">
+                        <p>No courses assigned to you</p>
+                    </div>
+                `;
+                    return;
+                }
+
+                document.getElementById('classSelect').innerHTML = courses.map(course =>
+                    `<option value="${course.courseInstanceId}">${course.courseCode} - ${course.courseName} (Section ${course.section})</option>`
+                ).join('');
+
+                currentCourseInstanceId = courses[0].courseInstanceId;
+                currentCourseName = `${courses[0].courseCode} - ${courses[0].courseName}`;
+
+                await loadAssignments(currentCourseInstanceId, currentCourseName);
+            }
+
+            async function loadAssignments(courseInstanceId, courseName) {
+                currentCourseInstanceId = courseInstanceId;
+                currentCourseName = courseName;
+
+                document.getElementById('classInfo').textContent = courseName;
+                document.getElementById('assignmentsList').innerHTML = '<div style="text-align: center; padding: 40px;">Loading assignments...</div>';
+
+                const response = await apiRequest(`/assignment/course/${courseInstanceId}`);
+
+                if (!response.ok || !response.data) {
+                    document.getElementById('assignmentsList').innerHTML = `
+                    <div class="teacher-assignment-empty">
+                        <p>Failed to load assignments</p>
+                        <p>Please try again</p>
+                    </div>
+                `;
+                    return;
+                }
+
+                const assignments = response.data;
+
+                if (assignments.length === 0) {
+                    document.getElementById('assignmentsList').innerHTML = `
                     <div class="teacher-assignment-empty">
                         <p>No assignments yet</p>
                         <p>Click "New Assignment" to create one</p>
@@ -1332,36 +1409,46 @@ export const TeacherPages = {
                     return;
                 }
 
-                list.innerHTML = classData.assignments.map(assign => {
+                document.getElementById('assignmentsList').innerHTML = assignments.map(assign => {
                     const dueDate = new Date(assign.dueDate);
                     const today = new Date();
                     const isOverdue = dueDate < today;
 
                     return `
-                    <div class="teacher-assignment-card ${isOverdue ? 'teacher-assignment-card-overdue' : ''}">
-                        <div class="teacher-assignment-card-header">
-                            <h4 class="teacher-assignment-card-title">${assign.title}</h4>
-                            <span class="teacher-assignment-card-points">${assign.points} pts</span>
-                        </div>
-                        <div class="teacher-assignment-card-content">
-                            <p>${assign.description}</p>
-                            <div class="teacher-assignment-card-meta">
-                                <span class="teacher-assignment-due-date">Due: ${new Date(assign.dueDate).toLocaleDateString()}</span>
-                                <span class="teacher-assignment-submission-count">Submissions: ${assign.submissions} | Graded: ${assign.graded}</span>
+                            <div class="teacher-assignment-card ${isOverdue ? 'teacher-assignment-card-overdue' : ''}">
+                                <div class="teacher-assignment-card-header">
+                                    <h4 class="teacher-assignment-card-title">${assign.title}</h4>
+                                    <span class="teacher-assignment-card-points">${assign.totalPoints} pts</span>
+                                </div>
+                                <div class="teacher-assignment-card-content">
+                                    <p>${assign.description}</p>
+                                    <div class="teacher-assignment-card-meta">
+                                        <span class="teacher-assignment-due-date">Due: ${new Date(assign.dueDate).toLocaleDateString()}</span>
+                                        <span class="teacher-assignment-submission-count">Submissions: ${assign.submissionsCount} | Graded: ${assign.gradedCount}</span>
+                                    </div>
+                                </div>
+                                <div class="teacher-assignment-card-actions">
+                                    <button class="teacher-assignment-view-btn" onclick="window.viewSubmissions(${assign.id}, '${assign.title.replace(/'/g, "\\'")}', ${assign.totalPoints})">View Submissions</button>
+                
+                                    <button class="teacher-assignment-edit-btn" onclick="window.openEditAssignment(${assign.id}, '${assign.title.replace(/'/g, "\\'")}', '${assign.description.replace(/'/g, "\\'")}', '${assign.dueDate}', ${assign.totalPoints})">Edit</button>
+                                    <button class="teacher-assignment-delete-btn" onclick="window.deleteAssignment(${assign.id})">Delete</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="teacher-assignment-card-actions">
-                            <button class="teacher-assignment-view-btn" onclick="window.viewSubmissions(${assign.id}, '${assign.title}')">View Submissions</button>
-                            <button class="teacher-assignment-edit-btn" onclick="alert('Edit assignment')">Edit</button>
-                            <button class="teacher-assignment-delete-btn" onclick="window.deleteAssignment(${assign.id}, '${classId}')">Delete</button>
-                        </div>
-                    </div>
-                `;
+                        `;
                 }).join('');
             }
 
             window.openNewAssignment = function () {
-                document.getElementById('modalClassName').textContent = classesData[currentClassId].name;
+                if (!currentCourseInstanceId) {
+                    alert('Please select a course first');
+                    return;
+                }
+
+                isEditMode = false;
+                currentEditingAssignmentId = null;
+
+                document.getElementById('assignmentModalTitle').textContent = 'Create New Assignment';
+                document.getElementById('modalClassName').textContent = currentCourseName;
                 document.getElementById('assignmentTitle').value = '';
                 document.getElementById('assignmentDescription').value = '';
                 document.getElementById('assignmentDueDate').value = '';
@@ -1369,32 +1456,65 @@ export const TeacherPages = {
                 document.getElementById('assignmentModal').style.display = 'flex';
             };
 
-            window.createAssignment = function () {
+            window.openEditAssignment = function (assignmentId, title, description, dueDate, totalPoints) {
+                currentEditingAssignmentId = assignmentId;
+                isEditMode = true;
+
+                document.getElementById('assignmentModalTitle').textContent = 'Edit Assignment';
+                document.getElementById('modalClassName').textContent = currentCourseName;
+                document.getElementById('assignmentTitle').value = title;
+                document.getElementById('assignmentDescription').value = description;
+
+                const date = new Date(dueDate);
+                const formattedDate = `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
+                document.getElementById('assignmentDueDate').value = formattedDate;
+
+                document.getElementById('assignmentPoints').value = totalPoints;
+                document.getElementById('assignmentModal').style.display = 'flex';
+            };
+
+            window.createAssignment = async function () {
                 const title = document.getElementById('assignmentTitle').value.trim();
                 const description = document.getElementById('assignmentDescription').value.trim();
-                const dueDate = document.getElementById('assignmentDueDate').value;
+                const dueDateInput = document.getElementById('assignmentDueDate').value;
                 const points = parseInt(document.getElementById('assignmentPoints').value);
 
-                if (!title || !description || !dueDate || !points) {
+                if (!title || !description || !dueDateInput || !points) {
                     alert('Please fill in all fields');
                     return;
                 }
 
-                const classData = classesData[currentClassId];
-                const newAssignment = {
-                    id: Date.now(),
-                    title: title,
-                    description: description,
-                    dueDate: dueDate,
-                    points: points,
-                    submissions: 0,
-                    graded: 0
-                };
+                const dueDate = parseDate(dueDateInput);
+                if (!dueDate) {
+                    alert('Please enter a valid date in MM/DD/YYYY format');
+                    return;
+                }
 
-                classData.assignments.push(newAssignment);
+                let response;
+                if (isEditMode) {
+                    response = await apiRequest(`/assignment/${currentEditingAssignmentId}`, 'PUT', {
+                        title: title,
+                        description: description,
+                        dueDate: dueDate,
+                        totalPoints: points
+                    });
+                } else {
+                    response = await apiRequest('/assignment', 'POST', {
+                        courseInstanceId: currentCourseInstanceId,
+                        title: title,
+                        description: description,
+                        dueDate: dueDate,
+                        totalPoints: points
+                    });
+                }
+
+                if (!response.ok) {
+                    alert(`Failed to ${isEditMode ? 'update' : 'create'} assignment: ` + (response.message || 'Unknown error'));
+                    return;
+                }
 
                 const toast = document.getElementById('assignmentToast');
-                toast.textContent = `✓ Assignment "${title}" created successfully`;
+                toast.textContent = `✓ Assignment "${title}" ${isEditMode ? 'updated' : 'created'} successfully`;
                 toast.className = 'teacher-assignment-toast teacher-assignment-toast-success teacher-assignment-toast-show';
 
                 setTimeout(() => {
@@ -1402,125 +1522,169 @@ export const TeacherPages = {
                 }, 4000);
 
                 document.getElementById('assignmentModal').style.display = 'none';
-                loadAssignments(currentClassId);
+                await loadAssignments(currentCourseInstanceId, currentCourseName);
             };
 
-            window.viewSubmissions = function (assignmentId, assignmentTitle) {
+            window.viewSubmissions = async function (assignmentId, assignmentTitle, totalPoints) {
+                currentAssignmentId = assignmentId;
                 document.getElementById('submissionsTitle').textContent = assignmentTitle;
+                document.getElementById('gradeMaxPoints').textContent = totalPoints;
 
-                const submissions = [
-                    { studentName: 'Ahmed Hassan', studentId: 'STU001', status: 'submitted', submitted: '2024-10-14', grade: 95 },
-                    { studentName: 'Fatima Khan', studentId: 'STU002', status: 'submitted', submitted: '2024-10-13', grade: 88 },
-                    { studentName: 'Ali Yilmaz', studentId: 'STU003', status: 'submitted', submitted: '2024-10-15', grade: null },
-                    { studentName: 'Zeynep Demir', studentId: 'STU004', status: 'not-submitted', submitted: '-', grade: null },
-                    { studentName: 'Mustafa Ozer', studentId: 'STU005', status: 'submitted', submitted: '2024-10-15', grade: 92 }
-                ];
+                const response = await apiRequest(`/assignment/${assignmentId}/submissions`);
+                if (!response.ok || !response.data) {
+                    alert('Failed to load submissions');
+                    return;
+                }
 
-                const table = document.getElementById('submissionsTable');
-                table.innerHTML = submissions.map(sub => `
-        <tr class="teacher-assignment-submission-row">
-            <td>${sub.studentName}</td>
-            <td><span class="teacher-assignment-status-badge teacher-assignment-status-${sub.status}">${sub.status === 'submitted' ? 'Submitted' : 'Not Submitted'}</span></td>
-            <td>${sub.submitted}</td>
-            <td>${sub.grade ? sub.grade + ' pts' : '-'}</td>
-            <td>
-                <div class="teacher-assignment-action-expand">
-                    <button class="teacher-assignment-action-toggle">⋮</button>
-                    <div class="teacher-assignment-action-expanded">
-                        <button class="teacher-assignment-action-item teacher-assignment-action-view" onclick="alert('View submission from ${sub.studentName}')">View</button>
-                        <button class="teacher-assignment-action-item teacher-assignment-action-grade" onclick="window.openGradeModal('${sub.studentId}', '${sub.studentName}')">Grade</button>
-                        <button class="teacher-assignment-action-item teacher-assignment-action-reject" onclick="window.openRejectModal('${sub.studentId}', '${sub.studentName}')">Reject</button>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+                const submissions = response.data;
+                const FILE_BASE_URL = 'http://localhost:5000/';
+
+                const tableHeader = document.querySelector('.teacher-assignment-submissions-table thead tr');
+                if (!tableHeader.innerHTML.includes('File')) {
+                    tableHeader.innerHTML = `
+            <th>Student Name</th>
+            <th>Status</th>
+            <th>Submitted</th>
+            <th>File</th>
+            <th>Grade</th>
+            <th>Action</th>
+        `;
+                }
+
+                const tableBody = document.getElementById('submissionsTable');
+                if (submissions.length === 0) {
+                    tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">No submissions yet</td>
+            </tr>
+        `;
+                } else {
+                    tableBody.innerHTML = submissions.map(sub => {
+                        let fileLink = '<span style="color: #9ca3af;">No file</span>';
+                        if (sub.fileUrl) {
+                            const cleanPath = sub.fileUrl.startsWith('/')
+                                ? sub.fileUrl.substring(1)
+                                : sub.fileUrl;
+                            const fullUrl = `${FILE_BASE_URL}${cleanPath}`;
+
+                            const fileName = sub.fileUrl.split(/[/\\]/).pop();
+
+                            const extension = fileName.split('.').pop().toLowerCase();
+                            let icon = '📄';
+                            if (extension === 'pdf') icon = '📕';
+                            else if (['doc', 'docx'].includes(extension)) icon = '📘';
+                            else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) icon = '🖼️';
+                            else if (['zip', 'rar'].includes(extension)) icon = '📦';
+
+                            fileLink = `<a href="${fullUrl}" target="_blank" style="color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="${fileName}">
+                    <span>${icon}</span>
+                    <span style="text-decoration: underline;">View File</span>
+                </a>`;
+                        }
+
+                        return `
+            <tr class="teacher-assignment-submission-row">
+                <td>${sub.studentName}</td>
+                <td><span class="teacher-assignment-status-badge teacher-assignment-status-${sub.status.toLowerCase()}">${sub.status}</span></td>
+                <td>${sub.submittedAt ? new Date(sub.submittedAt).toLocaleDateString() : '-'}</td>
+                <td>${fileLink}</td>
+                <td>${sub.grade !== null && sub.grade !== undefined ? sub.grade + ' pts' : '-'}</td>
+                <td>
+                    ${sub.submittedAt ? `
+                        <button class="teacher-assignment-view-btn" onclick="window.openGradeModal(${sub.id}, '${sub.studentName.replace(/'/g, "\\'")}', ${sub.grade || 0})">
+                            ${sub.grade !== null && sub.grade !== undefined ? 'Edit Grade' : 'Grade'}
+                        </button>
+                    ` : '-'}
+                </td>
+            </tr>
+        `}).join('');
+                }
 
                 document.getElementById('submissionsModal').style.display = 'flex';
             };
 
-            window.openGradeModal = function (studentId, studentName) {
-                alert(`Grade submission from ${studentName}`);
+            window.openGradeModal = function (submissionId, studentName, currentGrade) {
+                currentSubmissionId = submissionId;
+                document.getElementById('gradeStudentName').textContent = studentName;
+                document.getElementById('gradePoints').value = currentGrade || '';
+                document.getElementById('gradeFeedback').value = '';
+                document.getElementById('gradeModal').style.display = 'flex';
             };
 
-            window.openRejectModal = function (studentId, studentName) {
-                const modal = document.getElementById('rejectSubmissionModal');
-                if (!modal) {
-                    const body = document.body;
-                    const modalHTML = `
-            <div id="rejectSubmissionModal" class="teacher-assignment-reject-modal">
-                <div class="teacher-assignment-modal-content">
-                    <div class="teacher-assignment-modal-header">
-                        <h3>Reject Submission</h3>
-                        <button class="teacher-assignment-modal-close" onclick="document.getElementById('rejectSubmissionModal').style.display='none'">×</button>
-                    </div>
-                    <div class="teacher-assignment-modal-body">
-                        <div class="teacher-assignment-form-group">
-                            <label>Student:</label>
-                            <p id="rejectStudentName" style="margin: 0; font-size: 13px; color: #2c2c2c;"></p>
-                        </div>
-                        <div class="teacher-assignment-form-group">
-                            <label>Reason for Rejection *</label>
-                            <textarea id="rejectReason" class="teacher-assignment-textarea" placeholder="Explain why this submission is being rejected..." rows="6"></textarea>
-                        </div>
-                    </div>
-                    <div class="teacher-assignment-modal-footer">
-                        <button class="teacher-assignment-btn-cancel" onclick="document.getElementById('rejectSubmissionModal').style.display='none'">Cancel</button>
-                        <button class="teacher-assignment-btn-reject" onclick="window.submitReject()">Reject Submission</button>
-                    </div>
-                </div>
-            </div>
-        `;
-                    body.insertAdjacentHTML('beforeend', modalHTML);
+            window.submitGrade = async function () {
+                const grade = parseInt(document.getElementById('gradePoints').value);
+                const feedback = document.getElementById('gradeFeedback').value.trim();
+                const maxPoints = parseInt(document.getElementById('gradeMaxPoints').textContent);
 
-                    document.getElementById('rejectSubmissionModal').addEventListener('click', function (e) {
-                        if (e.target === this) this.style.display = 'none';
-                    });
+                if (isNaN(grade) || grade < 0) {
+                    alert('Please enter a valid grade');
+                    return;
                 }
 
-                document.getElementById('rejectStudentName').textContent = studentName;
-                document.getElementById('rejectReason').value = '';
-                document.getElementById('rejectSubmissionModal').style.display = 'flex';
-            };
+                if (grade > maxPoints) {
+                    alert(`Grade cannot exceed ${maxPoints} points`);
+                    return;
+                }
 
-            window.submitReject = function () {
-                const reason = document.getElementById('rejectReason').value.trim();
+                const response = await apiRequest(`/assignment/submissions/${currentSubmissionId}/grade`, 'POST', {
+                    grade: grade,
+                    feedback: feedback || null
+                });
 
-                if (!reason) {
-                    alert('Please provide a reason for rejection');
+                if (!response.ok) {
+                    alert('Failed to submit grade: ' + (response.message || 'Unknown error'));
                     return;
                 }
 
                 const toast = document.getElementById('assignmentToast');
-                toast.textContent = `✓ Submission rejected with reason`;
+                toast.textContent = '✓ Grade submitted successfully';
                 toast.className = 'teacher-assignment-toast teacher-assignment-toast-success teacher-assignment-toast-show';
 
                 setTimeout(() => {
                     toast.classList.remove('teacher-assignment-toast-show');
                 }, 4000);
 
-                document.getElementById('rejectSubmissionModal').style.display = 'none';
+                document.getElementById('gradeModal').style.display = 'none';
+
+                await window.viewSubmissions(currentAssignmentId, document.getElementById('submissionsTitle').textContent, parseInt(document.getElementById('gradeMaxPoints').textContent));
             };
 
-            window.deleteAssignment = function (assignmentId, classId) {
-                if (confirm('Delete this assignment?')) {
-                    const classData = classesData[classId];
-                    classData.assignments = classData.assignments.filter(a => a.id !== assignmentId);
-
-                    const toast = document.getElementById('assignmentToast');
-                    toast.textContent = '✓ Assignment deleted';
-                    toast.className = 'teacher-assignment-toast teacher-assignment-toast-success teacher-assignment-toast-show';
-
-                    setTimeout(() => {
-                        toast.classList.remove('teacher-assignment-toast-show');
-                    }, 4000);
-
-                    loadAssignments(classId);
+            window.deleteAssignment = async function (assignmentId) {
+                if (!confirm('Are you sure you want to delete this assignment? This action cannot be undone.')) {
+                    return;
                 }
+
+                const response = await apiRequest(`/assignment/${assignmentId}`, 'DELETE');
+
+                if (!response.ok) {
+                    alert('Failed to delete assignment: ' + (response.message || 'Unknown error'));
+                    return;
+                }
+
+                const toast = document.getElementById('assignmentToast');
+                toast.textContent = '✓ Assignment deleted successfully';
+                toast.className = 'teacher-assignment-toast teacher-assignment-toast-success teacher-assignment-toast-show';
+
+                setTimeout(() => {
+                    toast.classList.remove('teacher-assignment-toast-show');
+                }, 4000);
+
+                await loadAssignments(currentCourseInstanceId, currentCourseName);
             };
 
-            document.getElementById('classSelect').addEventListener('change', function () {
-                loadAssignments(this.value);
+            const dateInput = document.getElementById('assignmentDueDate');
+            dateInput.addEventListener('input', function () {
+                formatDateInput(this);
+            });
+
+            document.getElementById('classSelect').addEventListener('change', async function () {
+                const courseInstanceId = parseInt(this.value);
+                const selectedCourse = courses.find(c => c.courseInstanceId === courseInstanceId);
+
+                if (selectedCourse) {
+                    const courseName = `${selectedCourse.courseCode} - ${selectedCourse.courseName}`;
+                    await loadAssignments(courseInstanceId, courseName);
+                }
             });
 
             document.getElementById('assignmentModal').addEventListener('click', function (e) {
@@ -1531,7 +1695,11 @@ export const TeacherPages = {
                 if (e.target === this) this.style.display = 'none';
             });
 
-            loadAssignments('CS101-A');
+            document.getElementById('gradeModal').addEventListener('click', function (e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+
+            await loadCourses();
         }
     },
 

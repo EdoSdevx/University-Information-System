@@ -901,107 +901,211 @@ export const StudentPages = {
 
     assignments: {
         render: () => `
-     <div class="student-breadcrumb">Home / Assignments</div>
-     <div class="student-section-header">My Assignments</div>
-     
-     <div class="student-assignment-container">
-         <div class="student-assignment-tabs">
-             <button class="student-assignment-tab active" onclick="window.filterAssignments('all')">All</button>
-             <button class="student-assignment-tab" onclick="window.filterAssignments('pending')">Pending</button>
-             <button class="student-assignment-tab" onclick="window.filterAssignments('submitted')">Submitted</button>
-             <button class="student-assignment-tab" onclick="window.filterAssignments('graded')">Graded</button>
-         </div>
+                    <div class="student-breadcrumb">Home / Assignments</div>
+                    <div class="student-section-header">My Assignments</div>
 
-         <div class="student-assignment-list" id="assignmentsList"></div>
-     </div>
+                    <div class="student-assignment-container">
+        
+                        <div class="student-assignment-tabs">
+                            <button class="student-assignment-tab active" onclick="window.filterAssignments('all')">All</button>
+                            <button class="student-assignment-tab" onclick="window.filterAssignments('pending')">Pending</button>
+                            <button class="student-assignment-tab" onclick="window.filterAssignments('submitted')">Submitted</button>
+                            <button class="student-assignment-tab" onclick="window.filterAssignments('graded')">Graded</button>
+                        </div>
 
-     <!-- Modal: Submit Assignment -->
-     <div class="student-assignment-submit-modal" id="submitModal">
-         <div class="student-assignment-modal-content">
-             <div class="student-assignment-modal-header">
-                 <h3 id="submitTitle"></h3>
-                 <button class="student-assignment-modal-close" onclick="document.getElementById('submitModal').style.display='none'">×</button>
-             </div>
-             <div class="student-assignment-modal-body">
-                 <div class="student-assignment-form-group">
-                     <label>Assignment Description:</label>
-                     <p id="submitDescription" class="student-assignment-description"></p>
-                 </div>
-                 <div class="student-assignment-form-group">
-                     <label>Due Date:</label>
-                     <p id="submitDueDate" class="student-assignment-due-date"></p>
-                 </div>
-                 <div class="student-assignment-form-group">
-                     <label>Upload File *</label>
-                     <input type="file" id="submitFile" class="student-assignment-file-input">
-                     <p class="student-assignment-file-hint">Max file size: 50MB</p>
-                 </div>
-                 <div class="student-assignment-form-group">
-                     <label>Comments (Optional)</label>
-                     <textarea id="submitComments" class="student-assignment-textarea" placeholder="Add any comments..." rows="4"></textarea>
-                 </div>
-             </div>
-             <div class="student-assignment-modal-footer">
-                 <button class="student-assignment-btn-cancel" onclick="document.getElementById('submitModal').style.display='none'">Cancel</button>
-                 <button class="student-assignment-btn-submit" onclick="window.submitAssignment()">Submit Assignment</button>
-             </div>
-         </div>
-     </div>
- `,
-        afterRender: () => {
-            const assignments = [
-                { id: 1, course: 'CS101', title: 'Variables and Data Types', description: 'Write a program using different data types', dueDate: '2024-10-15', points: 100, status: 'submitted', grade: 95 },
-                { id: 2, course: 'CS101', title: 'Functions and Loops', description: 'Implement functions and loop structures', dueDate: '2024-10-22', points: 100, status: 'pending', grade: null },
-                { id: 3, course: 'MATH101', title: 'Derivatives Practice', description: 'Solve 20 derivative problems', dueDate: '2024-10-20', points: 50, status: 'graded', grade: 48 },
-                { id: 4, course: 'ENG101', title: 'Essay Writing', description: 'Write a 5-page essay', dueDate: '2024-10-25', points: 100, status: 'pending', grade: null }
-            ];
+                        <div class="student-assignment-list" id="assignmentsList">
+                            <div style="text-align: center; padding: 40px;">Loading assignments...</div>
+                        </div>
+                    </div>
 
+                    <div class="student-assignment-submit-modal" id="submitModal">
+                        <div class="student-assignment-modal-content">
+                            <div class="student-assignment-modal-header">
+                                <h3 id="submitTitle"></h3>
+                                <button class="student-assignment-modal-close" onclick="document.getElementById('submitModal').style.display='none'">×</button>
+                            </div>
+            
+                            <div class="student-assignment-modal-body">
+                                <div class="student-assignment-form-group">
+                                    <label>Course:</label>
+                                    <p id="submitCourse" class="student-assignment-course-name"></p>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Assignment Description:</label>
+                                    <p id="submitDescription" class="student-assignment-description"></p>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Due Date:</label>
+                                    <p id="submitDueDate" class="student-assignment-due-date"></p>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Total Points:</label>
+                                    <p id="submitPoints" class="student-assignment-points"></p>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Upload File</label>
+                                    <input type="file" id="submitFile" class="student-assignment-file-input" 
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z,.tar,.gz,.jpg,.jpeg,.png,.gif,.bmp,.svg">
+                                    <p class="student-assignment-file-hint">
+                                        Supported: PDF, Word, Excel, PowerPoint, Images, Text, Archives (ZIP, RAR, 7Z, TAR, GZ)<br>
+                                        <strong>Note:</strong> For multiple files, please compress them into a ZIP or RAR archive first. Max file size: 50MB
+                                    </p>
+                                    <div id="filePreview" style="margin-top: 10px;"></div>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Submission Text</label>
+                                    <textarea id="submitText" class="student-assignment-textarea" placeholder="Enter your submission text or additional comments..." rows="8"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="student-assignment-modal-footer">
+                                <button class="student-assignment-btn-cancel" onclick="document.getElementById('submitModal').style.display='none'">Cancel</button>
+                                <button class="student-assignment-btn-submit" onclick="window.submitAssignment()">Submit Assignment</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="student-assignment-modal" id="gradeModal">
+                        <div class="student-assignment-modal-content">
+                            <div class="student-assignment-modal-header">
+                                <h3>Assignment Grade</h3>
+                                <button class="student-assignment-modal-close" onclick="document.getElementById('gradeModal').style.display='none'">×</button>
+                            </div>
+            
+                            <div class="student-assignment-modal-body">
+                                <div class="student-assignment-form-group">
+                                    <label>Assignment:</label>
+                                    <p id="gradeTitle" style="margin: 0; font-weight: 600;"></p>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Grade:</label>
+                                    <p id="gradeScore" style="margin: 0; font-size: 24px; font-weight: 700; color: #2ecc71;"></p>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Feedback:</label>
+                                    <p id="gradeFeedback" style="margin: 0; color: #555;"></p>
+                                </div>
+
+                                <div class="student-assignment-form-group">
+                                    <label>Submitted:</label>
+                                    <p id="gradeSubmittedAt" style="margin: 0; color: #666;"></p>
+                                </div>
+                            </div>
+
+                            <div class="student-assignment-modal-footer">
+                                <button class="student-assignment-btn-cancel" onclick="document.getElementById('gradeModal').style.display='none'">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                `,
+        afterRender: async () => {
+            let allAssignments = [];
             let currentFilter = 'all';
+            let currentSubmittingAssignment = null;
+            let selectedFile = null;
+            const fileInput = document.getElementById('submitFile');
+            if (fileInput) {
+                fileInput.addEventListener('change', function (e) {
+                    if (e.target.files.length > 0) {
+                        handleFileSelection(e.target.files[0]);
+                    }
+                });
+            }
 
-            function renderAssignments() {
-                const filtered = currentFilter === 'all' ? assignments : assignments.filter(a => a.status === currentFilter);
-
-                const list = document.getElementById('assignmentsList');
-                if (filtered.length === 0) {
-                    list.innerHTML = `
-                 <div class="student-assignment-empty">
-                     <p>No assignments in this category</p>
-                 </div>
-             `;
+            function handleFileSelection(file) {
+                const maxSize = 50 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('File size cannot exceed 50MB. Please choose a smaller file or compress it.');
+                    fileInput.value = '';
                     return;
                 }
+                const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar', '7z', 'tar', 'gz', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'];
+                const extension = file.name.split('.').pop().toLowerCase();
+                if (!allowedExtensions.includes(extension)) {
+                    alert(`File type .${extension} is not supported.`);
+                    fileInput.value = '';
+                    return;
+                }
+                selectedFile = file;
+                displayFilePreview();
+            }
 
+            function displayFilePreview() {
+                const previewDiv = document.getElementById('filePreview');
+                if (!selectedFile) {
+                    previewDiv.innerHTML = '';
+                    return;
+                }
+                const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+                const fileIcon = getFileIcon(selectedFile.name);
+                previewDiv.innerHTML = `<div style="background: #e8f5e9; padding: 12px; border-radius: 6px; border: 1px solid #81c784; display: flex; justify-content: space-between; align-items: center;"><div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 24px;">${fileIcon}</span><div><div style="font-weight: 600; color: #2e7d32; font-size: 13px;">${selectedFile.name}</div><div style="color: #558b2f; font-size: 11px;">${fileSizeMB} MB</div></div></div><button onclick="window.removeFile()" style="background: #c62828; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">Remove</button></div>`;
+            }
+
+            function getFileIcon(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const icons = {
+                    'pdf': '📄',
+                    'doc': '📝',
+                    'docx': '📝',
+                    'xls': '📊',
+                    'xlsx': '📊',
+                    'ppt': '📽️',
+                    'pptx': '📽️',
+                    'txt': '📃',
+                    'zip': '🗜️',
+                    'rar': '🗜️',
+                    '7z': '🗜️',
+                    'tar': '🗜️',
+                    'gz': '🗜️',
+                    'jpg': '🖼️',
+                    'jpeg': '🖼️',
+                    'png': '🖼️',
+                    'gif': '🖼️',
+                    'bmp': '🖼️',
+                    'svg': '🖼️'
+                };
+                return icons[ext] || '📎';
+            }
+            window.removeFile = function () {
+                selectedFile = null;
+                fileInput.value = '';
+                displayFilePreview();
+            };
+            async function loadAssignments() {
+                document.getElementById('assignmentsList').innerHTML = '<div style="text-align: center; padding: 40px;">Loading assignments...</div>';
+                const response = await apiRequest('/assignment/my-assignments');
+                if (!response.ok || !response.data) {
+                    document.getElementById('assignmentsList').innerHTML = `<div class="student-assignment-empty"><p>Failed to load assignments</p><p>Please try again</p></div>`;
+                    return;
+                }
+                allAssignments = response.data.map(a => ({
+                    ...a,
+                    status: a.grade !== null && a.grade !== undefined ? 'graded' : a.isSubmitted ? 'submitted' : 'pending'
+                }));
+                renderAssignments();
+            }
+
+            function renderAssignments() {
+                const filtered = currentFilter === 'all' ? allAssignments : allAssignments.filter(a => a.status === currentFilter);
+                const list = document.getElementById('assignmentsList');
+                if (filtered.length === 0) {
+                    list.innerHTML = `<div class="student-assignment-empty"><p>No assignments in this category</p></div>`;
+                    return;
+                }
                 list.innerHTML = filtered.map(assign => {
                     const dueDate = new Date(assign.dueDate);
                     const today = new Date();
                     const isOverdue = dueDate < today && assign.status === 'pending';
-
-                    return `
-                 <div class="student-assignment-card ${isOverdue ? 'student-assignment-card-overdue' : ''}">
-                     <div class="student-assignment-card-header">
-                         <div>
-                             <span class="student-assignment-course">${assign.course}</span>
-                             <h4 class="student-assignment-card-title">${assign.title}</h4>
-                         </div>
-                         <span class="student-assignment-card-points">${assign.points} pts</span>
-                     </div>
-                     <div class="student-assignment-card-content">
-                         <p>${assign.description}</p>
-                         <div class="student-assignment-card-meta">
-                             <span>Due: ${new Date(assign.dueDate).toLocaleDateString()}</span>
-                             <span class="student-assignment-status-badge student-assignment-status-${assign.status}">${assign.status.charAt(0).toUpperCase() + assign.status.slice(1)}</span>
-                             ${assign.grade ? `<span class="student-assignment-grade">${assign.grade}/${assign.points}</span>` : ''}
-                         </div>
-                     </div>
-                     <div class="student-assignment-card-actions">
-                         ${assign.status === 'pending' ? `<button class="student-assignment-submit-btn" onclick="window.openSubmitModal(${assign.id}, '${assign.title}', '${assign.description}', '${assign.dueDate}')">Submit</button>` : ''}
-                         ${assign.status === 'graded' ? `<button class="student-assignment-view-grade-btn" onclick="alert('Your grade: ${assign.grade}/${assign.points}')">View Grade</button>` : ''}
-                     </div>
-                 </div>
-             `;
+                    return `<div class="student-assignment-card ${isOverdue ? 'student-assignment-card-overdue' : ''}"><div class="student-assignment-card-header"><div><span class="student-assignment-course">${assign.courseCode}</span><h4 class="student-assignment-card-title">${assign.title}</h4></div><span class="student-assignment-card-points">${assign.totalPoints} pts</span></div><div class="student-assignment-card-content"><p>${assign.description}</p><div class="student-assignment-card-meta"><span>Due: ${new Date(assign.dueDate).toLocaleDateString()}</span><span class="student-assignment-status-badge student-assignment-status-${assign.status}">${assign.status.charAt(0).toUpperCase() + assign.status.slice(1)}</span>${assign.grade !== null && assign.grade !== undefined ? `<span class="student-assignment-grade">${assign.grade}/${assign.totalPoints}</span>` : ''}</div><div class="student-assignment-teacher"><span>Instructor: ${assign.teacherName}</span></div></div><div class="student-assignment-card-actions">${assign.status === 'pending' ? `<button class="student-assignment-submit-btn" onclick="window.openSubmitModal(${assign.id}, '${assign.title.replace(/'/g, "\\'")}', '${assign.description.replace(/'/g, "\\'")}', '${assign.dueDate}', '${assign.courseCode} - ${assign.courseName}', ${assign.totalPoints})">Submit</button>` : ''}${assign.status === 'graded' ? `<button class="student-assignment-view-grade-btn" onclick="window.viewGrade('${assign.title.replace(/'/g, "\\'")}', ${assign.grade}, ${assign.totalPoints}, '${assign.feedback ? assign.feedback.replace(/'/g, "\\'") : 'No feedback provided'}', '${assign.submittedAt}')">View Grade</button>` : ''}${assign.status === 'submitted' ? `<button class="student-assignment-view-grade-btn" disabled style="opacity: 0.6; cursor: not-allowed;">Awaiting Grade</button>` : ''}</div></div>`;
                 }).join('');
             }
-
             window.filterAssignments = function (filter) {
                 currentFilter = filter;
                 document.querySelectorAll('.student-assignment-tab').forEach(tab => {
@@ -1010,33 +1114,81 @@ export const StudentPages = {
                 event.target.classList.add('active');
                 renderAssignments();
             };
-
-            window.openSubmitModal = function (assignmentId, title, description, dueDate) {
+            window.openSubmitModal = function (assignmentId, title, description, dueDate, courseName, totalPoints) {
+                currentSubmittingAssignment = assignmentId;
+                selectedFile = null;
                 document.getElementById('submitTitle').textContent = title;
+                document.getElementById('submitCourse').textContent = courseName;
                 document.getElementById('submitDescription').textContent = description;
                 document.getElementById('submitDueDate').textContent = new Date(dueDate).toLocaleDateString();
-                document.getElementById('submitFile').value = '';
-                document.getElementById('submitComments').value = '';
+                document.getElementById('submitPoints').textContent = totalPoints + ' points';
+                document.getElementById('submitText').value = '';
+                fileInput.value = '';
+                displayFilePreview();
                 document.getElementById('submitModal').style.display = 'flex';
             };
-
-            window.submitAssignment = function () {
-                const file = document.getElementById('submitFile').value;
-
-                if (!file) {
-                    alert('Please select a file');
+            window.submitAssignment = async function () {
+                const submissionText = document.getElementById('submitText').value.trim();
+                if (!submissionText && !selectedFile) {
+                    alert('Please provide either submission text or upload a file');
                     return;
                 }
+                const formData = new FormData();
+                formData.append('assignmentId', currentSubmittingAssignment);
+                formData.append('submissionText', submissionText);
+                if (selectedFile) {
+                    formData.append('file', selectedFile);
+                }
+                const submitBtn = document.querySelector('.student-assignment-btn-submit');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Submitting...';
+                submitBtn.disabled = true;
 
-                alert('Assignment submitted successfully!');
+                try {
+                    // 4. Send to Backend
+                    // IMPORTANT: Ensure your apiRequest helper does NOT set 'Content-Type': 'application/json' 
+                    // when passing FormData. The browser must set the Content-Type boundary automatically.
+                    const response = await apiRequest('/assignment/submit', 'POST', formData);
+
+                    if (response.ok) {
+                        alert('Assignment submitted successfully!');
+                        document.getElementById('submitModal').style.display = 'none';
+
+                        // Clear inputs
+                        document.getElementById('submitText').value = '';
+                        window.removeFile();
+
+                        // Refresh list
+                        await loadAssignments();
+                    } else {
+                        alert(response.message || 'Failed to submit assignment. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Submission error:', error);
+                    alert('An error occurred while submitting. Please check your connection.');
+                } finally {
+                    // 5. Reset Button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+
                 document.getElementById('submitModal').style.display = 'none';
+                await loadAssignments();
             };
-
+            window.viewGrade = function (title, grade, totalPoints, feedback, submittedAt) {
+                document.getElementById('gradeTitle').textContent = title;
+                document.getElementById('gradeScore').textContent = `${grade} / ${totalPoints}`;
+                document.getElementById('gradeFeedback').textContent = feedback;
+                document.getElementById('gradeSubmittedAt').textContent = submittedAt ? new Date(submittedAt).toLocaleString() : 'N/A';
+                document.getElementById('gradeModal').style.display = 'flex';
+            };
             document.getElementById('submitModal').addEventListener('click', function (e) {
                 if (e.target === this) this.style.display = 'none';
             });
-
-            renderAssignments();
+            document.getElementById('gradeModal').addEventListener('click', function (e) {
+                if (e.target === this) this.style.display = 'none';
+            });
+            await loadAssignments();
         }
     },
 

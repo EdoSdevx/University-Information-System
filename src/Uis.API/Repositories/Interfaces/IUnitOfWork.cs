@@ -16,6 +16,8 @@ public interface IUnitOfWork : IAsyncDisposable
     IGradeRepository Grades { get; }
     IAnnouncementRepository Announcements { get; }
     IAttendanceRepository Attendances { get; }
+    IAssignmentRepository Assignments { get; }
+    IAssignmentSubmissionRepository AssignmentSubmissions { get; }
 
     Task<int> SaveChangesAsync();
     Task<IAsyncDisposable> BeginTransactionAsync();

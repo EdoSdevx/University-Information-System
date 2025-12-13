@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Uis.API.Constants;
 using Uis.API.Models;
 
 namespace Uis.API.Models;
@@ -13,7 +14,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
     public DbSet<Grade> Grades => Set<Grade>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
-    public DbSet<Attendance> Attendances { get; set; }
+    public DbSet<Attendance> Attendances => Set<Attendance>();
+    public DbSet<Assignment> Assignments => Set<Assignment>();
+    public DbSet<AssignmentSubmission> AssignmentSubmissions =>  Set<AssignmentSubmission>();
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -30,6 +33,8 @@ public class ApplicationDbContext : DbContext
         ConfigureGradeEntity(modelBuilder);
         ConfigureAnnouncementEntity(modelBuilder);
         ConfigureAttendanceEntity(modelBuilder);
+        ConfigureAssignmentEntity(modelBuilder);
+        ConfigureAssignmentSubmissionEntity(modelBuilder);
     }
 
     private void ConfigureUserEntity(ModelBuilder modelBuilder)
@@ -658,5 +663,170 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(a => a.EnrollmentId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
+    }
+    private void ConfigureAssignmentEntity(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<Assignment>();
+
+        entity.ToTable("Assignments");
+        entity.HasKey(a => a.Id);
+
+        entity.Property(a => a.CourseInstanceId)
+            .IsRequired()
+            .HasColumnName("CourseInstanceId");
+
+        entity.Property(a => a.CreatedByTeacherId)
+            .IsRequired()
+            .HasColumnName("CreatedByTeacherId");
+
+        entity.Property(a => a.Title)
+            .IsRequired()
+            .HasMaxLength(200)
+            .HasColumnName("Title");
+
+        entity.Property(a => a.Description)
+            .IsRequired()
+            .HasMaxLength(2000)
+            .HasColumnName("Description");
+
+        entity.Property(a => a.DueDate)
+            .IsRequired()
+            .HasColumnType("datetime2")
+            .HasColumnName("DueDate");
+
+        entity.Property(a => a.TotalPoints)
+            .IsRequired()
+            .HasColumnName("TotalPoints");
+
+        entity.Property(a => a.Status)
+            .IsRequired()
+            .HasConversion<int>()
+            .HasColumnName("Status");
+
+        entity.Property(a => a.CreatedAt)
+            .IsRequired()
+            .HasColumnType("datetime2")
+            .HasDefaultValueSql("GETUTCDATE()")
+            .HasColumnName("CreatedAt");
+
+        entity.Property(a => a.UpdatedAt)
+            .HasColumnType("datetime2")
+            .HasColumnName("UpdatedAt");
+
+        entity.HasIndex(a => a.CourseInstanceId)
+            .HasDatabaseName("IX_Assignment_CourseInstanceId");
+
+        entity.HasIndex(a => a.CreatedByTeacherId)
+            .HasDatabaseName("IX_Assignment_CreatedByTeacherId");
+
+        entity.HasIndex(a => new { a.CourseInstanceId, a.DueDate })
+            .HasDatabaseName("IX_Assignment_CourseInstance_DueDate");
+
+        entity.HasIndex(a => a.Status)
+            .HasDatabaseName("IX_Assignment_Status");
+
+        entity.HasOne(a => a.CourseInstance)
+            .WithMany(ci => ci.Assignments)
+            .HasForeignKey(a => a.CourseInstanceId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+
+        entity.HasOne(a => a.CreatedByTeacher)
+            .WithMany()
+            .HasForeignKey(a => a.CreatedByTeacherId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
+
+        entity.HasMany(a => a.Submissions)
+            .WithOne(s => s.Assignment)
+            .HasForeignKey(s => s.AssignmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+
+    private void ConfigureAssignmentSubmissionEntity(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<AssignmentSubmission>();
+
+        entity.ToTable("AssignmentSubmissions");
+        entity.HasKey(s => s.Id);
+
+        entity.Property(s => s.AssignmentId)
+            .IsRequired()
+            .HasColumnName("AssignmentId");
+
+        entity.Property(s => s.StudentId)
+            .IsRequired()
+            .HasColumnName("StudentId");
+
+        entity.Property(s => s.SubmissionText)
+            .HasMaxLength(5000)
+            .HasColumnName("SubmissionText");
+
+        entity.Property(s => s.FileUrl)
+            .HasMaxLength(500)
+            .HasColumnName("FileUrl");
+
+        entity.Property(s => s.SubmittedAt)
+            .HasColumnType("datetime2")
+            .HasColumnName("SubmittedAt");
+
+        entity.Property(s => s.Grade)
+            .HasColumnName("Grade");
+
+        entity.Property(s => s.GradedAt)
+            .HasColumnType("datetime2")
+            .HasColumnName("GradedAt");
+
+        entity.Property(s => s.GradedByTeacherId)
+            .HasColumnName("GradedByTeacherId");
+
+        entity.Property(s => s.Status)
+            .IsRequired()
+            .HasConversion<int>()
+            .HasColumnName("Status");
+
+        entity.Property(s => s.CreatedAt)
+            .IsRequired()
+            .HasColumnType("datetime2")
+            .HasDefaultValueSql("GETUTCDATE()")
+            .HasColumnName("CreatedAt");
+
+        entity.Property(s => s.UpdatedAt)
+            .HasColumnType("datetime2")
+            .HasColumnName("UpdatedAt");
+
+        entity.HasIndex(s => new { s.AssignmentId, s.StudentId })
+            .IsUnique()
+            .HasDatabaseName("IX_AssignmentSubmission_Assignment_Student_Unique");
+
+        entity.HasIndex(s => s.AssignmentId)
+            .HasDatabaseName("IX_AssignmentSubmission_AssignmentId");
+
+        entity.HasIndex(s => s.StudentId)
+            .HasDatabaseName("IX_AssignmentSubmission_StudentId");
+
+        entity.HasIndex(s => s.Status)
+            .HasDatabaseName("IX_AssignmentSubmission_Status");
+
+        entity.HasIndex(s => new { s.AssignmentId, s.Status })
+            .HasDatabaseName("IX_AssignmentSubmission_Assignment_Status");
+
+        entity.HasOne(s => s.Assignment)
+            .WithMany(a => a.Submissions)
+            .HasForeignKey(s => s.AssignmentId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+
+        entity.HasOne(s => s.Student)
+            .WithMany()
+            .HasForeignKey(s => s.StudentId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
+
+        entity.HasOne(s => s.GradedByTeacher)
+            .WithMany()
+            .HasForeignKey(s => s.GradedByTeacherId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
     }
 }

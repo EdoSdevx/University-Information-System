@@ -88,6 +88,15 @@ public static class SeedData
             DepartmentId = departments[0].Id,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
             Role = UserRole.Student,
+            PhoneNumber = $"+1-555-010{i:00}",
+            DateOfBirth = new DateTime(2003, i % 12 + 1, (i % 28) + 1),
+            Address = $"{100 + i} Computer Science Lane",
+            City = "Tech City",
+            Major = "Computer Science",
+            AcademicYear = "2024-2025",
+            EmergencyContactName = $"Parent {i}",
+            EmergencyContactPhone = $"+1-555-020{i:00}",
+            EmergencyContactRelationship = "Parent",
             CreatedAt = DateTime.UtcNow
         }).ToList();
 
@@ -99,6 +108,15 @@ public static class SeedData
             DepartmentId = departments[1].Id,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
             Role = UserRole.Student,
+            PhoneNumber = $"+1-555-030{i:00}",
+            DateOfBirth = new DateTime(2003, (i % 12) + 1, (i % 28) + 1),
+            Address = $"{200 + i} Engineering Avenue",
+            City = "Tech City",
+            Major = "Electrical Engineering",
+            AcademicYear = "2024-2025",
+            EmergencyContactName = $"Parent {i}",
+            EmergencyContactPhone = $"+1-555-040{i:00}",
+            EmergencyContactRelationship = "Parent",
             CreatedAt = DateTime.UtcNow
         }).ToList();
 
@@ -110,6 +128,15 @@ public static class SeedData
             DepartmentId = departments[2].Id,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
             Role = UserRole.Student,
+            PhoneNumber = $"+1-555-050{i:00}",
+            DateOfBirth = new DateTime(2003, (i % 12) + 1, (i % 28) + 1),
+            Address = $"{300 + i} Math Boulevard",
+            City = "Science City",
+            Major = "Mathematics",
+            AcademicYear = "2024-2025",
+            EmergencyContactName = $"Guardian {i}",
+            EmergencyContactPhone = $"+1-555-060{i:00}",
+            EmergencyContactRelationship = "Guardian",
             CreatedAt = DateTime.UtcNow
         }).ToList();
 
@@ -121,6 +148,15 @@ public static class SeedData
             DepartmentId = departments[3].Id,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Student123"),
             Role = UserRole.Student,
+            PhoneNumber = $"+1-555-070{i:00}",
+            DateOfBirth = new DateTime(2003, (i % 12) + 1, (i % 28) + 1),
+            Address = $"{400 + i} Physics Street",
+            City = "Science City",
+            Major = "Physics",
+            AcademicYear = "2024-2025",
+            EmergencyContactName = $"Sibling {i}",
+            EmergencyContactPhone = $"+1-555-080{i:00}",
+            EmergencyContactRelationship = "Sibling",
             CreatedAt = DateTime.UtcNow
         }).ToList();
 
@@ -549,7 +585,6 @@ public static class SeedData
         await context.SaveChangesAsync();
 
         // Attendances
-        // Attendances
         var attendances = new List<Attendance>();
         var random = new Random();
 
@@ -564,8 +599,8 @@ public static class SeedData
                 // Create record for Day1
                 var day1Status = random.Next(0, 100) switch
                 {
-                    >= 90 => "Absent",         // 10% chance Absent
-                    _ => "Present"             // 90% chance Present
+                    >= 90 => "Absent",
+                    _ => "Present"
                 };
 
                 attendances.Add(new Attendance

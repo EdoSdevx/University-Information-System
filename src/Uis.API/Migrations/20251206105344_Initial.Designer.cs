@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Uis.API.Models;
 
@@ -11,9 +12,11 @@ using Uis.API.Models;
 namespace Uis.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251206105344_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,54 +148,6 @@ namespace Uis.API.Migrations
                     b.HasIndex("TargetDepartmentId");
 
                     b.ToTable("Announcements", (string)null);
-                });
-
-            modelBuilder.Entity("Uis.API.Models.Attendance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreatedAt")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int?>("Day")
-                        .HasColumnType("int");
-
-                    b.Property<int>("EnrollmentId")
-                        .HasColumnType("int")
-                        .HasColumnName("EnrollmentId");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("Status");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("UpdatedAt");
-
-                    b.Property<int>("Week")
-                        .HasColumnType("int")
-                        .HasColumnName("Week");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Week")
-                        .HasDatabaseName("IX_Attendance_Week");
-
-                    b.HasIndex("EnrollmentId", "Week", "Day")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Attendance_Enrollment_Week_Day_Unique")
-                        .HasFilter("[Day] IS NOT NULL");
-
-                    b.ToTable("Attendances", (string)null);
                 });
 
             modelBuilder.Entity("Uis.API.Models.Course", b =>
@@ -487,15 +442,6 @@ namespace Uis.API.Migrations
                         .HasColumnName("CreatedAt")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<int?>("Exam1")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Exam2")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("Final")
-                        .HasColumnType("int");
-
                     b.Property<string>("LetterGrade")
                         .IsRequired()
                         .HasMaxLength(2)
@@ -508,9 +454,6 @@ namespace Uis.API.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasDefaultValue("")
                         .HasColumnName("Notes");
-
-                    b.Property<int?>("Project")
-                        .HasColumnType("int");
 
                     b.Property<decimal>("Score")
                         .HasPrecision(5, 2)
@@ -558,23 +501,11 @@ namespace Uis.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AcademicYear")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasColumnName("CreatedAt")
                         .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
 
                     b.Property<int?>("DepartmentId")
                         .HasColumnType("int");
@@ -584,15 +515,6 @@ namespace Uis.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("Email");
-
-                    b.Property<string>("EmergencyContactName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EmergencyContactPhone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EmergencyContactRelationship")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -609,16 +531,10 @@ namespace Uis.API.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("LastName");
 
-                    b.Property<string>("Major")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("PasswordHash");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
@@ -678,17 +594,6 @@ namespace Uis.API.Migrations
                     b.Navigation("TargetCourseInstance");
 
                     b.Navigation("TargetDepartment");
-                });
-
-            modelBuilder.Entity("Uis.API.Models.Attendance", b =>
-                {
-                    b.HasOne("Uis.API.Models.Enrollment", "Enrollment")
-                        .WithMany("Attendances")
-                        .HasForeignKey("EnrollmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Enrollment");
                 });
 
             modelBuilder.Entity("Uis.API.Models.Course", b =>
@@ -828,11 +733,6 @@ namespace Uis.API.Migrations
             modelBuilder.Entity("Uis.API.Models.Department", b =>
                 {
                     b.Navigation("Courses");
-                });
-
-            modelBuilder.Entity("Uis.API.Models.Enrollment", b =>
-                {
-                    b.Navigation("Attendances");
                 });
 
             modelBuilder.Entity("Uis.API.Models.User", b =>

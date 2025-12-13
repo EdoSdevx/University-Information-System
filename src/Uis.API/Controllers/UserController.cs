@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Uis.API.DTOs.User;
 using Uis.API.Services.Interfaces;
@@ -7,6 +8,7 @@ using Uis.API.Services.Interfaces;
 namespace Uis.API.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
 {
@@ -18,7 +20,6 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("by-email/{email}")]
-    [Authorize]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserByEmailAsync(string email)
@@ -30,7 +31,6 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("teacher/{teacherId}/courses")]
-    [Authorize]
     [ProducesResponseType(typeof(TeacherResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTeacherWithCoursesAsync(int teacherId)
@@ -39,5 +39,65 @@ public class UserController : ControllerBase
         if (!result.Success)
             return StatusCode(result.StatusCode, result);
         return Ok(result);
+    }
+
+    [HttpGet("profile")]
+    [ProducesResponseType(typeof(StudentProfileResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetProfile()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.GetStudentProfileAsync(userId);   
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return Ok(result);
+    }
+
+    [HttpPut("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] StudentUpdateProfileRequest model)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.UpdateStudentProfileAsync(userId, model);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+       
+    }
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordRequest model)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.ChangePasswordAsync(userId, model);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(new { message = result.Message });
     }
 }

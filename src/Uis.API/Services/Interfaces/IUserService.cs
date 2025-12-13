@@ -13,4 +13,7 @@ public interface IUserService
     Task<ResultService<UserResponse>> GetUserByIdAsync(int id);
     Task<ResultService<UserResponse>> GetUserByEmailAsync(string email);
     Task<ResultService<TeacherResponse>> GetTeacherWithCoursesAsync(int teacherId);
+    Task<ResultService<StudentProfileResponse>> GetStudentProfileAsync(int studentId);
+    Task<ResultService<StudentProfileResponse>> UpdateStudentProfileAsync(int studentId, StudentUpdateProfileRequest request);
+    Task<ResultService<bool>> ChangePasswordAsync(int userId, ChangePasswordRequest model);
 }

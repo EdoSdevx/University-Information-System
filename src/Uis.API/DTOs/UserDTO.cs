@@ -35,7 +35,7 @@ public class UserResponse
     public UserRole Role { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
-}
+}   
 
 public class TeacherResponse
 {
@@ -45,4 +45,48 @@ public class TeacherResponse
     public string? LastName { get; set; }
     public int CourseCount { get; set; }
 
+}
+
+// ==================== STUDENT PROFILE DTOs ====================
+
+
+public class StudentProfileResponse
+{
+    public int Id { get; set; }
+    public string? Email { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? PhoneNumber { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public string? Address { get; set; }
+    public string? City { get; set; }
+    public string? Major { get; set; }
+    public string? AcademicYear { get; set; }
+    public string? EmergencyContactName { get; set; }
+    public string? EmergencyContactPhone { get; set; }
+    public string? EmergencyContactRelationship { get; set; }
+    public int? DepartmentId { get; set; }
+    public UserRole Role { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public DateTime? LastLoginAt { get; set; }
+}
+
+public class StudentUpdateProfileRequest
+{
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? PhoneNumber { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public string? Address { get; set; }
+    public string? City { get; set; }
+    public string? EmergencyContactName { get; set; }
+    public string? EmergencyContactPhone { get; set; }
+    public string? EmergencyContactRelationship { get; set; }
+}
+
+public class ChangePasswordRequest
+{
+    public required string CurrentPassword { get; set; }
+    public required string NewPassword { get; set; }
 }

@@ -1397,15 +1397,221 @@ export const StudentPages = {
 
     profile: {
         render: () => `
-            <div class="student-breadcrumb">Home / My Profile</div>
-            <div class="student-section-header">Personal Information</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">👤</div>
-                <div class="placeholder-title">My Profile</div>
-                <div class="placeholder-text">View and update your personal information.</div>
+        <div class="student-breadcrumb">Home / My Profile</div>
+        <div class="student-section-header">Personal Profile</div>
+        
+        <div class="student-profile-container">
+            <div class="student-profile-header">
+                <div class="student-profile-pic-wrapper">
+                    <img id="profilePic" src="https://via.placeholder.com/120?text=Avatar" class="student-profile-pic">
+                </div>
+                <div class="student-profile-info">
+                    <h2 id="profileName">Loading...</h2>
+                    <p id="profileEmail" class="student-profile-email">Email: -</p>
+                    <p id="profileMajor" class="student-profile-major">Major: -</p>
+                </div>
             </div>
-        `,
-        afterRender: () => { }
+            
+            <div class="student-profile-tabs">
+                <button class="student-profile-tab-btn student-profile-tab-active" onclick="window.showProfileTab('personal')">Personal Info</button>
+                <button class="student-profile-tab-btn" onclick="window.showProfileTab('contact')">Contact</button>
+                <button class="student-profile-tab-btn" onclick="window.showProfileTab('security')">Security</button>
+            </div>
+            
+            <div id="personalTab" class="student-profile-tab-content">
+                <div class="student-profile-form">
+                    <div class="student-profile-form-group">
+                        <label>First Name</label>
+                        <input type="text" id="firstName" class="student-profile-input">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="lastName" class="student-profile-input">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Email</label>
+                        <input type="email" id="profileEmail" class="student-profile-input" readonly>
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phoneNumber" class="student-profile-input" placeholder="+1 (555) 000-0000">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" id="dateOfBirth" class="student-profile-input">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Address</label>
+                        <input type="text" id="address" class="student-profile-input" placeholder="Street address">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>City</label>
+                        <input type="text" id="city" class="student-profile-input">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Major</label>
+                        <input type="text" id="major" class="student-profile-input" readonly>
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Academic Year</label>
+                        <input type="text" id="academicYear" class="student-profile-input" readonly>
+                    </div>
+                    <button class="student-profile-btn-save" onclick="window.savePersonalInfo()">Save Changes</button>
+                </div>
+            </div>
+            
+            <div id="contactTab" class="student-profile-tab-content" style="display: none;">
+                <div class="student-profile-form">
+                    <h4>Emergency Contact</h4>
+                    <div class="student-profile-form-group">
+                        <label>Emergency Contact Name</label>
+                        <input type="text" id="emergencyName" class="student-profile-input" placeholder="Full name">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Emergency Contact Phone</label>
+                        <input type="tel" id="emergencyPhone" class="student-profile-input" placeholder="+1 (555) 000-0000">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Relationship</label>
+                        <select id="emergencyRelationship" class="student-profile-input">
+                            <option value="">Select relationship</option>
+                            <option value="Parent">Parent</option>
+                            <option value="Guardian">Guardian</option>
+                            <option value="Sibling">Sibling</option>
+                            <option value="Spouse">Spouse</option>
+                            <option value="Friend">Friend</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <button class="student-profile-btn-save" onclick="window.saveContactInfo()">Save Changes</button>
+                </div>
+            </div>
+            
+            <div id="securityTab" class="student-profile-tab-content" style="display: none;">
+                <div class="student-profile-form">
+                    <h4>Change Password</h4>
+                    <div class="student-profile-form-group">
+                        <label>Current Password</label>
+                        <input type="password" id="currentPassword" class="student-profile-input" placeholder="Enter current password">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPassword" class="student-profile-input" placeholder="Enter new password (min. 8 characters)">
+                    </div>
+                    <div class="student-profile-form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="student-profile-input" placeholder="Confirm new password">
+                    </div>
+                    <button class="student-profile-btn-save" onclick="window.changePassword()">Change Password</button>
+                </div>
+            </div>
+        </div>
+    `,
+        afterRender: async () => {
+            const response = await apiRequest('/user/profile');
+
+            if (!response.ok || !response.data) {
+                console.error('Failed to load profile');
+                return;
+            }
+
+            const profile = response.data;
+
+            document.getElementById('profileName').textContent = `${profile.firstName} ${profile.lastName}`;
+            document.getElementById('profileEmail').textContent = `Email: ${profile.email}`;
+            document.getElementById('profileMajor').textContent = `Major: ${profile.major || 'N/A'}`;
+
+            document.getElementById('firstName').value = profile.firstName || '';
+            document.getElementById('lastName').value = profile.lastName || '';
+            document.querySelector('input[readonly][type="email"]').value = profile.email || '';
+            document.getElementById('phoneNumber').value = profile.phoneNumber || '';
+            document.getElementById('dateOfBirth').value = profile.dateOfBirth ? profile.dateOfBirth.split('T')[0] : '';
+            document.getElementById('address').value = profile.address || '';
+            document.getElementById('city').value = profile.city || '';
+            document.getElementById('major').value = profile.major || '';
+            document.getElementById('academicYear').value = profile.academicYear || '';
+
+            // Fill contact info
+            document.getElementById('emergencyName').value = profile.emergencyContactName || '';
+            document.getElementById('emergencyPhone').value = profile.emergencyContactPhone || '';
+            document.getElementById('emergencyRelationship').value = profile.emergencyContactRelationship || '';
+
+            window.showProfileTab = function (tab) {
+                document.querySelectorAll('.student-profile-tab-content').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.student-profile-tab-btn').forEach(btn => btn.classList.remove('student-profile-tab-active'));
+
+                document.getElementById(tab + 'Tab').style.display = 'block';
+                event.target.classList.add('student-profile-tab-active');
+            };
+
+            window.savePersonalInfo = async function () {
+                const data = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    dateOfBirth: document.getElementById('dateOfBirth').value || null,
+                    address: document.getElementById('address').value,
+                    city: document.getElementById('city').value
+                };
+
+                const response = await apiRequest('/user/profile', 'PUT', data);
+                if (response.ok) {
+                    alert('Personal information updated successfully!');
+                } else {
+                    alert('Failed to update personal information');
+                }
+            };
+
+            window.saveContactInfo = async function () {
+                const data = {
+                    emergencyContactName: document.getElementById('emergencyName').value,
+                    emergencyContactPhone: document.getElementById('emergencyPhone').value,
+                    emergencyContactRelationship: document.getElementById('emergencyRelationship').value
+                };
+
+                const response = await apiRequest('/user/profile', 'PUT', data);
+                if (response.ok) {
+                    alert('Contact information updated successfully!');
+                } else {
+                    alert('Failed to update contact information');
+                }
+            };
+
+            window.changePassword = async function () {
+                const current = document.getElementById('currentPassword').value;
+                const newPass = document.getElementById('newPassword').value;
+                const confirm = document.getElementById('confirmPassword').value;
+
+                if (!current || !newPass || !confirm) {
+                    alert('Please fill all fields');
+                    return;
+                }
+
+                if (newPass.length < 8) {
+                    alert('New password must be at least 8 characters long');
+                    return;
+                }
+
+                if (newPass !== confirm) {
+                    alert('New passwords do not match');
+                    return;
+                }
+
+                const response = await apiRequest('/user/change-password', 'POST', {
+                    currentPassword: current,
+                    newPassword: newPass
+                });
+
+                if (response.ok) {
+                    alert('Password changed successfully!');
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                } else {
+                    alert('Failed to change password');
+                }
+            };
+        }
     },
 
     settings: {

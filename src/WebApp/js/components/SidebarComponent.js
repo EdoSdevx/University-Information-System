@@ -21,7 +21,6 @@ export const SidebarComponent = {
             ],
             account: [
                 { page: 'profile', label: 'My Profile' },
-                { page: 'settings', label: 'Account Settings' },
                 { page: 'help', label: 'Help & Support' }
             ]
         },
@@ -38,7 +37,6 @@ export const SidebarComponent = {
             ],
             account: [
                 { page: 'profile', label: 'My Profile' },
-                { page: 'settings', label: 'Account Settings' },
                 { page: 'help', label: 'Help & Support' }
             ]
         },

@@ -6,25 +6,7 @@
 import { apiRequest } from '../core/ApiService.js';
 
 const StudentDashboardService = {
-    async fetchDashboardData() {
-        try {
-            const enrollmentsResponse = await apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100');
-            const gradesResponse = await apiRequest('/grade/my-grades?pageIndex=1&pageSize=100');
-
-            if (!enrollmentsResponse.ok || !gradesResponse.ok) {
-                console.error('Failed to fetch dashboard data');
-                return null;
-            }
-
-            return {
-                enrollments: enrollmentsResponse.data || [],
-                grades: gradesResponse.data || []
-            };
-        } catch (error) {
-            console.error('Dashboard data fetch error:', error);
-            return null;
-        }
-    },
+  
 
     calculateGPA(grades) {
         if (!grades || grades.length === 0) return 0;
@@ -86,52 +68,104 @@ const StudentDashboardService = {
 export const StudentPages = {
     dashboard: {
         render: () => `
-            <div class="student-breadcrumb">Home / Dashboard</div>
-            <div class="student-banner">
-                <div class="student-banner-title">Course Registration Now Open</div>
-                <div class="student-banner-text">Spring 2025 course registration is available. Registration closes December 15, 2024. Please register for your courses promptly.</div>
-            </div>
-            <div style="margin-bottom: 30px;">
-                <div class="student-section-header">Academic Summary</div>
-                <div id="academicSummary" class="student-stats">
-                    <div class="student-stat-card">
-                        <div class="student-stat-value loading">-</div>
-                        <div class="student-stat-label">Enrolled Courses</div>
-                    </div>
-                    <div class="student-stat-card">
-                        <div class="student-stat-value loading">-</div>
-                        <div class="student-stat-label">Current GPA</div>
-                    </div>
-                    <div class="student-stat-card">
-                        <div class="student-stat-value loading">-</div>
-                        <div class="student-stat-label">Credits Earned</div>
-                    </div>
-                    <div class="student-stat-card">
-                        <div class="student-stat-value loading">-</div>
-                        <div class="student-stat-label">Upcoming Exams</div>
-                    </div>
+        <div class="student-breadcrumb">Home / Dashboard</div>
+        <div id="enrollmentBanner"></div>
+        <div style="margin-bottom: 30px;">
+            <div class="student-section-header">Academic Summary</div>
+            <div id="academicSummary" class="student-stats">
+                <div class="student-stat-card">
+                    <div class="student-stat-value loading">-</div>
+                    <div class="student-stat-label">Enrolled Courses</div>
+                </div>
+                <div class="student-stat-card">
+                    <div class="student-stat-value loading">-</div>
+                    <div class="student-stat-label">Current GPA</div>
+                </div>
+                <div class="student-stat-card">
+                    <div class="student-stat-value loading">-</div>
+                    <div class="student-stat-label">Credits Earned</div>
+                </div>
+                <div class="student-stat-card">
+                    <div class="student-stat-value loading">-</div>
+                    <div class="student-stat-label">Upcoming Exams</div>
                 </div>
             </div>
-            <div>
-                <div class="student-section-header">Current Course Enrollment</div>
-                <div id="enrolledCourses" class="student-courses">
-                    <div style="text-align: center; padding: 20px;">Loading courses...</div>
-                </div>
+        </div>
+        <div>
+            <div class="student-section-header">Current Course Enrollment</div>
+            <div id="enrolledCourses" class="student-courses">
+                <div style="text-align: center; padding: 20px;">Loading courses...</div>
             </div>
-        `,
+        </div>
+    `,
         afterRender: async () => {
-            const data = await StudentDashboardService.fetchDashboardData();
-            if (!data) {
-                document.getElementById('enrolledCourses').innerHTML =
-                    '<div style="text-align: center; padding: 20px; color: red;">Failed to load courses</div>';
-                return;
-            }
+            try {
+                // Fetch academic year data
+                const academicYearResponse = await apiRequest('/academicYear/active');
+                const enrollmentsResponse = await apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100');
+                const gradesResponse = await apiRequest('/grade/my-grades?pageIndex=1&pageSize=100');
 
-            const gpa = StudentDashboardService.calculateGPA(data.grades);
-            const enrollmentCount = data.enrollments.length;
-            const creditsEarned = data.enrollments.reduce((sum, e) => sum + (e.creditHours || 3), 0);
+                // Check enrollment period
+                const now = new Date();
+                let isEnrollmentOpen = false;
+                let enrollmentEndDate = null;
 
-            const summaryHTML = `
+                if (academicYearResponse.ok && academicYearResponse.data) {
+                    const academicYear = academicYearResponse.data;
+                    const startDate = new Date(academicYear.enrollmentStartDate);
+                    const endDate = new Date(academicYear.enrollmentEndDate);
+                    isEnrollmentOpen = now >= startDate && now <= endDate;
+                    enrollmentEndDate = endDate;
+                }
+
+                // Get enrollment count from response
+                const enrollmentCount = enrollmentsResponse.ok && enrollmentsResponse.data
+                    ? (enrollmentsResponse.data.totalCount || enrollmentsResponse.data.length || 0)
+                    : 0;
+
+                const enrollments = enrollmentsResponse.ok && enrollmentsResponse.data
+                    ? (enrollmentsResponse.data.data || enrollmentsResponse.data || [])
+                    : [];
+
+                const grades = gradesResponse.ok && gradesResponse.data
+                    ? (gradesResponse.data.data || gradesResponse.data || [])
+                    : [];
+
+                // Display appropriate banner
+                const bannerContainer = document.getElementById('enrollmentBanner');
+                if (isEnrollmentOpen) {
+                    const formattedDate = enrollmentEndDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    bannerContainer.innerHTML = `
+                    <div class="student-banner">
+                        <div class="student-banner-title">Course Registration Now Open</div>
+                        <div class="student-banner-text">
+                            ${enrollmentCount > 0
+                            ? `You are currently registered for ${enrollmentCount} course${enrollmentCount !== 1 ? 's' : ''}. `
+                            : ''}Registration closes on ${formattedDate}. ${enrollmentCount === 0 ? 'Please register for your courses promptly.' : 'You can still add or drop courses.'}
+                        </div>
+                    </div>
+                `;
+                } else {
+                    bannerContainer.innerHTML = `
+                    <div class="student-banner">
+                        <div class="student-banner-title">Registration Period Closed</div>
+                        <div class="student-banner-text">
+                            You are registered for ${enrollmentCount} course${enrollmentCount !== 1 ? 's' : ''} this semester. Course registration is currently closed.
+                        </div>
+                    </div>
+                `;
+                }
+
+                // Calculate statistics
+                const gpa = StudentDashboardService.calculateGPA(grades);
+                const creditsEarned = enrollments.reduce((sum, e) => sum + (e.creditHours || 3), 0);
+
+                // Update summary cards
+                const summaryHTML = `
                 <div class="student-stat-card">
                     <div class="student-stat-value">${enrollmentCount}</div>
                     <div class="student-stat-label">Enrolled Courses</div>
@@ -145,22 +179,23 @@ export const StudentPages = {
                     <div class="student-stat-label">Credits Earned</div>
                 </div>
                 <div class="student-stat-card">
-                    <div class="student-stat-value">${data.enrollments.length > 0 ? Math.ceil(data.enrollments.length * 0.75) : 0}</div>
+                    <div class="student-stat-value">${enrollments.length > 0 ? Math.ceil(enrollments.length * 0.75) : 0}</div>
                     <div class="student-stat-label">Upcoming Exams</div>
                 </div>
             `;
-            document.getElementById('academicSummary').innerHTML = summaryHTML;
+                document.getElementById('academicSummary').innerHTML = summaryHTML;
 
-            if (data.enrollments.length === 0) {
-                document.getElementById('enrolledCourses').innerHTML =
-                    '<div style="text-align: center; padding: 20px;">No courses enrolled yet. <a href="#registration">Browse available courses</a></div>';
-                return;
-            }
+                // Display enrolled courses
+                if (enrollments.length === 0) {
+                    document.getElementById('enrolledCourses').innerHTML =
+                        '<div style="text-align: center; padding: 20px;">No courses enrolled yet. <a href="#registration">Browse available courses</a></div>';
+                    return;
+                }
 
-            const coursesHTML = data.enrollments.map((enrollment, index) => {
-                const colorClass = StudentDashboardService.getColorClass(index);
+                const coursesHTML = enrollments.map((enrollment, index) => {
+                    const colorClass = StudentDashboardService.getColorClass(index);
 
-                return `
+                    return `
                     <div class="student-course-card">
                         <div class="student-course-header ${colorClass}">
                             <div class="student-course-code">${enrollment.courseCode || 'N/A'}</div>
@@ -188,84 +223,204 @@ export const StudentPages = {
                         </div>
                     </div>
                 `;
-            }).join('');
+                }).join('');
 
-            document.getElementById('enrolledCourses').innerHTML = coursesHTML;
+                document.getElementById('enrolledCourses').innerHTML = coursesHTML;
 
-            document.querySelectorAll('[data-course-instance-id]').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    if (confirm('Are you sure you want to drop this course?')) {
-                        const response = await apiRequest('/enrollment/drop', 'POST', {
-                            courseInstanceId: parseInt(btn.dataset.courseInstanceId)
-                        });
+                // Add drop course functionality
+                document.querySelectorAll('[data-course-instance-id]').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        if (confirm('Are you sure you want to drop this course?')) {
+                            const response = await apiRequest('/enrollment/drop', 'POST', {
+                                courseInstanceId: parseInt(btn.dataset.courseInstanceId)
+                            });
 
-                        if (response.ok) {
-                            alert('Course dropped successfully');
-                            window.location.reload();
-                        } else {
-                            alert('Failed to drop course: ' + response.message);
+                            if (response.ok) {
+                                alert('Course dropped successfully');
+                                window.location.reload();
+                            } else {
+                                alert('Failed to drop course: ' + (response.message || 'Unknown error'));
+                            }
                         }
-                    }
+                    });
                 });
-            });
+
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                document.getElementById('enrolledCourses').innerHTML =
+                    '<div style="text-align: center; padding: 20px; color: red;">Failed to load dashboard data</div>';
+            }
         }
     },
 
     courses: {
         render: () => `
-            <div class="student-breadcrumb">Home / My Courses</div>
-            <div class="student-section-header">Your Enrolled Courses</div>
-            <div id="coursesList" class="student-courses">
-                <div style="text-align: center; padding: 20px;">Loading courses...</div>
+        <div class="student-breadcrumb">Home / My Courses</div>
+        <div class="student-section-header">Your Enrolled Courses</div>
+        <div id="coursesList" class="student-courses">
+            <div style="text-align: center; padding: 20px;">Loading courses...</div>
+        </div>
+
+        <!-- Course Details Modal -->
+        <div class="register-course-schedule-modal" id="courseDetailModal">
+            <div class="register-course-modal-content">
+                <div class="register-course-modal-header">
+                    <h3 id="courseDetailTitle">Course Details</h3>
+                    <button class="register-course-modal-close" onclick="document.getElementById('courseDetailModal').style.display='none'">×</button>
+                </div>
+                <div class="register-course-modal-body">
+                    <div id="courseDetailContent"></div>
+                </div>
             </div>
-        `,
+        </div>
+    `,
         afterRender: async () => {
             const response = await apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100');
-            if (!response.ok || !response.data || response.data.length === 0) {
+
+            if (!response.ok || !response.data) {
+                document.getElementById('coursesList').innerHTML =
+                    '<div style="text-align: center; padding: 20px;">Failed to load courses.</div>';
+                return;
+            }
+
+            const courses = response.data.data || response.data || [];
+
+            if (courses.length === 0) {
                 document.getElementById('coursesList').innerHTML =
                     '<div style="text-align: center; padding: 20px;">No courses enrolled yet.</div>';
                 return;
             }
 
-            const courses = response.data;
             const coursesHTML = courses.map((enrollment, index) => {
                 const colorClass = StudentDashboardService.getColorClass(index);
 
                 return `
-                    <div class="student-course-card">
-                        <div class="student-course-header ${colorClass}">
-                            <div class="student-course-code">${enrollment.courseCode}</div>
-                            <div class="student-course-name">${enrollment.courseName}</div>
+                <div class="student-course-card">
+                    <div class="student-course-header ${colorClass}">
+                        <div class="student-course-code">${enrollment.courseCode}</div>
+                        <div class="student-course-name">${enrollment.courseName}</div>
+                    </div>
+                    <div class="student-course-body">
+                        <div class="student-course-meta">
+                            <div class="student-course-meta-item">
+                                <div class="student-course-meta-label">Instructor</div>
+                                <div class="student-course-meta-value">${enrollment.teacherName}</div>
+                            </div>
+                            <div class="student-course-meta-item">
+                                <div class="student-course-meta-label">Section</div>
+                                <div class="student-course-meta-value">${enrollment.section}</div>
+                            </div>
+                            <div class="student-course-meta-item">
+                                <div class="student-course-meta-label">Status</div>
+                                <div class="student-course-meta-value">${enrollment.status}</div>
+                            </div>
+                            <div class="student-course-meta-item">
+                                <div class="student-course-meta-label">Enrolled</div>
+                                <div class="student-course-meta-value">${new Date(enrollment.enrolledAt).toLocaleDateString()}</div>
+                            </div>
                         </div>
-                        <div class="student-course-body">
-                            <div class="student-course-meta">
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Instructor</div>
-                                    <div class="student-course-meta-value">${enrollment.teacherName}</div>
-                                </div>
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Section</div>
-                                    <div class="student-course-meta-value">${enrollment.section}</div>
-                                </div>
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Status</div>
-                                    <div class="student-course-meta-value">${enrollment.status}</div>
-                                </div>
-                                <div class="student-course-meta-item">
-                                    <div class="student-course-meta-label">Enrolled</div>
-                                    <div class="student-course-meta-value">${new Date(enrollment.enrolledAt).toLocaleDateString()}</div>
-                                </div>
+                        <div class="student-course-actions">
+                            <button class="student-course-btn" onclick="window.showCourseDetails(${enrollment.courseInstanceId}, '${enrollment.courseCode}', '${enrollment.courseName}')">View Details</button>
+                            <button class="student-course-btn secondary" data-course-instance-id="${enrollment.courseInstanceId}">Drop Course</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            document.getElementById('coursesList').innerHTML = coursesHTML;
+
+            // Show course details function
+            window.showCourseDetails = async function (courseInstanceId, courseCode, courseName) {
+                const modal = document.getElementById('courseDetailModal');
+                const title = document.getElementById('courseDetailTitle');
+                const content = document.getElementById('courseDetailContent');
+
+                title.textContent = `${courseCode} - ${courseName}`;
+                content.innerHTML = '<div style="text-align: center; padding: 20px;">Loading details...</div>';
+                modal.style.display = 'flex';
+
+                try {
+                    const detailResponse = await apiRequest(`/courseInstance/${courseInstanceId}/enrollment-detail`);
+
+                    if (!detailResponse.ok || !detailResponse.data) {
+                        content.innerHTML = '<div style="text-align: center; padding: 20px; color: red;">Failed to load course details</div>';
+                        return;
+                    }
+
+                    const details = detailResponse.data;
+
+                    const getDayName = (dayNum) => {
+                        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                        return days[dayNum] || 'TBA';
+                    };
+
+                    const formatTime = (time) => {
+                        if (!time) return 'TBA';
+                        const [hours, minutes] = time.split(':');
+                        const h = parseInt(hours);
+                        const ampm = h >= 12 ? 'PM' : 'AM';
+                        const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+                        return `${displayH}:${minutes} ${ampm}`;
+                    };
+
+                    const scheduleDays = [];
+                    if (details.day1 !== null && details.day1 !== undefined) {
+                        scheduleDays.push(getDayName(details.day1));
+                    }
+                    if (details.day2 !== null && details.day2 !== undefined) {
+                        scheduleDays.push(getDayName(details.day2));
+                    }
+
+                    const detailHTML = `
+                    <div class="register-course-schedule-details">
+                        <div class="register-course-schedule-item">
+                            <label>Course Code:</label>
+                            <span>${details.courseCode || courseCode}</span>
+                        </div>
+                        <div class="register-course-schedule-item">
+                            <label>Course Name:</label>
+                            <span>${details.courseName || courseName}</span>
+                        </div>
+                        <div class="register-course-schedule-item">
+                            <label>Section:</label>
+                            <span>${details.section || 'N/A'}</span>
+                        </div>
+                        <div class="register-course-schedule-item">
+                            <label>Instructor:</label>
+                            <span>${details.teacherName || 'TBA'}</span>
+                        </div>
+                        <div class="register-course-schedule-item">
+                            <label>Credits:</label>
+                            <span>${details.credits} Credits</span>
+                        </div>
+                        <div class="register-course-schedule-item">
+                            <label>Room:</label>
+                            <span>${details.location || 'TBA'}</span>
+                        </div>
+                        <div class="register-course-schedule-item">
+                            <label>Schedule:</label>
+                            <div class="register-course-schedule-days">
+                                ${scheduleDays.length > 0
+                            ? scheduleDays.map(day => `<span style="display: inline-block; background: #f0f0f0; padding: 4px 8px; border-radius: 3px; font-size: 11px; margin-right: 6px;">${day}</span>`).join('')
+                            : '<span>TBA</span>'
+                        }
                             </div>
-                            <div class="student-course-actions">
-                                <button class="student-course-btn">View Details</button>
-                                <button class="student-course-btn secondary" data-course-instance-id="${enrollment.courseInstanceId}">Drop Course</button>
-                            </div>
+                        </div>
+                        <div class="register-course-schedule-item">
+                            <label>Time:</label>
+                            <span>${formatTime(details.startTime)} - ${formatTime(details.endTime)}</span>
                         </div>
                     </div>
                 `;
-            }).join('');
-                
-            document.getElementById('coursesList').innerHTML = coursesHTML;
+
+                    content.innerHTML = detailHTML;
+
+                } catch (error) {
+                    console.error('Error loading course details:', error);
+                    content.innerHTML = '<div style="text-align: center; padding: 20px; color: red;">Failed to load course details</div>';
+                }
+            };
 
             document.querySelectorAll('[data-course-instance-id]').forEach(btn => {
                 btn.addEventListener('click', async () => {
@@ -278,10 +433,16 @@ export const StudentPages = {
                             alert('Course dropped successfully');
                             window.location.reload();
                         } else {
-                            alert('Failed to drop course: ' + dropResponse.message);
+                            alert('Failed to drop course: ' + (dropResponse.message || 'Unknown error'));
                         }
                     }
                 });
+            });
+
+            document.getElementById('courseDetailModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
             });
         }
     },
@@ -437,19 +598,26 @@ export const StudentPages = {
 
             const enrollResponse = await apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100');
 
-            if (enrollResponse.ok && enrollResponse.data && enrollResponse.data.length > 0) {
-                courses = enrollResponse.data;
-                currentCourseId = courses[0].courseInstanceId;
+            if (enrollResponse.ok && enrollResponse.data) {
+                const responseData = enrollResponse.data.data || enrollResponse.data;
 
-                courseSelect.innerHTML = '<option value="">All Courses</option>' +
-                    courses.map(course => `
-                    <option value="${course.courseInstanceId}">
-                        ${course.courseCode} - ${course.courseName}
-                    </option>
-                `).join('');
+                if (responseData.length > 0) {
+                    courses = responseData;
 
-                courseSelect.value = currentCourseId;
-                loadAnnouncements();
+                    courseSelect.innerHTML = '<option value="">All Courses</option>' +
+                        courses.map(course => `
+                <option value="${course.courseInstanceId}">
+                    ${course.courseCode} - ${course.courseName}
+                </option>
+            `).join('');
+
+                    courseSelect.value = "";
+
+                    loadAnnouncements();
+                } else {
+                    courseSelect.innerHTML = '<option value="">No courses enrolled</option>';
+                    announcementsList.innerHTML = '<div class="student-announcements-empty">No courses available</div>';
+                }
             } else {
                 courseSelect.innerHTML = '<option value="">No courses enrolled</option>';
                 announcementsList.innerHTML = '<div class="student-announcements-empty">No courses available</div>';
@@ -466,7 +634,9 @@ export const StudentPages = {
                     return;
                 }
 
-                allAnnouncements = response.data.sort((a, b) =>
+                const responseData = response.data.data || response.data;
+
+                allAnnouncements = responseData.sort((a, b) =>
                     new Date(b.publishedAt) - new Date(a.publishedAt)
                 );
 
@@ -484,41 +654,41 @@ export const StudentPages = {
 
                 if (filtered.length === 0) {
                     announcementsList.innerHTML = `
-                    <div class="student-announcements-empty">
-                        <p>No announcements for this course</p>
-                    </div>
-                `;
+            <div class="student-announcements-empty">
+                <p>No announcements ${currentCourseId ? 'for this course' : 'available'}</p>
+            </div>
+        `;
                     return;
                 }
 
                 announcementsList.innerHTML = filtered.map(ann => {
                     const course = courses.find(c => c.courseInstanceId === ann.targetCourseInstanceId) || {};
-           
+
                     const isUrgent = ann.content && (ann.content.toLowerCase().includes('urgent') || ann.content.toLowerCase().includes('important'));
 
                     return `
-                    <div class="student-announcements-card ${isUrgent ? 'student-announcements-card-urgent' : ''}">
-                        <div class="student-announcements-card-header">
-                            <div class="student-announcements-card-info">
-                                <div class="student-announcements-card-meta">
-                                    <span class="student-announcements-card-course">${course.courseCode}</span>
-                                    <span class="student-announcements-card-teacher">${course.teacherName}</span>
-                                    ${isUrgent ? '<span class="student-announcements-urgent-badge">URGENT</span>' : ''}
-                                </div>
-                                <h4 class="student-announcements-card-title">${ann.title}</h4>
-                            </div>
-                            <span class="student-announcements-card-date">${new Date(ann.publishedAt).toLocaleDateString()}</span>
+            <div class="student-announcements-card ${isUrgent ? 'student-announcements-card-urgent' : ''}">
+                <div class="student-announcements-card-header">
+                    <div class="student-announcements-card-info">
+                        <div class="student-announcements-card-meta">
+                            <span class="student-announcements-card-course">${course.courseCode || 'N/A'}</span>
+                            <span class="student-announcements-card-teacher">${course.teacherName || 'N/A'}</span>
+                            ${isUrgent ? '<span class="student-announcements-urgent-badge">URGENT</span>' : ''}
                         </div>
-                        <div class="student-announcements-card-preview">
-                            <p>${ann.content.substring(0, 120)}${ann.content.length > 120 ? '...' : ''}</p>
-                        </div>
-                        <div class="student-announcements-card-actions">
-                            <button class="student-announcements-view-btn" onclick="window.viewAnnouncementDetail(${ann.id})">
-                                View Details
-                            </button>
-                        </div>
+                        <h4 class="student-announcements-card-title">${ann.title}</h4>
                     </div>
-                `;
+                    <span class="student-announcements-card-date">${new Date(ann.publishedAt).toLocaleDateString()}</span>
+                </div>
+                <div class="student-announcements-card-preview">
+                    <p>${ann.content.substring(0, 120)}${ann.content.length > 120 ? '...' : ''}</p>
+                </div>
+                <div class="student-announcements-card-actions">
+                    <button class="student-announcements-view-btn" onclick="window.viewAnnouncementDetail(${ann.id})">
+                        View Details
+                    </button>
+                </div>
+            </div>
+        `;
                 }).join('');
             }
 
@@ -1308,47 +1478,70 @@ export const StudentPages = {
 
     grades: {
         render: () => `
-            <div class="student-breadcrumb">Home / Grades & Transcripts</div>
-            <div class="student-section-header">Your Grades</div>
-            <div id="gradesContainer">
-                <div style="text-align: center; padding: 20px;">Loading grades...</div>
-            </div>
-        `,
+        <div class="student-breadcrumb">Home / Grades & Transcripts</div>
+        <div class="student-section-header">Your Grades</div>
+        <div id="gradesContainer">
+            <div style="text-align: center; padding: 20px;">Loading grades...</div>
+        </div>
+    `,
         afterRender: async () => {
-            const response = await apiRequest('/grade/my-grades?pageIndex=1&pageSize=100');
+            try {
+                const [enrollmentsResponse, gradesResponse] = await Promise.all([
+                    apiRequest('/enrollment/my-enrollments?pageIndex=1&pageSize=100'),
+                    apiRequest('/grade/my-grades?pageIndex=1&pageSize=100')
+                ]);
 
-            if (!response.ok || !response.data || response.data.length === 0) {
-                document.getElementById('gradesContainer').innerHTML =
-                    '<div style="text-align: center; padding: 20px;">No grades available yet.</div>';
-                return;
-            }
+                if (!enrollmentsResponse.ok || !enrollmentsResponse.data) {
+                    document.getElementById('gradesContainer').innerHTML =
+                        '<div style="text-align: center; padding: 20px;">Failed to load courses.</div>';
+                    return;
+                }
 
-            const grades = response.data;
-            const gpa = StudentDashboardService.calculateGPA(grades);
-            const totalCredits = grades.reduce((sum, g) => sum + (g.creditHours || 0), 0);
+                const enrollments = enrollmentsResponse.data.data || enrollmentsResponse.data || [];
+                const grades = gradesResponse.ok && gradesResponse.data
+                    ? (gradesResponse.data.data || gradesResponse.data || [])
+                    : [];
 
-            const getGradeColor = (letterGrade) => {
-                const colors = {
-                    'A': { bg: '#d4edda', text: '#155724', border: '#c3e6cb' },
-                    'B': { bg: '#cce5ff', text: '#004085', border: '#b8daff' },
-                    'C': { bg: '#fff3cd', text: '#856404', border: '#ffeeba' },
-                    'D': { bg: '#f8d7da', text: '#721c24', border: '#f5c6cb' },
-                    'F': { bg: '#f5c6cb', text: '#721c24', border: '#f1b0b7' }
-                };
-                const firstChar = letterGrade?.charAt(0) || 'F';
-                return colors[firstChar] || colors['F'];
-            };
+                if (enrollments.length === 0) {
+                    document.getElementById('gradesContainer').innerHTML =
+                        '<div style="text-align: center; padding: 20px;">No courses enrolled yet.</div>';
+                    return;
+                }
 
-            const gradesHTML = `
+                const courseGrades = enrollments.map(enrollment => {
+                    const gradeData = grades.find(g =>
+                        g.courseCode === enrollment.courseCode ||
+                        g.courseInstanceId === enrollment.courseInstanceId
+                    );
+
+                    return {
+                        courseCode: enrollment.courseCode,
+                        courseName: enrollment.courseName,
+                        creditHours: enrollment.creditHours || 3,
+                        exam1: gradeData?.exam1 || null,
+                        exam2: gradeData?.exam2 || null,
+                        final: gradeData?.final || null,
+                        project: gradeData?.project || null,
+                        letterGrade: gradeData?.letterGrade || null,
+                        hasGrade: !!gradeData
+                    };
+                });
+
+                const coursesWithGrades = courseGrades.filter(c => c.letterGrade);
+                const gpa = StudentDashboardService.calculateGPA(coursesWithGrades);
+                const totalCredits = courseGrades.reduce((sum, g) => sum + g.creditHours, 0);
+                const earnedCredits = coursesWithGrades.reduce((sum, g) => sum + g.creditHours, 0);
+
+                const gradesHTML = `
                 <div class="student-grades-container">
                     <div class="student-grades-header">
                         <div>
                             <h3>Current Semester Grades</h3>
-                            <p class="student-grades-subtitle">${grades.length} course(s)</p>
+                            <p class="student-grades-subtitle">${courseGrades.length} course(s)</p>
                         </div>
                         <div class="student-grades-summary">
-                                <span>GPA: <strong>${gpa}</strong></span>
-                                <span>Credits: <strong>${totalCredits}/15</strong></span>
+                            <span>GPA: <strong>${gpa}</strong></span>
+                            <span>Credits: <strong>${earnedCredits}/${totalCredits}</strong></span>
                         </div>
                     </div>
 
@@ -1367,16 +1560,19 @@ export const StudentPages = {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${grades.map(grade => `
-                                <tr class="student-grades-row">
+                                ${courseGrades.map(grade => `
+                                <tr class="student-grades-row ${!grade.hasGrade ? 'student-grades-row-pending' : ''}">
                                     <td class="student-grades-col-code"><strong>${grade.courseCode}</strong></td>
                                     <td class="student-grades-col-name">${grade.courseName}</td>
-                                    <td class="student-grades-col-grade">${grade.exam1 || '-'}</td>
-                                    <td class="student-grades-col-grade">${grade.exam2 || '-'}</td>
-                                    <td class="student-grades-col-grade">${grade.final || '-'}</td>
-                                    <td class="student-grades-col-grade">${grade.project || '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.exam1 ?? '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.exam2 ?? '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.final ?? '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.project ?? '-'}</td>
                                     <td class="student-grades-col-letter">
-                                        <span class="student-grades-letter student-grades-letter-${grade.letterGrade.toLowerCase()}">${grade.letterGrade}</span>
+                                        ${grade.letterGrade
+                        ? `<span class="student-grades-letter student-grades-letter-${grade.letterGrade.toLowerCase()}">${grade.letterGrade}</span>`
+                        : '-'
+                    }
                                     </td>
                                     <td class="student-grades-col-credits">${grade.creditHours}</td>
                                 </tr>
@@ -1386,144 +1582,180 @@ export const StudentPages = {
                     </div>
 
                     <div class="student-grades-info">
-                        <p><strong>Note:</strong> Grades are updated as instructors submit them. Contact your instructor if you believe there's an error.</p>
+                        <p><strong>Note:</strong> Grades are updated as instructors submit them. Courses showing "Pending" have not been graded yet. Contact your instructor if you believe there's an error.</p>
                     </div>
                 </div>
             `;
 
-            document.getElementById('gradesContainer').innerHTML = gradesHTML;
+                document.getElementById('gradesContainer').innerHTML = gradesHTML;
+            } catch (error) {
+                console.error('Error loading grades:', error);
+                document.getElementById('gradesContainer').innerHTML =
+                    '<div style="text-align: center; padding: 20px; color: red;">Failed to load grades.</div>';
+            }
         }
     },
 
     profile: {
         render: () => `
-        <div class="student-breadcrumb">Home / My Profile</div>
-        <div class="student-section-header">Personal Profile</div>
-        
-        <div class="student-profile-container">
-            <div class="student-profile-header">
-                <div class="student-profile-pic-wrapper">
-                    <img id="profilePic" src="https://via.placeholder.com/120?text=Avatar" class="student-profile-pic">
-                </div>
-                <div class="student-profile-info">
-                    <h2 id="profileName">Loading...</h2>
-                    <p id="profileEmail" class="student-profile-email">Email: -</p>
-                    <p id="profileMajor" class="student-profile-major">Major: -</p>
-                </div>
+    <div class="student-breadcrumb">Home / My Profile</div>
+    <div class="student-section-header">Personal Profile</div>
+    
+    <div class="student-profile-container">
+        <div class="student-profile-header">
+            <div class="student-profile-pic-wrapper">
+                <img id="profilePic" src="https://via.placeholder.com/120?text=Avatar" class="student-profile-pic">
             </div>
-            
-            <div class="student-profile-tabs">
-                <button class="student-profile-tab-btn student-profile-tab-active" onclick="window.showProfileTab('personal')">Personal Info</button>
-                <button class="student-profile-tab-btn" onclick="window.showProfileTab('contact')">Contact</button>
-                <button class="student-profile-tab-btn" onclick="window.showProfileTab('security')">Security</button>
-            </div>
-            
-            <div id="personalTab" class="student-profile-tab-content">
-                <div class="student-profile-form">
-                    <div class="student-profile-form-group">
-                        <label>First Name</label>
-                        <input type="text" id="firstName" class="student-profile-input">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Last Name</label>
-                        <input type="text" id="lastName" class="student-profile-input">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Email</label>
-                        <input type="email" id="profileEmail" class="student-profile-input" readonly>
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" id="phoneNumber" class="student-profile-input" placeholder="+1 (555) 000-0000">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Date of Birth</label>
-                        <input type="date" id="dateOfBirth" class="student-profile-input">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Address</label>
-                        <input type="text" id="address" class="student-profile-input" placeholder="Street address">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>City</label>
-                        <input type="text" id="city" class="student-profile-input">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Major</label>
-                        <input type="text" id="major" class="student-profile-input" readonly>
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Academic Year</label>
-                        <input type="text" id="academicYear" class="student-profile-input" readonly>
-                    </div>
-                    <button class="student-profile-btn-save" onclick="window.savePersonalInfo()">Save Changes</button>
-                </div>
-            </div>
-            
-            <div id="contactTab" class="student-profile-tab-content" style="display: none;">
-                <div class="student-profile-form">
-                    <h4>Emergency Contact</h4>
-                    <div class="student-profile-form-group">
-                        <label>Emergency Contact Name</label>
-                        <input type="text" id="emergencyName" class="student-profile-input" placeholder="Full name">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Emergency Contact Phone</label>
-                        <input type="tel" id="emergencyPhone" class="student-profile-input" placeholder="+1 (555) 000-0000">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Relationship</label>
-                        <select id="emergencyRelationship" class="student-profile-input">
-                            <option value="">Select relationship</option>
-                            <option value="Parent">Parent</option>
-                            <option value="Guardian">Guardian</option>
-                            <option value="Sibling">Sibling</option>
-                            <option value="Spouse">Spouse</option>
-                            <option value="Friend">Friend</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <button class="student-profile-btn-save" onclick="window.saveContactInfo()">Save Changes</button>
-                </div>
-            </div>
-            
-            <div id="securityTab" class="student-profile-tab-content" style="display: none;">
-                <div class="student-profile-form">
-                    <h4>Change Password</h4>
-                    <div class="student-profile-form-group">
-                        <label>Current Password</label>
-                        <input type="password" id="currentPassword" class="student-profile-input" placeholder="Enter current password">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>New Password</label>
-                        <input type="password" id="newPassword" class="student-profile-input" placeholder="Enter new password (min. 8 characters)">
-                    </div>
-                    <div class="student-profile-form-group">
-                        <label>Confirm New Password</label>
-                        <input type="password" id="confirmPassword" class="student-profile-input" placeholder="Confirm new password">
-                    </div>
-                    <button class="student-profile-btn-save" onclick="window.changePassword()">Change Password</button>
-                </div>
+            <div class="student-profile-info">
+                <h2 id="profileName">Loading...</h2>
+                <p id="profileEmail" class="student-profile-email">Email: -</p>
+                <p id="profileMajor" class="student-profile-major">Major: -</p>
             </div>
         </div>
-    `,
+        
+        <div class="student-profile-tabs">
+            <button class="student-profile-tab-btn" data-tab="personal">Personal Info</button>
+            <button class="student-profile-tab-btn" data-tab="contact">Contact</button>
+            <button class="student-profile-tab-btn" data-tab="security">Security</button>
+        </div>
+        
+        <div id="personalTab" class="student-profile-tab-content">
+            <div class="student-profile-form">
+                <div class="student-profile-form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" class="student-profile-input">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" class="student-profile-input">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmailInput" class="student-profile-input" readonly>
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phoneNumber" class="student-profile-input" placeholder="+90 (555) 000-0000">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="dateOfBirth" class="student-profile-input">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Address</label>
+                    <input type="text" id="address" class="student-profile-input" placeholder="Street address">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>City</label>
+                    <input type="text" id="city" class="student-profile-input">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Major</label>
+                    <input type="text" id="major" class="student-profile-input" readonly>
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Academic Year</label>
+                    <input type="text" id="academicYear" class="student-profile-input" readonly>
+                </div>
+                <button class="student-profile-btn-save" id="savePersonalBtn">Save Changes</button>
+            </div>
+        </div>
+        
+        <div id="contactTab" class="student-profile-tab-content">
+            <div class="student-profile-form">
+                <h4>Emergency Contact</h4>
+                <div class="student-profile-form-group">
+                    <label>Emergency Contact Name</label>
+                    <input type="text" id="emergencyName" class="student-profile-input" placeholder="Full name">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Emergency Contact Phone</label>
+                    <input type="tel" id="emergencyPhone" class="student-profile-input" placeholder="+90 (555) 000-0000">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Relationship</label>
+                    <select id="emergencyRelationship" class="student-profile-input">
+                        <option value="">Select relationship</option>
+                        <option value="Parent">Parent</option>
+                        <option value="Guardian">Guardian</option>
+                        <option value="Sibling">Sibling</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Friend">Friend</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button class="student-profile-btn-save" id="saveContactBtn">Save Changes</button>
+            </div>
+        </div>
+        
+        <div id="securityTab" class="student-profile-tab-content">
+            <div class="student-profile-form">
+                <h4>Change Password</h4>
+                <div class="student-profile-form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPassword" class="student-profile-input" placeholder="Enter current password">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" class="student-profile-input" placeholder="Enter new password (min. 8 characters)">
+                </div>
+                <div class="student-profile-form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPassword" class="student-profile-input" placeholder="Confirm new password">
+                </div>
+                <button class="student-profile-btn-save" id="changePasswordBtn">Change Password</button>
+            </div>
+        </div>
+    </div>
+`,
         afterRender: async () => {
+            function showProfileTab(tabName) {
+                document.querySelectorAll('.student-profile-tab-content').forEach(el => {
+                    el.style.display = 'none';
+                });
+
+                document.querySelectorAll('.student-profile-tab-btn').forEach(btn => {
+                    btn.classList.remove('student-profile-tab-active');
+                });
+
+                const selectedTab = document.getElementById(tabName + 'Tab');
+                if (selectedTab) {
+                    selectedTab.style.display = 'block';
+                }
+
+                const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('student-profile-tab-active');
+                }
+            }
+
+            showProfileTab('personal');
+
+            document.querySelectorAll('.student-profile-tab-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const tab = this.getAttribute('data-tab');
+                    showProfileTab(tab);
+                });
+            });
+
             const response = await apiRequest('/user/profile');
 
             if (!response.ok || !response.data) {
                 console.error('Failed to load profile');
+                document.getElementById('profileName').textContent = 'Error loading profile';
                 return;
             }
 
             const profile = response.data;
 
+ 
             document.getElementById('profileName').textContent = `${profile.firstName} ${profile.lastName}`;
             document.getElementById('profileEmail').textContent = `Email: ${profile.email}`;
             document.getElementById('profileMajor').textContent = `Major: ${profile.major || 'N/A'}`;
 
             document.getElementById('firstName').value = profile.firstName || '';
             document.getElementById('lastName').value = profile.lastName || '';
-            document.querySelector('input[readonly][type="email"]').value = profile.email || '';
+            document.getElementById('profileEmailInput').value = profile.email || '';
             document.getElementById('phoneNumber').value = profile.phoneNumber || '';
             document.getElementById('dateOfBirth').value = profile.dateOfBirth ? profile.dateOfBirth.split('T')[0] : '';
             document.getElementById('address').value = profile.address || '';
@@ -1531,20 +1763,11 @@ export const StudentPages = {
             document.getElementById('major').value = profile.major || '';
             document.getElementById('academicYear').value = profile.academicYear || '';
 
-            // Fill contact info
             document.getElementById('emergencyName').value = profile.emergencyContactName || '';
             document.getElementById('emergencyPhone').value = profile.emergencyContactPhone || '';
             document.getElementById('emergencyRelationship').value = profile.emergencyContactRelationship || '';
 
-            window.showProfileTab = function (tab) {
-                document.querySelectorAll('.student-profile-tab-content').forEach(el => el.style.display = 'none');
-                document.querySelectorAll('.student-profile-tab-btn').forEach(btn => btn.classList.remove('student-profile-tab-active'));
-
-                document.getElementById(tab + 'Tab').style.display = 'block';
-                event.target.classList.add('student-profile-tab-active');
-            };
-
-            window.savePersonalInfo = async function () {
+            document.getElementById('savePersonalBtn').addEventListener('click', async function () {
                 const data = {
                     firstName: document.getElementById('firstName').value,
                     lastName: document.getElementById('lastName').value,
@@ -1554,30 +1777,32 @@ export const StudentPages = {
                     city: document.getElementById('city').value
                 };
 
-                const response = await apiRequest('/user/profile', 'PUT', data);
-                if (response.ok) {
+                const saveResponse = await apiRequest('/user/profile', 'PUT', data);
+                if (saveResponse.ok) {
+
+                    document.getElementById('profileName').textContent = `${data.firstName} ${data.lastName}`;
                     alert('Personal information updated successfully!');
                 } else {
-                    alert('Failed to update personal information');
+                    alert('Failed to update personal information: ' + (saveResponse.message || 'Unknown error'));
                 }
-            };
+            });
 
-            window.saveContactInfo = async function () {
+            document.getElementById('saveContactBtn').addEventListener('click', async function () {
                 const data = {
                     emergencyContactName: document.getElementById('emergencyName').value,
                     emergencyContactPhone: document.getElementById('emergencyPhone').value,
                     emergencyContactRelationship: document.getElementById('emergencyRelationship').value
                 };
 
-                const response = await apiRequest('/user/profile', 'PUT', data);
-                if (response.ok) {
+                const saveResponse = await apiRequest('/user/profile', 'PUT', data);
+                if (saveResponse.ok) {
                     alert('Contact information updated successfully!');
                 } else {
-                    alert('Failed to update contact information');
+                    alert('Failed to update contact information: ' + (saveResponse.message || 'Unknown error'));
                 }
-            };
+            });
 
-            window.changePassword = async function () {
+            document.getElementById('changePasswordBtn').addEventListener('click', async function () {
                 const current = document.getElementById('currentPassword').value;
                 const newPass = document.getElementById('newPassword').value;
                 const confirm = document.getElementById('confirmPassword').value;
@@ -1597,48 +1822,120 @@ export const StudentPages = {
                     return;
                 }
 
-                const response = await apiRequest('/user/change-password', 'POST', {
+                const pwdResponse = await apiRequest('/user/change-password', 'POST', {
                     currentPassword: current,
                     newPassword: newPass
                 });
 
-                if (response.ok) {
+                if (pwdResponse.ok) {
                     alert('Password changed successfully!');
                     document.getElementById('currentPassword').value = '';
                     document.getElementById('newPassword').value = '';
                     document.getElementById('confirmPassword').value = '';
                 } else {
-                    alert('Failed to change password');
+                    alert('Failed to change password: ' + (pwdResponse.message || 'Unknown error'));
                 }
-            };
+            });
         }
-    },
-
-    settings: {
-        render: () => `
-            <div class="student-breadcrumb">Home / Account Settings</div>
-            <div class="student-section-header">Settings</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">⚙️</div>
-                <div class="placeholder-title">Account Settings</div>
-                <div class="placeholder-text">Manage your account preferences and security settings.</div>
-            </div>
-        `,
-        afterRender: () => { }
     },
 
     help: {
         render: () => `
-            <div class="student-breadcrumb">Home / Help & Support</div>
-            <div class="student-section-header">Support Center</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">❓</div>
-                <div class="placeholder-title">Help & Support</div>
-                <div class="placeholder-text">Get help and contact support for any issues.</div>
+        <div class="student-breadcrumb">Home / Help & Support</div>
+        <div class="student-section-header">Contact Information</div>
+        
+        <div class="student-help-container">
+            <div id="helpContacts">
+                <div style="text-align: center; padding: 40px;">Loading contacts...</div>
             </div>
-        `,
-        afterRender: () => { }
+        </div>
+    `,
+        afterRender: async () => {
+            const response = await apiRequest('/user/help-contacts');
+
+            if (!response.ok || !response.data) {
+                document.getElementById('helpContacts').innerHTML =
+                    '<div style="text-align: center; padding: 40px; color: red;">Failed to load contact information</div>';
+                return;
+            }
+
+            const data = response.data;
+
+            const html = `
+            <div class="help-section">
+                <!-- Department Contact -->
+                <div class="help-category">
+                    <h3 class="help-category-title">Department Contact</h3>
+                    <div class="help-contact-item">
+                        <label>Department:</label>
+                        <span>${data.departmentName || 'N/A'}</span>
+                    </div>
+                    ${data.departmentEmail ? `
+                        <div class="help-contact-item">
+                            <label>Department Email:</label>
+                            <a href="mailto:${data.departmentEmail}">${data.departmentEmail}</a>
+                        </div>
+                    ` : ''}
+                    ${data.departmentSecretaryEmail ? `
+                        <div class="help-contact-item">
+                            <label>Secretary Office:</label>
+                            <a href="mailto:${data.departmentSecretaryEmail}">${data.departmentSecretaryEmail}</a>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- University Services -->
+                <div class="help-category">
+                    <h3 class="help-category-title">University Services</h3>
+                    <div class="help-contact-item">
+                        <label>Student Affairs:</label>
+                        <a href="mailto:${data.studentAffairsEmail}">${data.studentAffairsEmail}</a>
+                    </div>
+                    ${data.registrarEmail ? `
+                        <div class="help-contact-item">
+                            <label>Registrar Office:</label>
+                            <a href="mailto:${data.registrarEmail}">${data.registrarEmail}</a>
+                        </div>
+                    ` : ''}
+                    ${data.itSupportEmail ? `
+                        <div class="help-contact-item">
+                            <label>IT Support:</label>
+                            <a href="mailto:${data.itSupportEmail}">${data.itSupportEmail}</a>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Course Instructors -->
+                ${data.courseInstructors && data.courseInstructors.length > 0 ? `
+                    <div class="help-category">
+                        <h3 class="help-category-title">Course Instructors</h3>
+                        <div class="help-instructors-grid">
+                            ${data.courseInstructors.map(instructor => `
+                                <div class="help-instructor-card">
+                                    <div class="help-instructor-course-code">${instructor.courseCode}</div>
+                                    <div class="help-instructor-course-name">${instructor.courseName}</div>
+                                    <div class="help-instructor-name">${instructor.instructorName}</div>
+                                    ${instructor.instructorEmail ?
+                    `<a href="mailto:${instructor.instructorEmail}" class="help-instructor-email">${instructor.instructorEmail}</a>`
+                    : '<span class="help-no-email">No email available</span>'
+                }
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="help-category">
+                        <h3 class="help-category-title">Course Instructors</h3>
+                        <div class="help-empty">
+                            <p>You are not currently enrolled in any courses.</p>
+                        </div>
+                    </div>
+                `}
+            </div>
+        `;
+
+            document.getElementById('helpContacts').innerHTML = html;
+        }
     },
 
-    
 };

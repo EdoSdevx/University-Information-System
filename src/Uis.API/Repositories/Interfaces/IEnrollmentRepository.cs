@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Uis.API.DTOs;
 using Uis.API.Models;
 
 namespace Uis.API.Repositories.Interfaces
@@ -12,6 +13,7 @@ namespace Uis.API.Repositories.Interfaces
         Task<Enrollment?> GetEnrollmentAsync(int studentId, int courseInstanceId);
         Task<List<Enrollment>> GetCourseEnrollmentsAsync(int courseInstanceId);
         Task<int> GetCourseEnrollmentCountAsync(int courseInstanceId);
+        Task<List<CourseInstructorDto>> GetStudentInstructorsAsync(int studentId);
 
     }
 }

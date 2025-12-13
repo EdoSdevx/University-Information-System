@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Uis.API.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class UserProfile : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -84,10 +84,19 @@ namespace Uis.API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Major = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AcademicYear = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EmergencyContactName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EmergencyContactPhone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EmergencyContactRelationship = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DepartmentId = table.Column<int>(type: "int", nullable: true),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -297,6 +306,7 @@ namespace Uis.API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EnrollmentId = table.Column<int>(type: "int", nullable: false),
                     Week = table.Column<int>(type: "int", nullable: false),
+                    Day = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -344,10 +354,11 @@ namespace Uis.API.Migrations
                 column: "TargetDepartmentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Attendance_Enrollment_Week_Unique",
+                name: "IX_Attendance_Enrollment_Week_Day_Unique",
                 table: "Attendances",
-                columns: new[] { "EnrollmentId", "Week" },
-                unique: true);
+                columns: new[] { "EnrollmentId", "Week", "Day" },
+                unique: true,
+                filter: "[Day] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Attendance_Week",

@@ -190,11 +190,7 @@ public class EnrollmentService : IEnrollmentService
             var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                enrollment.Status = EnrollmentStatus.Dropped;
-                enrollment.DroppedAt = DateTime.UtcNow;
-                enrollment.UpdatedAt = DateTime.UtcNow;
-
-                await _unitOfWork.Enrollments.UpdateAsync(enrollment);
+                await _unitOfWork.Enrollments.DeleteAsync(enrollment);
 
                 var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(request.CourseInstanceId);
                 if (courseInstance != null && courseInstance.CurrentEnrollmentCount > 0)

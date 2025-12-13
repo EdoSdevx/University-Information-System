@@ -114,6 +114,9 @@ builder.Services.AddSwaggerGen(options =>
 
     options.AddSecurityRequirement(securityRequirement);
 });
+
+builder.Services.Configure<UniversitySettings>(
+    builder.Configuration.GetSection("UniversitySettings"));
 // ==================== FLUENT VALIDATION SETUP ====================    
 
 builder.Services.AddFluentValidationAutoValidation();

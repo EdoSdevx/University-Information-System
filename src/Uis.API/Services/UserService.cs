@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Uis.API.Constants;
+using Uis.API.DTOs;
 using Uis.API.DTOs.User;
 using Uis.API.Models;
 using Uis.API.Repositories.Interfaces;
@@ -16,11 +18,14 @@ public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UserService> _logger;
+    private readonly UniversitySettings _universitySettings;
 
-    public UserService(IUnitOfWork unitOfWork, ILogger<UserService> logger)
+    public UserService(IUnitOfWork unitOfWork, ILogger<UserService> logger, IOptions<UniversitySettings> universitySettings)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _universitySettings = universitySettings.Value;
+
     }
 
     public async Task<ResultService<UserResponse>> GetUserByIdAsync(int id)
@@ -224,5 +229,37 @@ public class UserService : IUserService
 
         _logger.LogInformation("Password changed successfully for user {UserId}", userId);
         return ResultService<bool>.Ok(true);
+    }
+    public async Task<ResultService<HelpContactsResponse>> GetHelpContactsAsync(int studentId)
+    {
+        _logger.LogInformation("Fetching help contacts for student {StudentId}", studentId);
+
+        var student = await _unitOfWork.Users.GetByIdAsync(studentId);
+        if (student == null)
+        {
+            _logger.LogWarning("Student {StudentId} not found", studentId);
+            return ResultService<HelpContactsResponse>.NotFound("Student not found");
+        }
+
+   
+        var department = await _unitOfWork.Departments.GetByIdAsync(student.DepartmentId.Value);
+
+        var instructors = await _unitOfWork.Enrollments.GetStudentInstructorsAsync(studentId);
+
+        var response = new HelpContactsResponse
+        {
+            DepartmentName = department?.Name,
+            DepartmentEmail = department?.Email,
+            DepartmentSecretaryEmail = department?.SecretaryEmail,
+            StudentAffairsEmail = _universitySettings.StudentAffairsEmail,
+            RegistrarEmail = _universitySettings.RegistrarEmail,
+            ITSupportEmail = _universitySettings.ITSupportEmail,
+            CourseInstructors = instructors
+        };
+
+        _logger.LogInformation("Retrieved help contacts for student {StudentId}: {InstructorCount} instructors",
+            studentId, instructors.Count);
+
+        return ResultService<HelpContactsResponse>.Ok(response);
     }
 }

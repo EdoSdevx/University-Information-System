@@ -1822,19 +1822,6 @@ export const TeacherPages = {
         afterRender: () => { }
     },
 
-    settings: {
-        render: () => `
-            <div class="teacher-breadcrumb">Home / Account Settings</div>
-            <div class="teacher-section-header">Settings</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">⚙️</div>
-                <div class="placeholder-title">Account Settings</div>
-                <div class="placeholder-text">Manage your account preferences and security settings.</div>
-            </div>
-        `,
-        afterRender: () => { }
-    },
-
     help: {
         render: () => `
             <div class="teacher-breadcrumb">Home / Help & Support</div>

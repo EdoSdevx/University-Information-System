@@ -29,12 +29,40 @@ public static class SeedData
         context.AcademicYears.Add(academicYear);
 
         var departments = new List<Department>
-        {
-            new Department { Code = "CSE", Name = "Computer Science & Engineering", CreatedAt = DateTime.UtcNow },
-            new Department { Code = "ENG", Name = "Electrical Engineering", CreatedAt = DateTime.UtcNow },
-            new Department { Code = "MATH", Name = "Mathematics", CreatedAt = DateTime.UtcNow },
-            new Department { Code = "PHYS", Name = "Physics", CreatedAt = DateTime.UtcNow }
-        };
+{
+    new Department
+    {
+        Code = "CSE",
+        Name = "Computer Science & Engineering",
+        Email = "cse@university.edu",
+        SecretaryEmail = "cse.sekreterlik@university.edu",
+        CreatedAt = DateTime.UtcNow
+    },
+    new Department
+    {
+        Code = "ENG",
+        Name = "Electrical Engineering",
+        Email = "eng@university.edu",
+        SecretaryEmail = "eng.sekreterlik@university.edu",
+        CreatedAt = DateTime.UtcNow
+    },
+    new Department
+    {
+        Code = "MATH",
+        Name = "Mathematics",
+        Email = "math@university.edu",
+        SecretaryEmail = "math.sekreterlik@university.edu",
+        CreatedAt = DateTime.UtcNow
+    },
+    new Department
+    {
+        Code = "PHYS",
+        Name = "Physics",
+        Email = "phys@university.edu",
+        SecretaryEmail = "phys.sekreterlik@university.edu",
+        CreatedAt = DateTime.UtcNow
+    }
+};
         context.Departments.AddRange(departments);
         await context.SaveChangesAsync();
 

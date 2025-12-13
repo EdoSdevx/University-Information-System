@@ -384,11 +384,19 @@ namespace Uis.API.Migrations
                         .HasColumnName("CreatedAt")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("Name");
+
+                    b.Property<string>("SecretaryEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -807,7 +815,7 @@ namespace Uis.API.Migrations
             modelBuilder.Entity("Uis.API.Models.User", b =>
                 {
                     b.HasOne("Uis.API.Models.Department", "Department")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
@@ -828,6 +836,8 @@ namespace Uis.API.Migrations
             modelBuilder.Entity("Uis.API.Models.Department", b =>
                 {
                     b.Navigation("Courses");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Uis.API.Models.Enrollment", b =>

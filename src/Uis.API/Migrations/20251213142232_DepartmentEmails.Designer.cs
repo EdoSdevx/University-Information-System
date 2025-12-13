@@ -12,8 +12,8 @@ using Uis.API.Models;
 namespace Uis.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251211183941_AttendancesDay1-2")]
-    partial class AttendancesDay12
+    [Migration("20251213142232_DepartmentEmails")]
+    partial class DepartmentEmails
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -387,11 +387,19 @@ namespace Uis.API.Migrations
                         .HasColumnName("CreatedAt")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)")
                         .HasColumnName("Name");
+
+                    b.Property<string>("SecretaryEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -561,11 +569,23 @@ namespace Uis.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AcademicYear")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("City")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasColumnName("CreatedAt")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("DepartmentId")
                         .HasColumnType("int");
@@ -575,6 +595,15 @@ namespace Uis.API.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("Email");
+
+                    b.Property<string>("EmergencyContactName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmergencyContactRelationship")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -591,10 +620,16 @@ namespace Uis.API.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("LastName");
 
+                    b.Property<string>("Major")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("PasswordHash");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
@@ -783,7 +818,7 @@ namespace Uis.API.Migrations
             modelBuilder.Entity("Uis.API.Models.User", b =>
                 {
                     b.HasOne("Uis.API.Models.Department", "Department")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
@@ -804,6 +839,8 @@ namespace Uis.API.Migrations
             modelBuilder.Entity("Uis.API.Models.Department", b =>
                 {
                     b.Navigation("Courses");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Uis.API.Models.Enrollment", b =>

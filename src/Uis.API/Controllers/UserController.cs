@@ -2,7 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Uis.API.DTOs;
 using Uis.API.DTOs.User;
+using Uis.API.Models;
+using Uis.API.Repositories.Interfaces;
+using Uis.API.Services;
 using Uis.API.Services.Interfaces;
 
 namespace Uis.API.API.Controllers;
@@ -14,7 +18,7 @@ public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, IUnitOfWork unitOfWork)
     {
         _userService = userService;
     }
@@ -99,5 +103,25 @@ public class UserController : ControllerBase
             return StatusCode(result.StatusCode, result);
 
         return Ok(new { message = result.Message });
+    }
+
+    [HttpGet("help-contacts")]
+    public async Task<IActionResult> GetHelpContacts()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.GetHelpContactsAsync(userId);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
     }
 }

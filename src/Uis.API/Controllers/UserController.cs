@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Uis.API.DTOs;
+using Uis.API.DTOs.Authentication;
 using Uis.API.DTOs.User;
 using Uis.API.Models;
 using Uis.API.Repositories.Interfaces;
@@ -122,6 +123,110 @@ public class UserController : ControllerBase
         if (!result.Success)
             return StatusCode(result.StatusCode, result);
 
+        return Ok(result);
+    }
+    [HttpGet("profile/teacher")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<ActionResult<ResultService<TeacherProfileResponse>>> GetTeacherProfile()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.GetTeacherProfileAsync(userId);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
+
+    [HttpPut("profile/teacher")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<ActionResult<ResultService<TeacherProfileResponse>>> UpdateTeacherProfile([FromBody] TeacherUpdateProfileRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.UpdateTeacherProfileAsync(userId, request);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
+    [HttpGet("help-contacts/teacher")]
+    [Authorize(Roles = "Teacher")]
+    public async Task<ActionResult<ResultService<TeacherHelpContactsResponse>>> GetTeacherHelpContacts()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.GetTeacherHelpContactsAsync(userId);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
+
+    [HttpGet("admin/all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllUsers([FromQuery] string? roleFilter,
+        [FromQuery] int? departmentId,
+        [FromQuery] string? searchTerm, [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var result = await _userService.GetAllUsersAsync(roleFilter, departmentId, searchTerm, pageIndex, pageSize);
+        return Ok(result);
+    }
+
+    [HttpPost("admin/create")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CreateUser([FromBody] RegisterRequest request)
+    {
+        var result = await _userService.CreateUserAsync(request);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    [HttpPut("admin/{userId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateUserByAdmin(int userId, [FromBody] AdminUpdateUserRequest request)
+    {
+        var result = await _userService.UpdateUserByAdminAsync(userId, request);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return Ok(result);
+    }
+
+    [HttpDelete("admin/{userId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUser(int userId)
+    {
+        var result = await _userService.DeleteUserAsync(userId);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
         return Ok(result);
     }
 }

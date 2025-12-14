@@ -44,6 +44,8 @@ export const SidebarComponent = {
             navigation: [
                 { page: 'dashboard', label: 'Dashboard' },
                 { page: 'users', label: 'User Management' },
+                { page: 'departments', label: 'Department Management' },
+                { page: 'instances', label: 'Course Instance Management' },
                 { page: 'courses', label: 'Course Management' },
                 { page: 'reports', label: 'Reports' }
             ],

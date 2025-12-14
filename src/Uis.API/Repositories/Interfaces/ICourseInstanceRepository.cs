@@ -13,5 +13,8 @@ namespace Uis.API.Repositories.Interfaces
         Task<bool> HasCapacityAsync(int courseInstanceId);
         Task<List<CourseInstance>> GetTeacherCoursesAsync(int teacherId);
         Task<CourseInstance?> GetWithEnrollmentsAsync(int courseInstanceId);
+
+        Task<List<CourseInstance>> GetAllWithDetailsAsync();
+        Task<CourseInstance?> GetByIdWithDetailsAsync(int id);
     }
 }

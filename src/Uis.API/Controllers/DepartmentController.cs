@@ -19,6 +19,16 @@ public class DepartmentController : ControllerBase
         _departmentService = departmentService;
     }
 
+    [HttpGet("admin/all")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> GetAllDepartments(
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 10)
+    {
+        var result = await _departmentService.GetAllDepartmentsAsync(pageIndex, pageSize);
+        return Ok(result);
+    }
+
     [HttpGet("{id}")]
     [Authorize]
     [ProducesResponseType(typeof(DepartmentResponse), StatusCodes.Status200OK)]

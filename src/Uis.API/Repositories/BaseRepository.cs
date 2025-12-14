@@ -23,6 +23,10 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : BaseEntit
 
     // ==================== READ OPERATIONS ====================
 
+    public virtual async Task<List<T?>> GetAllAsync()
+    {
+        return await DbSet.ToListAsync();
+    }
     public virtual async Task<T?> GetByIdAsync(int id)
     {
         return await DbSet.FirstOrDefaultAsync(e => e.Id == id);

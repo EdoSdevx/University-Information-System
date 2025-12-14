@@ -10,4 +10,7 @@ public class UniversitySettings
     public string StudentAffairsEmail { get; set; } = string.Empty;
     public string RegistrarEmail { get; set; } = string.Empty;
     public string ITSupportEmail { get; set; } = string.Empty;
+    public string AcademicAffairsEmail { get; set; } = string.Empty;
+    public string HREmail { get; set; } = string.Empty;
+    public string CounselingEmail { get; set; } = string.Empty;
 }

@@ -15,4 +15,5 @@ public interface IDepartmentService
     Task<ResultService<DepartmentResponse>> CreateDepartmentAsync(CreateDepartmentRequest request);
     Task<ResultService<DepartmentResponse>> UpdateDepartmentAsync(int id, UpdateDepartmentRequest request);
     Task<ResultService> DeleteDepartmentAsync(int id);
+    Task<PagedResultService<DepartmentResponse>> GetAllDepartmentsAsync(int pageIndex, int pageSize);
 }

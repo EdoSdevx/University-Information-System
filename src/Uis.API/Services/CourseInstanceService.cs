@@ -32,10 +32,10 @@ public class CourseInstanceService : ICourseInstanceService
             CourseCode = ci.Course.Code,
             CourseName = ci.Course.Name,
             Section = ci.Section,
-            Day1 = ci.Day1,
-            Day2 = ci.Day2,
-            StartTime = ci.StartTime,
-            EndTime = ci.EndTime,
+            Day1 = (int)ci.Day1,
+            Day2 = (int)ci.Day2,
+            StartTime = ci.StartTime?.ToString("HH:mm"),
+            EndTime = ci.EndTime?.ToString("HH:mm"),
             TeacherName = $"{ci.Teacher.FirstName} {ci.Teacher.LastName}",
             Location = ci.Location
         }).ToList();
@@ -78,10 +78,10 @@ public class CourseInstanceService : ICourseInstanceService
             Section = ci.Section,
             Capacity = ci.Capacity,
             CurrentEnrollmentCount = ci.Enrollments.Count(e => e.Status == EnrollmentStatus.Active),
-            Day1 = ci.Day1,
-            Day2 = ci.Day2,
-            StartTime = ci.StartTime,
-            EndTime = ci.EndTime,
+            Day1 = (int)ci.Day1,
+            Day2 = (int)ci.Day2,
+            StartTime = ci.StartTime?.ToString("HH:mm"),
+            EndTime = ci.EndTime?.ToString("HH:mm"),
             Location = ci.Location
         }).ToList();
 
@@ -118,10 +118,10 @@ public class CourseInstanceService : ICourseInstanceService
             Section = course.Section,
             Capacity = course.Capacity,
             CurrentEnrollmentCount = enrollmentCount,
-            Day1 = course.Day1,
-            Day2 = course.Day2,
-            StartTime = course.StartTime,
-            EndTime = course.EndTime,
+            Day1 = (int)course.Day1,
+            Day2 = (int)course.Day2,
+            StartTime = course.StartTime?.ToString("HH:mm"),
+            EndTime = course.EndTime?.ToString("HH:mm"),
             Location = course.Location,
             AcademicYear = course.AcademicYear?.Year ?? null
         };
@@ -159,10 +159,10 @@ public class CourseInstanceService : ICourseInstanceService
             Capacity = ci.Capacity,
             CurrentEnrollmentCount = ci.Enrollments?.Count(e => e.Status == EnrollmentStatus.Active) ?? 0,
             AcademicYear = ci.AcademicYear?.Year ?? null,
-            Day1 = ci.Day1,
-            Day2 = ci.Day2,
-            StartTime = ci.StartTime,
-            EndTime = ci.EndTime,
+            Day1 = (int)ci.Day1,
+            Day2 = (int)ci.Day2,
+            StartTime = ci.StartTime?.ToString("HH:mm"),
+            EndTime = ci.EndTime?.ToString("HH:mm"),
             Location = ci.Location
         }).ToList();
 
@@ -176,6 +176,224 @@ public class CourseInstanceService : ICourseInstanceService
             totalCount: totalCount,
             $"Retrieved {totalCount} courses"
         );
+    }
+    public async Task<PagedResultService<CourseInstanceResponse>> GetAllInstancesAsync(int? academicYearId, int? departmentId, string? searchTerm, int pageIndex, int pageSize)
+    {
+        if (pageIndex < 1) pageIndex = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var instances = await _unitOfWork.CourseInstances.GetAllWithDetailsAsync();
+
+        if (academicYearId.HasValue)
+        {
+            instances = instances.Where(i => i.AcademicYearId == academicYearId.Value).ToList();
+        }
+
+        if (departmentId.HasValue)
+        {
+            instances = instances.Where(i => i.DepartmentId == departmentId.Value).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLower();
+            instances = instances.Where(i =>
+                (i.Course != null && i.Course.Code != null && i.Course.Code.ToLower().Contains(term)) ||
+                (i.Course != null && i.Course.Name != null && i.Course.Name.ToLower().Contains(term))
+            ).ToList();
+        }
+
+        var totalCount = instances.Count;
+
+        var pagedInstances = instances
+            .OrderByDescending(i => i.CreatedAt)
+            .Skip((pageIndex - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var dtos = pagedInstances.Select(i => new CourseInstanceResponse
+        {
+            CourseInstanceId = i.Id,
+            CourseCode = i.Course?.Code,
+            CourseName = i.Course?.Name,
+            Section = i.Section,
+            TeacherName = i.Teacher != null ? $"{i.Teacher.FirstName} {i.Teacher.LastName}" : null,
+            Day1 = (int?)i.Day1,
+            Day2 = (int?)i.Day2,
+            StartTime = i.StartTime?.ToString("HH:mm"),
+            EndTime = i.EndTime?.ToString("HH:mm"),
+            Location = i.Location,
+            Capacity = i.Capacity,
+            CurrentEnrollmentCount = i.Enrollments?.Count(e => e.Status == EnrollmentStatus.Active) ?? 0,
+            AcademicYear = i.AcademicYear?.Year,
+            DepartmentName = i.Department?.Name
+        }).ToList();
+
+        _logger.LogInformation("Retrieved {Count} course instances. Page {PageIndex}/{TotalPages}",
+            dtos.Count, pageIndex, (int)Math.Ceiling((double)totalCount / pageSize));
+
+        return PagedResultService<CourseInstanceResponse>.Ok(
+            dtos,
+            pageIndex: pageIndex,
+            pageSize: pageSize,
+            totalCount: totalCount,
+            $"Retrieved {totalCount} course instances"
+        );
+    }
+
+    public async Task<ResultService<CourseInstanceResponse>> CreateInstanceAsync(CreateCourseInstanceRequest request)
+    {
+        _logger.LogInformation("Attempting to create new course instance for course {CourseId}", request.CourseId);
+
+        var course = await _unitOfWork.Courses.GetByIdAsync(request.CourseId);
+        if (course == null)
+        {
+            _logger.LogWarning("Course instance creation failed: course {CourseId} not found", request.CourseId);
+            return ResultService<CourseInstanceResponse>.NotFound("Course not found");
+        }
+
+        var teacher = await _unitOfWork.Users.GetByIdAsync(request.TeacherId);
+        if (teacher == null || teacher.Role != UserRole.Teacher)
+        {
+            _logger.LogWarning("Course instance creation failed: teacher {TeacherId} not found", request.TeacherId);
+            return ResultService<CourseInstanceResponse>.NotFound("Teacher not found");
+        }
+
+        var academicYear = await _unitOfWork.AcademicYears.GetByIdAsync(request.AcademicYearId);
+        if (academicYear == null)
+        {
+            _logger.LogWarning("Course instance creation failed: academic year {AcademicYearId} not found", request.AcademicYearId);
+            return ResultService<CourseInstanceResponse>.NotFound("Academic year not found");
+        }
+
+        var instance = new CourseInstance
+        {
+            CourseId = request.CourseId,
+            TeacherId = request.TeacherId,
+            AcademicYearId = request.AcademicYearId,
+            DepartmentId = course.DepartmentId,
+            Section = request.Section,
+            Capacity = request.Capacity,
+            Day1 = request.Day1.HasValue ? (DayOfWeek)request.Day1.Value : null,
+            Day2 = request.Day2.HasValue ? (DayOfWeek)request.Day2.Value : null,
+            StartTime = TimeOnly.Parse(request.StartTime),
+            EndTime = TimeOnly.Parse(request.EndTime),
+            Location = request.Location,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.CourseInstances.AddAsync(instance);
+        await _unitOfWork.SaveChangesAsync();
+
+        var response = new CourseInstanceResponse
+        {
+            CourseInstanceId = instance.Id,
+            CourseCode = course.Code,
+            CourseName = course.Name,
+            Section = instance.Section,
+            TeacherName = $"{teacher.FirstName} {teacher.LastName}",
+            Day1 = (int)instance.Day1,
+            Day2 = (int)instance.Day2,
+            StartTime = instance.StartTime?.ToString("HH:mm"),
+            EndTime = instance.EndTime?.ToString("HH:mm"),
+            Location = instance.Location,
+            Capacity = instance.Capacity,
+            CurrentEnrollmentCount = 0,
+            AcademicYear = academicYear.Year,
+            DepartmentName = course.Department?.Name
+        };
+
+        _logger.LogInformation("Course instance created successfully with ID: {InstanceId}", instance.Id);
+        return ResultService<CourseInstanceResponse>.Ok(response, "Course instance created successfully");
+    }
+
+    public async Task<ResultService<CourseInstanceResponse>> UpdateInstanceAsync(int instanceId, UpdateCourseInstanceRequest request)
+    {
+        _logger.LogInformation("Attempting to update course instance with ID: {InstanceId}", instanceId);
+
+        var instance = await _unitOfWork.CourseInstances.GetByIdWithDetailsAsync(instanceId);
+        if (instance == null)
+        {
+            _logger.LogWarning("Course instance update failed: instance {InstanceId} not found", instanceId);
+            return ResultService<CourseInstanceResponse>.NotFound("Course instance not found");
+        }
+
+        if (request.TeacherId.HasValue)
+        {
+            var teacher = await _unitOfWork.Users.GetByIdAsync(request.TeacherId.Value);
+            if (teacher == null || teacher.Role != UserRole.Teacher)
+            {
+                _logger.LogWarning("Course instance update failed: teacher {TeacherId} not found", request.TeacherId);
+                return ResultService<CourseInstanceResponse>.NotFound("Teacher not found");
+            }
+            instance.TeacherId = request.TeacherId.Value;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Section))
+            instance.Section = request.Section;
+
+        instance.Capacity = request.Capacity;
+
+        if (request.Day1.HasValue)
+            instance.Day1 = (DayOfWeek)request.Day1.Value;
+
+        if (request.Day2.HasValue)
+            instance.Day2 = (DayOfWeek)request.Day2.Value;
+
+        if (!string.IsNullOrWhiteSpace(request.StartTime))
+            instance.StartTime = TimeOnly.Parse(request.StartTime);
+
+        if (!string.IsNullOrWhiteSpace(request.EndTime))
+            instance.EndTime = TimeOnly.Parse(request.EndTime);
+
+        if (request.Location != null)
+            instance.Location = request.Location;
+
+        instance.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.CourseInstances.UpdateAsync(instance);
+        await _unitOfWork.SaveChangesAsync();
+
+        var updatedInstance = await _unitOfWork.CourseInstances.GetByIdWithDetailsAsync(instanceId);
+
+        var response = new CourseInstanceResponse
+        {
+            CourseInstanceId = updatedInstance!.Id,
+            CourseCode = updatedInstance.Course?.Code,
+            CourseName = updatedInstance.Course?.Name,
+            Section = updatedInstance.Section,
+            TeacherName = updatedInstance.Teacher != null ? $"{updatedInstance.Teacher.FirstName} {updatedInstance.Teacher.LastName}" : null,
+            Day1 = (int)updatedInstance.Day1,
+            Day2 = (int)updatedInstance.Day2,
+            StartTime = updatedInstance.StartTime?.ToString("HH:mm"),
+            EndTime = updatedInstance.EndTime?.ToString("HH:mm"),
+            Location = updatedInstance.Location,
+            Capacity = updatedInstance.Capacity,
+            CurrentEnrollmentCount = updatedInstance.Enrollments?.Count(e => e.Status == EnrollmentStatus.Active) ?? 0,
+            AcademicYear = updatedInstance.AcademicYear?.Year,
+            DepartmentName = updatedInstance.Department?.Name
+        };
+
+        _logger.LogInformation("Course instance updated successfully: {InstanceId}", instanceId);
+        return ResultService<CourseInstanceResponse>.Ok(response, "Course instance updated successfully");
+    }
+
+    public async Task<ResultService> DeleteInstanceAsync(int instanceId)
+    {
+        _logger.LogInformation("Attempting to delete course instance with ID: {InstanceId}", instanceId);
+
+        var instance = await _unitOfWork.CourseInstances.GetByIdAsync(instanceId);
+        if (instance == null)
+        {
+            _logger.LogWarning("Course instance deletion failed: instance {InstanceId} not found", instanceId);
+            return ResultService.NotFound("Course instance not found");
+        }
+
+        await _unitOfWork.CourseInstances.DeleteAsync(instanceId);
+        await _unitOfWork.SaveChangesAsync();
+
+        _logger.LogInformation("Course instance deleted successfully: {InstanceId}", instanceId);
+        return ResultService.Ok("Course instance deleted successfully");
     }
 }
 

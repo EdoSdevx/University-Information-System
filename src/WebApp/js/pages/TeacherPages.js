@@ -1979,28 +1979,360 @@ export const TeacherPages = {
 
     profile: {
         render: () => `
-            <div class="teacher-breadcrumb">Home / My Profile</div>
-            <div class="teacher-section-header">Personal Information</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">👤</div>
-                <div class="placeholder-title">My Profile</div>
-                <div class="placeholder-text">View and update your personal information.</div>
+    <div class="teacher-breadcrumb">Home / My Profile</div>
+    <div class="teacher-section-header">Personal Profile</div>
+    
+    <div class="teacher-profile-container">
+        <div class="teacher-profile-header">
+            <div class="teacher-profile-pic-wrapper">
+                <img id="profilePic" src="https://via.placeholder.com/120?text=Avatar" class="teacher-profile-pic">
             </div>
-        `,
-        afterRender: () => { }
+            <div class="teacher-profile-info">
+                <h2 id="profileName">Loading...</h2>
+                <p id="profileEmail" class="teacher-profile-email">Email: -</p>
+                <p id="profileDepartment" class="teacher-profile-department">Department: -</p>
+            </div>
+        </div>
+        
+        <div class="teacher-profile-tabs">
+            <button class="teacher-profile-tab-btn" data-tab="personal">Personal Info</button>
+            <button class="teacher-profile-tab-btn" data-tab="contact">Contact</button>
+            <button class="teacher-profile-tab-btn" data-tab="security">Security</button>
+        </div>
+        
+        <div id="personalTab" class="teacher-profile-tab-content">
+            <div class="teacher-profile-form">
+                <div class="teacher-profile-form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" class="teacher-profile-input">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" class="teacher-profile-input">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmailInput" class="teacher-profile-input" readonly>
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phoneNumber" class="teacher-profile-input" placeholder="+90 (555) 000-0000">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" id="dateOfBirth" class="teacher-profile-input">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Address</label>
+                    <input type="text" id="address" class="teacher-profile-input" placeholder="Street address">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>City</label>
+                    <input type="text" id="city" class="teacher-profile-input">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Department</label>
+                    <input type="text" id="department" class="teacher-profile-input" readonly>
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Office Location</label>
+                    <input type="text" id="officeLocation" class="teacher-profile-input" placeholder="Building and room number">
+                </div>
+                <button class="teacher-profile-btn-save" id="savePersonalBtn">Save Changes</button>
+            </div>
+        </div>
+        
+        <div id="contactTab" class="teacher-profile-tab-content">
+            <div class="teacher-profile-form">
+                <h4>Emergency Contact</h4>
+                <div class="teacher-profile-form-group">
+                    <label>Emergency Contact Name</label>
+                    <input type="text" id="emergencyName" class="teacher-profile-input" placeholder="Full name">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Emergency Contact Phone</label>
+                    <input type="tel" id="emergencyPhone" class="teacher-profile-input" placeholder="+90 (555) 000-0000">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Relationship</label>
+                    <select id="emergencyRelationship" class="teacher-profile-input">
+                        <option value="">Select relationship</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Parent">Parent</option>
+                        <option value="Sibling">Sibling</option>
+                        <option value="Child">Child</option>
+                        <option value="Friend">Friend</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button class="teacher-profile-btn-save" id="saveContactBtn">Save Changes</button>
+            </div>
+        </div>
+        
+        <div id="securityTab" class="teacher-profile-tab-content">
+            <div class="teacher-profile-form">
+                <h4>Change Password</h4>
+                <div class="teacher-profile-form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPassword" class="teacher-profile-input" placeholder="Enter current password">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" class="teacher-profile-input" placeholder="Enter new password (min. 8 characters)">
+                </div>
+                <div class="teacher-profile-form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPassword" class="teacher-profile-input" placeholder="Confirm new password">
+                </div>
+                <button class="teacher-profile-btn-save" id="changePasswordBtn">Change Password</button>
+            </div>
+        </div>
+    </div>
+`,
+        afterRender: async () => {
+            function showProfileTab(tabName) {
+                document.querySelectorAll('.teacher-profile-tab-content').forEach(el => {
+                    el.style.display = 'none';
+                });
+
+                document.querySelectorAll('.teacher-profile-tab-btn').forEach(btn => {
+                    btn.classList.remove('teacher-profile-tab-active');
+                });
+
+                const selectedTab = document.getElementById(tabName + 'Tab');
+                if (selectedTab) {
+                    selectedTab.style.display = 'block';
+                }
+
+                const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('teacher-profile-tab-active');
+                }
+            }
+
+            showProfileTab('personal');
+
+            document.querySelectorAll('.teacher-profile-tab-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const tab = this.getAttribute('data-tab');
+                    showProfileTab(tab);
+                });
+            });
+
+            const response = await apiRequest('/user/profile/teacher');
+
+            if (!response.ok || !response.data) {
+                console.error('Failed to load profile');
+                document.getElementById('profileName').textContent = 'Error loading profile';
+                return;
+            }
+
+            const profile = response.data;
+
+            document.getElementById('profileName').textContent = `${profile.firstName} ${profile.lastName}`;
+            document.getElementById('profileEmail').textContent = `Email: ${profile.email}`;
+            document.getElementById('profileDepartment').textContent = `Department: ${profile.departmentName || 'N/A'}`;
+
+            document.getElementById('firstName').value = profile.firstName || '';
+            document.getElementById('lastName').value = profile.lastName || '';
+            document.getElementById('profileEmailInput').value = profile.email || '';
+            document.getElementById('phoneNumber').value = profile.phoneNumber || '';
+            document.getElementById('dateOfBirth').value = profile.dateOfBirth ? profile.dateOfBirth.split('T')[0] : '';
+            document.getElementById('address').value = profile.address || '';
+            document.getElementById('city').value = profile.city || '';
+            document.getElementById('department').value = profile.departmentName || '';
+            document.getElementById('officeLocation').value = profile.officeLocation || '';
+
+            document.getElementById('emergencyName').value = profile.emergencyContactName || '';
+            document.getElementById('emergencyPhone').value = profile.emergencyContactPhone || '';
+            document.getElementById('emergencyRelationship').value = profile.emergencyContactRelationship || '';
+
+            document.getElementById('savePersonalBtn').addEventListener('click', async function () {
+                const data = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    dateOfBirth: document.getElementById('dateOfBirth').value || null,
+                    address: document.getElementById('address').value,
+                    city: document.getElementById('city').value,
+                    officeLocation: document.getElementById('officeLocation').value
+                };
+
+                const saveResponse = await apiRequest('/user/profile/teacher', 'PUT', data);
+                if (saveResponse.ok) {
+                    document.getElementById('profileName').textContent = `${data.firstName} ${data.lastName}`;
+                    alert('Personal information updated successfully!');
+                } else {
+                    alert('Failed to update personal information: ' + (saveResponse.message || 'Unknown error'));
+                }
+            });
+
+            document.getElementById('saveContactBtn').addEventListener('click', async function () {
+                const data = {
+                    emergencyContactName: document.getElementById('emergencyName').value,
+                    emergencyContactPhone: document.getElementById('emergencyPhone').value,
+                    emergencyContactRelationship: document.getElementById('emergencyRelationship').value
+                };
+
+                const saveResponse = await apiRequest('/user/profile', 'PUT', data);
+                if (saveResponse.ok) {
+                    alert('Contact information updated successfully!');
+                } else {
+                    alert('Failed to update contact information: ' + (saveResponse.message || 'Unknown error'));
+                }
+            });
+
+            document.getElementById('changePasswordBtn').addEventListener('click', async function () {
+                const current = document.getElementById('currentPassword').value;
+                const newPass = document.getElementById('newPassword').value;
+                const confirm = document.getElementById('confirmPassword').value;
+
+                if (!current || !newPass || !confirm) {
+                    alert('Please fill all fields');
+                    return;
+                }
+
+                if (newPass.length < 8) {
+                    alert('New password must be at least 8 characters long');
+                    return;
+                }
+
+                if (newPass !== confirm) {
+                    alert('New passwords do not match');
+                    return;
+                }
+
+                const pwdResponse = await apiRequest('/user/change-password', 'POST', {
+                    currentPassword: current,
+                    newPassword: newPass
+                });
+
+                if (pwdResponse.ok) {
+                    alert('Password changed successfully!');
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                } else {
+                    alert('Failed to change password: ' + (pwdResponse.message || 'Unknown error'));
+                }
+            });
+        }
     },
 
     help: {
         render: () => `
-            <div class="teacher-breadcrumb">Home / Help & Support</div>
-            <div class="teacher-section-header">Support Center</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">❓</div>
-                <div class="placeholder-title">Help & Support</div>
-                <div class="placeholder-text">Get help and contact support for any issues.</div>
+    <div class="teacher-breadcrumb">Home / Help & Support</div>
+    <div class="teacher-section-header">Support & Resources</div>
+    
+    <div class="teacher-help-container">
+        <div id="helpContacts">
+            <div style="text-align: center; padding: 40px;">Loading contacts...</div>
+        </div>
+    </div>
+`,
+        afterRender: async () => {
+            const response = await apiRequest('/user/help-contacts/teacher');
+
+            if (!response.ok || !response.data) {
+                document.getElementById('helpContacts').innerHTML =
+                    '<div style="text-align: center; padding: 40px; color: red;">Failed to load contact information</div>';
+                return;
+            }
+
+            const data = response.data;
+
+            const html = `
+        <div class="help-section">
+            <!-- Department Information -->
+            <div class="help-category">
+                <h3 class="help-category-title">Your Department</h3>
+                <div class="help-contact-item">
+                    <label>Department:</label>
+                    <span>${data.departmentName || 'N/A'}</span>
+                </div>
+                ${data.departmentEmail ? `
+                    <div class="help-contact-item">
+                        <label>Department Email:</label>
+                        <a href="mailto:${data.departmentEmail}">${data.departmentEmail}</a>
+                    </div>
+                ` : ''}
+                ${data.departmentSecretaryEmail ? `
+                    <div class="help-contact-item">
+                        <label>Secretary Office:</label>
+                        <a href="mailto:${data.departmentSecretaryEmail}">${data.departmentSecretaryEmail}</a>
+                    </div>
+                ` : ''}
+                ${data.departmentHeadName ? `
+                    <div class="help-contact-item">
+                        <label>Department Head:</label>
+                        <span>${data.departmentHeadName}</span>
+                    </div>
+                ` : ''}
+                ${data.departmentHeadEmail ? `
+                    <div class="help-contact-item">
+                        <label>Head's Email:</label>
+                        <a href="mailto:${data.departmentHeadEmail}">${data.departmentHeadEmail}</a>
+                    </div>
+                ` : ''}
             </div>
-        `,
-        afterRender: () => { }
+
+            <!-- Administrative Services -->
+            <div class="help-category">
+                <h3 class="help-category-title">Administrative Services</h3>
+                ${data.registrarEmail ? `
+                    <div class="help-contact-item">
+                        <label>Registrar Office:</label>
+                        <a href="mailto:${data.registrarEmail}">${data.registrarEmail}</a>
+                    </div>
+                ` : ''}
+                ${data.academicAffairsEmail ? `
+                    <div class="help-contact-item">
+                        <label>Academic Affairs:</label>
+                        <a href="mailto:${data.academicAffairsEmail}">${data.academicAffairsEmail}</a>
+                    </div>
+                ` : ''}
+                ${data.hrEmail ? `
+                    <div class="help-contact-item">
+                        <label>Human Resources:</label>
+                        <a href="mailto:${data.hrEmail}">${data.hrEmail}</a>
+                    </div>
+                ` : ''}
+                ${data.itSupportEmail ? `
+                    <div class="help-contact-item">
+                        <label>IT Support:</label>
+                        <a href="mailto:${data.itSupportEmail}">${data.itSupportEmail}</a>
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- Student Support Resources -->
+            <div class="help-category">
+                <h3 class="help-category-title">Student Support Resources</h3>
+                <p class="help-category-description">For referring students who need assistance</p>
+                ${data.studentAffairsEmail ? `
+                    <div class="help-contact-item">
+                        <label>Student Affairs:</label>
+                        <a href="mailto:${data.studentAffairsEmail}">${data.studentAffairsEmail}</a>
+                    </div>
+                ` : ''}
+                ${data.counselingEmail ? `
+                    <div class="help-contact-item">
+                        <label>Counseling Services:</label>
+                        <a href="mailto:${data.counselingEmail}">${data.counselingEmail}</a>
+                    </div>
+                ` : ''}
+                ${data.disabilityServicesEmail ? `
+                    <div class="help-contact-item">
+                        <label>Disability Services:</label>
+                        <a href="mailto:${data.disabilityServicesEmail}">${data.disabilityServicesEmail}</a>
+                    </div>
+                ` : ''}
+            </div>    
+        </div>
+    `;
+
+            document.getElementById('helpContacts').innerHTML = html;
+        }
     },
 
     schedule: {

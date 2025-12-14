@@ -21,6 +21,28 @@ public class CourseController : ControllerBase
         _userService = userService;
     }
 
+    [HttpGet("admin/by-department/{departmentId}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetByDepartmentForAdminAsync(
+    int departmentId,
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 100)
+    {
+        var result = await _courseService.GetByDepartmentAsync(departmentId, pageIndex, pageSize);
+        return Ok(result);
+    }
+
+    [HttpGet("admin/all")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllCoursesForAdminAsync(
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 100)
+    {
+        var result = await _courseService.GetAllCoursesAsync(pageIndex, pageSize);
+        return Ok(result);
+    }
     [HttpGet("by-code/{code}")]
     [Authorize]
     [ProducesResponseType(typeof(CourseResponse), StatusCodes.Status200OK)]
@@ -42,6 +64,7 @@ public class CourseController : ControllerBase
         [FromQuery] int pageSize = 10)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         var userRoleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
 
         if (userIdClaim == null)

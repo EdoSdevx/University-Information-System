@@ -12,6 +12,7 @@ namespace Uis.API.Repositories.Interfaces;
 public interface IBaseRepository<T> where T : BaseEntity
 
 {   // READ
+    Task<List<T?>> GetAllAsync();
     Task<T?> GetByIdAsync(int id);
     Task<List<T>> GetAsync(Expression<Func<T, bool>> predicate);
     Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);

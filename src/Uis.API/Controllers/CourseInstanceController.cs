@@ -105,4 +105,49 @@ public class CourseInstanceController : ControllerBase
         var result = await _courseInstanceService.GetTeacherCoursesAsync(teacherId, pageIndex, pageSize);
         return Ok(result);
     }
+    // ==================== ADMIN ENDPOINTS ====================
+
+    [HttpGet("admin/all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllInstances(
+        [FromQuery] int? academicYearId,
+        [FromQuery] int? departmentId,
+        [FromQuery] string? searchTerm,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var result = await _courseInstanceService.GetAllInstancesAsync(academicYearId, departmentId, searchTerm, pageIndex, pageSize);
+        return Ok(result);
+    }
+
+    [HttpPost("admin/create")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> CreateInstance([FromBody] CreateCourseInstanceRequest request)
+    {
+        var result = await _courseInstanceService.CreateInstanceAsync(request);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    [HttpPut("admin/{instanceId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UpdateInstance(int instanceId, [FromBody] UpdateCourseInstanceRequest request)
+    {
+        var result = await _courseInstanceService.UpdateInstanceAsync(instanceId, request);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return Ok(result);
+    }
+
+    [HttpDelete("admin/{instanceId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteInstance(int instanceId)
+    {
+        var result = await _courseInstanceService.DeleteInstanceAsync(instanceId);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return Ok(result);
+    }
+
 }

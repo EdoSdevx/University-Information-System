@@ -73,5 +73,28 @@ namespace Uis.API.Repositories
                 .Include(ci => ci.Enrollments)
                 .FirstOrDefaultAsync(ci => ci.Id == courseInstanceId);
         }
+
+        public async Task<List<CourseInstance>> GetAllWithDetailsAsync()
+        {
+            return await DbSet
+                            .Include(ci => ci.Course)
+                            .Include(ci => ci.Teacher)
+                            .Include(ci => ci.AcademicYear)
+                            .Include(ci => ci.Department)
+                            .Include(ci => ci.Enrollments)
+                            .ToListAsync();
+        }
+
+        public async Task<CourseInstance?> GetByIdWithDetailsAsync(int id)
+        {
+            return await DbSet
+                            .Include(ci => ci.Course)
+                                .ThenInclude(c => c.Department)
+                            .Include(ci => ci.Teacher)
+                            .Include(ci => ci.AcademicYear)
+                            .Include(ci => ci.Department)
+                            .Include(ci => ci.Enrollments)
+                            .FirstOrDefaultAsync(ci => ci.Id == id);
+        }
     }
 }

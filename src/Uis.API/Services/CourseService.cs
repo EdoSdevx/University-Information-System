@@ -23,6 +23,33 @@ public class CourseService : ICourseService
         _logger = logger;
     }
 
+    public async Task<PagedResultService<CourseResponse>> GetAllCoursesAsync(int pageIndex = 1, int pageSize = 10)
+    {
+        if (pageIndex < 1) pageIndex = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        _logger.LogInformation("Retrieving all courses. Page {PageIndex}, Size {PageSize}", pageIndex, pageSize);
+
+        var courses = await _unitOfWork.Courses.GetAllAsync();
+
+        var totalCount = courses.Count;
+
+        var pagedCourses = courses
+                                .OrderBy(c => c.Name)
+                                .Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToList();
+
+        var dtos = pagedCourses.Select(course => new CourseResponse
+        {
+            Id = course.Id,
+            Name = course.Name,
+            Code = course.Code,
+            DepartmentId = course.DepartmentId
+        }).ToList();
+
+        return PagedResultService<CourseResponse>.Ok(dtos, pageIndex, pageSize, totalCount);
+    }
     public async Task<ResultService<CourseResponse>> GetCourseByCodeAsync(string code)
     {
 

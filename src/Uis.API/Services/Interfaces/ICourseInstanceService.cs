@@ -16,4 +16,9 @@ public interface ICourseInstanceService
     Task<ResultService<bool>> HasCapacityAsync(int courseInstanceId);
     Task<PagedResultService<CourseInstanceResponse>> GetTeacherCoursesAsync(int teacherId, int pageIndex = 1, int pageSize = 10);
 
+    Task<PagedResultService<CourseInstanceResponse>> GetAllInstancesAsync(int? academicYearId, int? departmentId, string? searchTerm, int pageIndex, int pageSize);
+    Task<ResultService<CourseInstanceResponse>> CreateInstanceAsync(CreateCourseInstanceRequest request);
+    Task<ResultService<CourseInstanceResponse>> UpdateInstanceAsync(int instanceId, UpdateCourseInstanceRequest request);
+    Task<ResultService> DeleteInstanceAsync(int instanceId);
+
 }

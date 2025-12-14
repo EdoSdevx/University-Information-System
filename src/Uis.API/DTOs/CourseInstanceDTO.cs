@@ -15,21 +15,22 @@ public class CreateCourseInstanceRequest
     public int AcademicYearId { get; set; }
     public string? Section { get; set; }
     public int Capacity { get; set; }
-    public DayOfWeek? Day1 { get; set; }
-    public DayOfWeek? Day2 { get; set; }
-    public TimeOnly? StartTime { get; set; }
-    public TimeOnly? EndTime { get; set; }
+    public int? Day1 { get; set; }
+    public int? Day2 { get; set; }
+    public string? StartTime { get; set; }
+    public string? EndTime { get; set; }
     public string? Location { get; set; }
 }
 
 public class UpdateCourseInstanceRequest
 {
+    public int? TeacherId { get; set; }
     public string? Section { get; set; }
     public int Capacity { get; set; }
-    public DayOfWeek? Day1 { get; set; }
-    public DayOfWeek? Day2 { get; set; }
-    public TimeOnly? StartTime { get; set; }
-    public TimeOnly? EndTime { get; set; }
+    public int? Day1 { get; set; }
+    public int? Day2 { get; set; }
+    public string? StartTime { get; set; }
+    public string? EndTime { get; set; }
     public string? Location { get; set; }
 }
 
@@ -41,10 +42,10 @@ public class CourseInstanceSchedule
     public string? CourseName { get; set; }
     public string? TeacherName { get; set; }
     public string? Section { get; set; }
-    public DayOfWeek? Day1 { get; set; }
-    public DayOfWeek? Day2 { get; set; }
-    public TimeOnly? StartTime { get; set; }
-    public TimeOnly? EndTime { get; set; }
+    public int? Day1 { get; set; }
+    public int? Day2 { get; set; }
+    public string? StartTime { get; set; }
+    public string? EndTime { get; set; }
     public string? Location { get; set; }
 }
 
@@ -55,14 +56,15 @@ public class CourseInstanceResponse
     public string? CourseName { get; set; }
     public string? TeacherName { get; set; }
     public string? AcademicYear { get; set; }
+    public string? DepartmentName { get; set; }
     public int Credits { get; set; }
     public string? Section { get; set; }
     public int Capacity { get; set; }
     public int CurrentEnrollmentCount { get; set; }
-    public DayOfWeek? Day1 { get; set; }
-    public DayOfWeek? Day2 { get; set; }
-    public TimeOnly? StartTime { get; set; }
-    public TimeOnly? EndTime { get; set; }
+    public int? Day1 { get; set; }
+    public int? Day2 { get; set; }
+    public string? StartTime { get; set; }
+    public string? EndTime { get; set; }
     public string? Location { get; set; }
     public CourseInstanceStatus Status { get; set; }
 }
@@ -86,10 +88,10 @@ public class CourseInstanceDetailResponse
     public int Capacity { get; set; }
     public int CurrentEnrollmentCount { get; set; }
     public int AvailableSeats { get; set; }
-    public DayOfWeek? Day1 { get; set; }
-    public DayOfWeek? Day2 { get; set; }
-    public TimeOnly? StartTime { get; set; }
-    public TimeOnly? EndTime { get; set; }
+    public int? Day1 { get; set; }
+    public int? Day2 { get; set; }
+    public string? StartTime { get; set; }
+    public string? EndTime { get; set; }
     public string? Location { get; set; }
     public CourseInstanceStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }

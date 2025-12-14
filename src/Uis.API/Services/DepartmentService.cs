@@ -23,6 +23,48 @@ public class DepartmentService : IDepartmentService
         _logger = logger;
     }
 
+    public async Task<PagedResultService<DepartmentResponse>> GetAllDepartmentsAsync(int pageIndex, int pageSize)
+    {
+        if (pageIndex < 1) pageIndex = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        _logger.LogInformation("Retrieving all departments. Page {PageIndex}, Size {PageSize}", pageIndex, pageSize);
+
+        var departments = await _unitOfWork.Departments.GetAllAsync();
+
+        var totalCount = departments.Count;
+
+        var pagedDepartments = departments
+                                .OrderBy(d => d.Name)
+                                .Skip((pageIndex - 1) * pageSize)
+                                .Take(pageSize)
+                                .ToList();
+
+        var dtos = pagedDepartments.Select(d => new DepartmentResponse
+        {
+            Id = d.Id,
+            Name = d.Name,
+            Code = d.Code,
+            Email = d.Email,
+            SecretaryEmail = d.SecretaryEmail,
+            DepartmentHeadName = d.DepartmentHeadName,
+            DepartmentHeadEmail = d.DepartmentHeadEmail,
+            CreatedAt = d.CreatedAt,
+            UpdatedAt = d.UpdatedAt
+        }).ToList();
+
+        _logger.LogInformation("Retrieved {Count} departments. Page {PageIndex}/{TotalPages}",
+            dtos.Count, pageIndex, (int)Math.Ceiling((double)totalCount / pageSize));
+
+        return PagedResultService<DepartmentResponse>.Ok(
+            dtos,
+            pageIndex: pageIndex,
+            pageSize: pageSize,
+            totalCount: totalCount,
+            $"Retrieved {totalCount} departments"
+        );
+    }
+
     public async Task<ResultService<DepartmentResponse>> GetDepartmentByIdAsync(int id)
     {
         _logger.LogInformation("Attempting to retrieve department with ID: {DepartmentId}", id);
@@ -110,13 +152,29 @@ public class DepartmentService : IDepartmentService
         {
             Code = request.Code,
             Name = request.Name,
+            Email = request.Email ?? string.Empty,
+            SecretaryEmail = request.SecretaryEmail ?? string.Empty,
+            DepartmentHeadName = request.DepartmentHeadName ?? string.Empty,
+            DepartmentHeadEmail = request.DepartmentHeadEmail ?? string.Empty,
             CreatedAt = DateTime.UtcNow
         };
 
         await _unitOfWork.Departments.AddAsync(department);
         await _unitOfWork.SaveChangesAsync();
 
-        var deptDto = MapToDepartmentResponse(department);
+        var deptDto = new DepartmentResponse
+        {
+            Id = department.Id,
+            Name = department.Name,
+            Code = department.Code,
+            Email = department.Email,
+            SecretaryEmail = department.SecretaryEmail,
+            DepartmentHeadName = department.DepartmentHeadName,
+            DepartmentHeadEmail = department.DepartmentHeadEmail,
+            CreatedAt = department.CreatedAt,
+            UpdatedAt = department.UpdatedAt
+        };
+
         _logger.LogInformation("Department created successfully: {Code} with ID: {DepartmentId}", department.Code, department.Id);
         return ResultService<DepartmentResponse>.Ok(deptDto, $"Department {department.Code} created successfully");
     }
@@ -138,33 +196,50 @@ public class DepartmentService : IDepartmentService
             return ResultService<DepartmentResponse>.Fail("Updated department data is required", ResultErrorCode.ValidationError);
         }
 
-        if (string.IsNullOrWhiteSpace(request.Name))
+        if (!string.IsNullOrWhiteSpace(request.Name))
+            department.Name = request.Name;
+
+        if (!string.IsNullOrWhiteSpace(request.Code))
         {
-            _logger.LogWarning("Department update failed: name is null or empty for department {DepartmentId}", id);
-            return ResultService<DepartmentResponse>.Fail("Department name is required", ResultErrorCode.ValidationError);
+            var codeExists = await _unitOfWork.Departments.GetByCodeAsync(request.Code);
+            if (codeExists != null && codeExists.Id != id)
+            {
+                _logger.LogWarning("Department update failed: code {Code} already in use", request.Code);
+                return ResultService<DepartmentResponse>.Fail($"Department code {request.Code} is already in use", ResultErrorCode.Conflict);
+            }
+            department.Code = request.Code;
         }
 
-        if (string.IsNullOrWhiteSpace(request.Code))
-        {
-            _logger.LogWarning("Department update failed: code is null or empty for department {DepartmentId}", id);
-            return ResultService<DepartmentResponse>.Fail("Department code is required", ResultErrorCode.ValidationError);
-        }
+        if (request.Email != null)
+            department.Email = request.Email;
 
-        var codeExists = await _unitOfWork.Departments.GetByCodeAsync(request.Code);
-        if (codeExists != null && codeExists.Id != id)
-        {
-            _logger.LogWarning("Department update failed: code {Code} already in use", request.Code);
-            return ResultService<DepartmentResponse>.Fail($"Department code {request.Code} is already in use", ResultErrorCode.Conflict);
-        }
+        if (request.SecretaryEmail != null)
+            department.SecretaryEmail = request.SecretaryEmail;
 
-        department.Name = request.Name;
-        department.Code = request.Code;
+        if (request.DepartmentHeadName != null)
+            department.DepartmentHeadName = request.DepartmentHeadName;
+
+        if (request.DepartmentHeadEmail != null)
+            department.DepartmentHeadEmail = request.DepartmentHeadEmail;
+
         department.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Departments.UpdateAsync(department);
         await _unitOfWork.SaveChangesAsync();
 
-        var deptDto = MapToDepartmentResponse(department);
+        var deptDto = new DepartmentResponse
+        {
+            Id = department.Id,
+            Name = department.Name,
+            Code = department.Code,
+            Email = department.Email,
+            SecretaryEmail = department.SecretaryEmail,
+            DepartmentHeadName = department.DepartmentHeadName,
+            DepartmentHeadEmail = department.DepartmentHeadEmail,
+            CreatedAt = department.CreatedAt,
+            UpdatedAt = department.UpdatedAt
+        };
+
         _logger.LogInformation("Department updated successfully: {Code}", department.Code);
         return ResultService<DepartmentResponse>.Ok(deptDto, $"Department {department.Code} updated successfully");
     }

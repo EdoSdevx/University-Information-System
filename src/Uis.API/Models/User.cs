@@ -25,12 +25,13 @@ public class User : BaseEntity
 
     public string? Major { get; set; }
     public string? AcademicYear { get; set; }
+    public string? OfficeLocation { get; set; }
 
     public string? EmergencyContactName { get; set; }
     public string? EmergencyContactPhone { get; set; }
     public string? EmergencyContactRelationship { get; set; }
 
-    public int? DepartmentId { get; set; }
+    public int DepartmentId { get; set; }
     public virtual Department? Department { get; set; }
 
     public string? RefreshToken { get; set; }

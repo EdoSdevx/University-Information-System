@@ -24,8 +24,7 @@ public class CreateCourseInstanceRequestValidator : AbstractValidator<CreateCour
 
         RuleFor(x => x.StartTime).NotNull().When(x => x.Day1.HasValue || x.Day2.HasValue);
         RuleFor(x => x.EndTime)
-            .NotNull().When(x => x.StartTime.HasValue)
-            .GreaterThan(x => x.StartTime).When(x => x.StartTime.HasValue)
+            .GreaterThan(x => x.StartTime)
             .WithMessage("EndTime must be after StartTime");
     }
 }

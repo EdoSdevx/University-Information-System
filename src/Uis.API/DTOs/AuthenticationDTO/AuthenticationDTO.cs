@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Uis.API.Constants;
 
 namespace Uis.API.DTOs.Authentication;
 
@@ -13,6 +14,7 @@ public class RegisterRequest
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Role { get; set; }
+    public int DepartmentId { get; set; }
 }
 
 public class LoginRequest

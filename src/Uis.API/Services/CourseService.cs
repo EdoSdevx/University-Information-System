@@ -113,5 +113,118 @@ public class CourseService : ICourseService
             $"Retrieved {dtos.Count} courses"
         );
     }
+
+    public async Task<ResultService<CourseDetailResponse>> CreateCourseAsync(CreateCourseRequest request)
+    {
+        var existingCourse = await _unitOfWork.Courses.GetByCodeAsync(request.Code);
+
+        if (existingCourse != null)
+            return ResultService<CourseDetailResponse>.Fail("Course code already exists");
+
+        var department = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId);
+        if (department == null)
+            return ResultService<CourseDetailResponse>.Fail("Department not found");
+
+        if (request.PrerequisiteCourseId.HasValue)
+        {
+            var prerequisite = await _unitOfWork.Courses.GetByIdAsync(request.PrerequisiteCourseId.Value);
+            if (prerequisite == null)
+                return ResultService<CourseDetailResponse>.Fail("Prerequisite course not found");
+        }
+
+        var course = new Course
+        {
+            Code = request.Code,
+            Name = request.Name,
+            CreditHours = request.CreditHours,
+            DepartmentId = request.DepartmentId,
+            PrerequisiteCourseId = request.PrerequisiteCourseId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Courses.AddAsync(course);
+        await _unitOfWork.SaveChangesAsync();
+
+        var response = new CourseDetailResponse
+        {
+            Id = course.Id,
+            Code = course.Code,
+            Name = course.Name,
+            CreditHours = course.CreditHours,
+            DepartmentId = course.DepartmentId,
+            DepartmentName = department.Name,
+            PrerequisiteCourseId = course.PrerequisiteCourseId
+        };
+
+        return ResultService<CourseDetailResponse>.Ok(response, "Course created successfully");
+    }
+    public async Task<ResultService<CourseResponse>> UpdateCourseAsync(int id, UpdateCourseRequest request)
+    {
+        var course = await _unitOfWork.Courses.GetByIdAsync(id);
+        if (course == null)
+            return ResultService<CourseResponse>.NotFound($"Course with ID {id} not found");
+
+        if (request.Code != course.Code)
+        {
+            var existingCourse = await _unitOfWork.Courses.GetByCodeAsync(request.Code);
+            if (existingCourse != null)
+                return ResultService<CourseResponse>.Fail("Course code already exists");
+        }
+
+        var department = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId);
+        if (department == null)
+            return ResultService<CourseResponse>.Fail("Department not found");
+
+        if (request.PrerequisiteCourseId.HasValue)
+        {
+            if (request.PrerequisiteCourseId.Value == id)
+                return ResultService<CourseResponse>.Fail("A course cannot be its own prerequisite");
+
+            var prerequisite = await _unitOfWork.Courses.GetByIdAsync(request.PrerequisiteCourseId.Value);
+            if (prerequisite == null)
+                return ResultService<CourseResponse>.Fail("Prerequisite course not found");
+        }
+
+        course.Code = request.Code;
+        course.Name = request.Name;
+        course.CreditHours = request.CreditHours;
+        course.DepartmentId = request.DepartmentId;
+        course.PrerequisiteCourseId = request.PrerequisiteCourseId;
+        course.UpdatedAt = DateTime.UtcNow;
+
+        await _unitOfWork.Courses.UpdateAsync(course);
+        await _unitOfWork.SaveChangesAsync();
+
+        var response = new CourseResponse
+        {
+            Id = course.Id,
+            Code = course.Code,
+            Name = course.Name,
+            CreditHours = course.CreditHours,
+            DepartmentId = course.DepartmentId,
+            DepartmentCode = department.Code,
+            CreatedAt = course.CreatedAt,
+            UpdatedAt = course.UpdatedAt
+        };
+
+        return ResultService<CourseResponse>.Ok(response, "Course updated successfully");
+    }
+
+    public async Task<ResultService> DeleteCourseAsync(int id)
+    {
+        var course = await _unitOfWork.Courses.GetByIdAsync(id);
+        if (course == null)
+            return ResultService.NotFound($"Course with ID {id} not found");
+
+        var hasInstances = await _unitOfWork.CourseInstances.AnyAsync(ci => ci.CourseId == id);
+
+        if (hasInstances)
+            return ResultService.Fail("Cannot delete course with existing instances");
+
+        await _unitOfWork.Courses.DeleteAsync(course);
+        await _unitOfWork.SaveChangesAsync();
+
+        return ResultService.Ok("Course deleted successfully");
+    }
 }
 

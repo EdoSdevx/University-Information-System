@@ -531,15 +531,12 @@ namespace Uis.API.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("DepartmentHeadEmail")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DepartmentHeadName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -549,7 +546,6 @@ namespace Uis.API.Migrations
                         .HasColumnName("Name");
 
                     b.Property<string>("SecretaryEmail")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")

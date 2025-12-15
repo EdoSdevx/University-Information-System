@@ -43,6 +43,52 @@ public class CourseController : ControllerBase
         var result = await _courseService.GetAllCoursesAsync(pageIndex, pageSize);
         return Ok(result);
     }
+
+    [HttpPost("admin/create")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(CourseDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateCourseAsync([FromBody] CreateCourseRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _courseService.CreateCourseAsync(request);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
+
+    [HttpPut("/admin/edit/{id}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(typeof(CourseResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateCourseAsync(int id, [FromBody] UpdateCourseRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _courseService.UpdateCourseAsync(id, request);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("/admin/delete/{id}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCourseAsync(int id)
+    {
+        var result = await _courseService.DeleteCourseAsync(id);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
     [HttpGet("by-code/{code}")]
     [Authorize]
     [ProducesResponseType(typeof(CourseResponse), StatusCodes.Status200OK)]

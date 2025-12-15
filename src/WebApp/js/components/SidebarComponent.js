@@ -47,7 +47,6 @@ export const SidebarComponent = {
                 { page: 'departments', label: 'Department Management' },
                 { page: 'instances', label: 'Course Instance Management' },
                 { page: 'courses', label: 'Course Management' },
-                { page: 'reports', label: 'Reports' }
             ],
             account: [
                 { page: 'profile', label: 'My Profile' },

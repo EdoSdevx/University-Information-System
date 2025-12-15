@@ -12,4 +12,8 @@ public interface ICourseService
     Task<ResultService<CourseResponse>> GetCourseByCodeAsync(string code);
     Task<PagedResultService<CourseResponse>> GetByDepartmentAsync(int departmentId, int pageIndex, int pageSize);
     Task<PagedResultService<CourseResponse>> GetAllCoursesAsync(int pageIndex, int pageSize);
+
+    Task<ResultService<CourseDetailResponse>> CreateCourseAsync(CreateCourseRequest request);
+    Task<ResultService<CourseResponse>> UpdateCourseAsync(int courseId, UpdateCourseRequest request);
+    Task<ResultService> DeleteCourseAsync(int courseId);
 }

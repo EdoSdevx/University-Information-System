@@ -12,8 +12,8 @@ using Uis.API.Models;
 namespace Uis.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251214085906_OfficeLocation")]
-    partial class OfficeLocation
+    [Migration("20251215084940_DepartmentName")]
+    partial class DepartmentName
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -533,8 +533,13 @@ namespace Uis.API.Migrations
                         .HasColumnName("CreatedAt")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("DepartmentHeadEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DepartmentHeadName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -544,7 +549,6 @@ namespace Uis.API.Migrations
                         .HasColumnName("Name");
 
                     b.Property<string>("SecretaryEmail")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")

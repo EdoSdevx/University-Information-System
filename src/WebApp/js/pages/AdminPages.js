@@ -340,28 +340,88 @@ export const AdminPages = {
 
     courses: {
         render: () => `
-            <div class="admin-breadcrumb">Home / Course Management</div>
-            <div class="admin-section-header">Course Management</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">📚</div>
-                <div class="placeholder-title">Course Management</div>
-                <div class="placeholder-text">Create, edit, and manage all courses in the system.</div>
+    <div class="admin-breadcrumb">Home / Course Management</div>
+    <div class="admin-section-header">Course Management</div>
+    
+    <div class="admin-courses-container">
+        <div class="admin-courses-header">
+            <div class="admin-courses-filters">
+                <select id="courseDepartmentFilter" class="admin-filter-select">
+                    <option value="">All Departments</option>
+                </select>
+                <input type="text" id="searchCourses" class="admin-search-input" placeholder="Search by code or name...">
             </div>
-        `,
-        afterRender: () => { }
-    },
+            <button class="admin-btn-primary" onclick="window.openCreateCourseModal()">+ Create Course</button>
+        </div>
 
-    reports: {
-        render: () => `
-            <div class="admin-breadcrumb">Home / Reports</div>
-            <div class="admin-section-header">System Reports</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">📊</div>
-                <div class="placeholder-title">Reports</div>
-                <div class="placeholder-text">View system reports, analytics, and statistics.</div>
+        <div class="admin-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Credits</th>
+                        <th>Department</th>
+                        <th>Prerequisite</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="coursesTable">
+                    <tr><td colspan="7" style="text-align: center; padding: 20px;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="admin-modal" id="courseModal" style="display: none;">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h3 id="courseModalTitle">Create Course</h3>
+                <button class="admin-modal-close" onclick="document.getElementById('courseModal').style.display='none'">×</button>
             </div>
-        `,
-        afterRender: () => { }
+            <div class="admin-modal-body">
+                <div class="admin-form-row">
+                    <div class="admin-form-group">
+                        <label>Course Code *</label>
+                        <input type="text" id="courseCode" class="admin-input" placeholder="CS101">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Credit Hours *</label>
+                        <input type="number" id="courseCreditHours" class="admin-input" placeholder="3" min="1" max="10">
+                    </div>
+                </div>
+                <div class="admin-form-group">
+                    <label>Course Name *</label>
+                    <input type="text" id="courseName" class="admin-input" placeholder="Introduction to Computer Science">
+                </div>
+                <div class="admin-form-group">
+                    <label>Department *</label>
+                    <select id="courseDepartment" class="admin-input">
+                        <option value="">Select department...</option>
+                    </select>
+                </div>
+                <div class="admin-form-group">
+                    <label>Prerequisite Course (Optional)</label>
+                    <select id="coursePrerequisite" class="admin-input" disabled>
+                        <option value="">None</option>
+                    </select>
+                </div>
+            </div>
+            <div class="admin-modal-footer">
+                <button class="admin-btn-cancel" onclick="document.getElementById('courseModal').style.display='none'">Cancel</button>
+                <button class="admin-btn-primary" onclick="window.saveCourse()">Save Course</button>
+            </div>
+        </div>
+    </div>
+`,
+        afterRender: async () => {
+            await loadCourseData();
+            await loadCoursesForTable();
+
+            document.getElementById('courseDepartmentFilter').addEventListener('change', loadCoursesForTable);
+            document.getElementById('searchCourses').addEventListener('input', debounce(loadCoursesForTable, 500));
+        }
     },
 
     profile: {
@@ -798,6 +858,7 @@ window.openCreateInstanceModal = async () => {
 
     newDeptSelect.addEventListener('change', async (e) => {
         await loadCoursesByDepartment(e.target.value);
+        await loadTeachersByDepartment(e.target.value);
     });
 
     document.getElementById('instanceModal').style.display = 'flex';
@@ -855,6 +916,27 @@ function loadTeachers() {
     if (teacherSelect && allTeachers && allTeachers.length > 0) {
         teacherSelect.innerHTML = '<option value="">Select instructor...</option>' +
             allTeachers.map(t => `<option value="${t.id}">${t.firstName} ${t.lastName}</option>`).join('');
+    }
+}
+async function loadTeachersByDepartment(departmentId) {
+    if (!departmentId) {
+        loadTeachers();
+        return;
+    }
+
+    const response = await apiRequest(`/user/admin/all?roleFilter=Teacher&departmentId=${departmentId}&pageSize=100`);
+
+    const teacherSelect = document.getElementById('instanceTeacher');
+
+    if (response.ok && response.data) {
+        const teachers = response.data;
+
+        if (teachers.length === 0) {
+            teacherSelect.innerHTML = '<option value="">No teachers in this department</option>';
+        } else {
+            teacherSelect.innerHTML = '<option value="">Select instructor...</option>' +
+                teachers.map(t => `<option value="${t.id}">${t.firstName} ${t.lastName}</option>`).join('');
+        }
     }
 }
 
@@ -916,6 +998,101 @@ window.deleteInstance = async (instanceId) => {
         alert(response.message || 'Delete failed');
     }
 };
+// ==================== COURSE MANAGEMENT ====================
+
+async function loadCourseData() {
+
+    const [deptResponse, courseResponse] = await Promise.all([
+        apiRequest('/department/admin/all?pageSize=100'),
+        apiRequest('/course/admin/all?pageSize=1000') 
+    ]);
+
+    if (deptResponse.ok && deptResponse.data) {
+        allDepartments = deptResponse.data;
+
+        const filterSelect = document.getElementById('courseDepartmentFilter');
+        if (filterSelect) {
+            filterSelect.innerHTML = '<option value="">All Departments</option>' +
+                allDepartments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        }
+
+        const modalSelect = document.getElementById('courseDepartment');
+        if (modalSelect) {
+            modalSelect.innerHTML = '<option value="">Select department...</option>' +
+                allDepartments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        }
+    }
+    if (courseResponse.ok && courseResponse.data) {
+        allCourses = courseResponse.data.items || courseResponse.data;
+
+        const prereqSelect = document.getElementById('coursePrerequisite');
+        if (prereqSelect) {
+            prereqSelect.innerHTML = '<option value="">None</option>' +
+                allCourses.map(c => `<option value="${c.id}">${c.code} - ${c.name}</option>`).join('');
+        }
+    }
+}
+
+async function loadCoursesForTable() {
+    const departmentId = document.getElementById('courseDepartmentFilter')?.value || '';
+    const searchTerm = document.getElementById('searchCourses')?.value.toLowerCase() || '';
+    const tbody = document.getElementById('coursesTable');
+
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Loading...</td></tr>';
+
+    let url = departmentId
+        ? `/course/admin/by-department/${departmentId}?pageSize=100`
+        : `/course/admin/all?pageSize=100`;
+
+    const response = await apiRequest(url);
+
+    if (!response.ok || !response.data) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: red;">Failed to load courses</td></tr>';
+        return;
+    }
+
+    let courses = response.data.items || response.data;
+
+    if (searchTerm) {
+        courses = courses.filter(c =>
+            c.name.toLowerCase().includes(searchTerm) ||
+            c.code.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    if (courses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No courses found</td></tr>';
+        return;
+    }
+
+    const getDeptName = (id) => {
+        const d = allDepartments.find(dept => dept.id === id);
+        return d ? d.name : 'Unknown';
+    };
+
+    const getPrereqName = (id) => {
+        if (!id) return '-';
+        const c = allCourses.find(course => course.id === id);
+        return c ? c.code : 'Unknown';
+    };
+
+    tbody.innerHTML = courses.map(c => `
+        <tr>
+            <td>${c.id}</td>
+            <td><strong>${c.code}</strong></td>
+            <td>${c.name}</td>
+            <td>${c.creditHours || '-'}</td>
+            <td>${getDeptName(c.departmentId)}</td>
+            <td>${getPrereqName(c.prerequisiteCourseId)}</td>
+            <td>
+                <button class="admin-action-btn edit" onclick="window.openEditCourseModal(${c.id})">Edit</button>
+                <button class="admin-action-btn delete" onclick="window.deleteCourse(${c.id})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+
 
 // ==================== UTILITY FUNCTIONS ====================
 

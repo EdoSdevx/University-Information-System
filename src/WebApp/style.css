@@ -2736,7 +2736,8 @@ body {
 
 .admin-users-container,
 .admin-departments-container,
-.admin-instances-container {
+.admin-instances-container,
+.admin-courses-container{
     background: white;
     border-radius: 2px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -2746,7 +2747,8 @@ body {
 /* Headers */
 .admin-users-header,
 .admin-departments-header,
-.admin-instances-header {
+.admin-instances-header,
+.admin-courses-header{
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -2755,7 +2757,8 @@ body {
 }
 
 .admin-users-filters,
-.admin-instances-filters {
+.admin-instances-filters,
+.admin-courses-filters{
     display: flex;
     gap: 12px;
     flex: 1;
@@ -3125,13 +3128,15 @@ body {
 @media (max-width: 768px) {
     .admin-users-header,
     .admin-departments-header,
-    .admin-instances-header {
+    .admin-instances-header,
+    .admin-courses-header{
         flex-direction: column;
         align-items: stretch;
     }
 
     .admin-users-filters,
-    .admin-instances-filters {
+    .admin-instances-filters,
+    .admin-courses-filters{
         flex-direction: column;
     }
 

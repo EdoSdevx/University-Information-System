@@ -14,4 +14,9 @@ public interface IEnrollmentService
     Task<ResultService> DropCourseAsync(int studentId, DropCourseRequest request);
     Task<PagedResultService<StudentEnrollmentResponse>> GetCourseEnrollmentsAsync(int courseInstanceId, int pageIndex, int pageSize);
     Task<bool> IsStudentEnrolledAsync(int studentId, int courseInstanceId);
+
+    Task<ResultService<EnrollmentResponse>> AdminEnrollStudentAsync(AdminEnrollStudentRequest request);
+    Task<ResultService> AdminDropCourseAsync(AdminDropCourseRequest request);
+
+    // PRIVATE ExecuteEnrollAsync
 }

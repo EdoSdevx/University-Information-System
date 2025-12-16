@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Azure.Core;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Uis.API.Constants;
+using Uis.API.DTOs.Course;
 using Uis.API.DTOs.CourseInstance;
 using Uis.API.Models;
 using Uis.API.Repositories.Interfaces;
@@ -240,30 +242,58 @@ public class CourseInstanceService : ICourseInstanceService
             $"Retrieved {totalCount} course instances"
         );
     }
+    public async Task<ResultService<CourseInstanceDetailResponse>> GetByIdAsync(int id)
+    {
+        _logger.LogInformation("Attempting to get course instance details for course {CourseId}", id);
 
+        var instance = await _unitOfWork.CourseInstances.GetByIdAsync(id);
+
+        if(instance == null)
+        {
+            _logger.LogWarning("Course instance could not found : course {CourseId} not found", id);
+            return ResultService<CourseInstanceDetailResponse>.NotFound("Course not found");
+        }
+
+        var dto = new CourseInstanceDetailResponse
+        {
+            CourseId = instance.CourseId,
+            TeacherId = instance.TeacherId,
+            AcademicYearId = instance.AcademicYearId,
+            DepartmentId = instance.DepartmentId,
+            Section = instance.Section,
+            Capacity = instance.Capacity,
+            Day1 = instance.Day1.HasValue ? (int)instance.Day1.Value : null,
+            Day2 = instance.Day2.HasValue ? (int)instance.Day2.Value : null,
+            StartTime = instance.StartTime?.ToString("HH:mm"),
+            EndTime = instance.EndTime?.ToString("HH:mm"),
+            Location = instance.Location,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        return ResultService<CourseInstanceDetailResponse>.Ok(dto);
+    }
     public async Task<ResultService<CourseInstanceResponse>> CreateInstanceAsync(CreateCourseInstanceRequest request)
+
     {
         _logger.LogInformation("Attempting to create new course instance for course {CourseId}", request.CourseId);
-
         var course = await _unitOfWork.Courses.GetByIdAsync(request.CourseId);
         if (course == null)
         {
             _logger.LogWarning("Course instance creation failed: course {CourseId} not found", request.CourseId);
             return ResultService<CourseInstanceResponse>.NotFound("Course not found");
         }
-
         var teacher = await _unitOfWork.Users.GetByIdAsync(request.TeacherId);
         if (teacher == null || teacher.Role != UserRole.Teacher)
         {
             _logger.LogWarning("Course instance creation failed: teacher {TeacherId} not found", request.TeacherId);
             return ResultService<CourseInstanceResponse>.NotFound("Teacher not found");
         }
-
         var academicYear = await _unitOfWork.AcademicYears.GetByIdAsync(request.AcademicYearId);
         if (academicYear == null)
         {
             _logger.LogWarning("Course instance creation failed: academic year {AcademicYearId} not found", request.AcademicYearId);
             return ResultService<CourseInstanceResponse>.NotFound("Academic year not found");
+
         }
 
         var instance = new CourseInstance
@@ -293,7 +323,7 @@ public class CourseInstanceService : ICourseInstanceService
             Section = instance.Section,
             TeacherName = $"{teacher.FirstName} {teacher.LastName}",
             Day1 = (int)instance.Day1,
-            Day2 = (int)instance.Day2,
+            Day2 = request.Day2.HasValue ? (int)request.Day2.Value : null,
             StartTime = instance.StartTime?.ToString("HH:mm"),
             EndTime = instance.EndTime?.ToString("HH:mm"),
             Location = instance.Location,
@@ -302,7 +332,6 @@ public class CourseInstanceService : ICourseInstanceService
             AcademicYear = academicYear.Year,
             DepartmentName = course.Department?.Name
         };
-
         _logger.LogInformation("Course instance created successfully with ID: {InstanceId}", instance.Id);
         return ResultService<CourseInstanceResponse>.Ok(response, "Course instance created successfully");
     }

@@ -23,7 +23,7 @@ public class CourseService : ICourseService
         _logger = logger;
     }
 
-    public async Task<PagedResultService<CourseResponse>> GetAllCoursesAsync(int pageIndex = 1, int pageSize = 10)
+    public async Task<PagedResultService<CourseDetailResponse>> GetAllCoursesAsync(int pageIndex = 1, int pageSize = 10)
     {
         if (pageIndex < 1) pageIndex = 1;
         if (pageSize < 1) pageSize = 10;
@@ -40,15 +40,17 @@ public class CourseService : ICourseService
                                 .Take(pageSize)
                                 .ToList();
 
-        var dtos = pagedCourses.Select(course => new CourseResponse
+        var dtos = pagedCourses.Select(course => new CourseDetailResponse
         {
             Id = course.Id,
+            CreditHours = course.CreditHours,
+            PrerequisiteCourseId = course.PrerequisiteCourseId,
             Name = course.Name,
             Code = course.Code,
             DepartmentId = course.DepartmentId
         }).ToList();
 
-        return PagedResultService<CourseResponse>.Ok(dtos, pageIndex, pageSize, totalCount);
+        return PagedResultService<CourseDetailResponse>.Ok(dtos, pageIndex, pageSize, totalCount);
     }
     public async Task<ResultService<CourseResponse>> GetCourseByCodeAsync(string code)
     {

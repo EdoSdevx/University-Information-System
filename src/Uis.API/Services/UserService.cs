@@ -625,4 +625,30 @@ public class UserService : IUserService
         return ResultService.Ok($"User {userEmail} deleted successfully");
     }
 
+    public async Task<ResultService<AdminProfileResponse>> GetAdminProfile(int adminId)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(adminId);
+
+        if (user == null)
+        {
+            _logger.LogWarning("Admin with id: {AdminId} does not exist.", adminId);
+            return ResultService<AdminProfileResponse>.NotFound("Admin not found");
+        }
+
+        var department = await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
+
+        var profileDto = new AdminProfileResponse
+        {
+            Id = user.Id,
+            Role = (int)user.Role,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,  
+            DepartmentId = user.DepartmentId,
+            DepartmentName = department?.Name,
+        };
+
+        _logger.LogInformation("Retrieved admin profile for user {UserId}", adminId);
+        return ResultService<AdminProfileResponse>.Ok(profileDto);
+    }
 }

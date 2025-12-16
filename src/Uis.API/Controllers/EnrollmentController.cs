@@ -112,5 +112,47 @@ public class EnrollmentController : ControllerBase
 
         var result = await _enrollmentService.GetCourseEnrollmentsAsync(courseInstanceId, pageIndex, pageSize);
         return Ok(result);
+
+    }
+    // ==================== ADMIN ENDPOINTS ====================
+
+
+    [HttpGet("admin/course/{courseInstanceId}")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> GetCourseEnrollmentsForAdminAsync(
+    int courseInstanceId,
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 100)
+    {
+        var result = await _enrollmentService.GetCourseEnrollmentsAsync(courseInstanceId, pageIndex, pageSize);
+
+        if (!result.Success) 
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("admin/enroll")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> AdminEnrollStudentAsync([FromBody] AdminEnrollStudentRequest request)
+    {
+
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+
+        var result = await _enrollmentService.AdminEnrollStudentAsync(request);
+
+        if (!result.Success) 
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("admin/drop")]
+    [Authorize(Roles = Roles.Admin)]
+    public async Task<IActionResult> AdminDropStudentAsync([FromBody] AdminDropCourseRequest request)
+    {
+        var result = await _enrollmentService.AdminDropCourseAsync(request);
+        if (!result.Success) return StatusCode(result.StatusCode, result);
+        return Ok(result);
     }
 }

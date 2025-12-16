@@ -11,6 +11,8 @@ let currentEditingInstanceId = null;
 let allDepartments = [];
 let allTeachers = [];
 let allCourses = [];
+let currentEditingCourseId = null;
+let currentManageInstanceId = null;
 
 export const AdminPages = {
     dashboard: {
@@ -209,126 +211,131 @@ export const AdminPages = {
 
     instances: {
         render: () => `
-<div class="admin-breadcrumb">Home / Course Instance Management</div>
-<div class="admin-section-header">Course Instances</div>
+            <div class="admin-breadcrumb">Home / Course Instance Management</div>
+            <div class="admin-section-header">Course Instances</div>
 
-<div class="admin-instances-container">
-    <div class="admin-instances-header">
-        <div class="admin-instances-filters">
-            <select id="instanceDepartmentFilter" class="admin-filter-select">
-                <option value="">All Departments</option>
-            </select>
-            <input type="text" id="searchInstances" class="admin-search-input" placeholder="Search by course code or name...">
-        </div>
-        <button class="admin-btn-primary" onclick="window.openCreateInstanceModal()">+ Create Instance</button>
-    </div>
+            <div class="admin-instances-container">
+                <div class="admin-instances-header">
+                    <div class="admin-instances-filters">
+                        <select id="instanceDepartmentFilter" class="admin-filter-select">
+                            <option value="">All Departments</option>
+                        </select>
+                        <input type="text" id="searchInstances" class="admin-search-input" placeholder="Search by course code or name...">
+                    </div>
+                    <button class="admin-btn-primary" onclick="window.openCreateInstanceModal()">+ Create Instance</button>
+                </div>
 
-    <div class="admin-table-wrapper">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Course Code</th>
-                    <th>Course Name</th>
-                    <th>Section</th>
-                    <th>Instructor</th>
-                    <th>Schedule</th>
-                    <th>Enrolled</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="instancesTable">
-                <tr><td colspan="8" style="text-align: center; padding: 20px;">Loading...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                 <th>Course Code</th>
+                                <th>Course Name</th>
+                                <th>Section</th>
+                                <th>Instructor</th>
+                                <th>Schedule</th>
+                                <th>Enrolled</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="instancesTable">
+                            <tr><td colspan="7" style="text-align: center; padding: 20px;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-<div class="admin-modal" id="instanceModal" style="display: none;">
-    <div class="admin-modal-content">
-        <div class="admin-modal-header">
-            <h3 id="instanceModalTitle">Create Course Instance</h3>
-            <button class="admin-modal-close" onclick="document.getElementById('instanceModal').style.display='none'">×</button>
-        </div>
-        <div class="admin-modal-body">
-            <div class="admin-form-group">
-                <label>Department *</label>
-                <select id="instanceDepartment" class="admin-input">
-                    <option value="">Select department...</option>
-                </select>
-            </div>
-            <div class="admin-form-group">
-                <label>Course *</label>
-                <select id="instanceCourse" class="admin-input" disabled>
-                    <option value="">Select department first...</option>
-                </select>
-            </div>
-            <div class="admin-form-row">
-                <div class="admin-form-group">
-                    <label>Section *</label>
-                    <input type="text" id="instanceSection" class="admin-input" placeholder="A">
-                </div>
-                <div class="admin-form-group">
-                    <label>Capacity *</label>
-                    <input type="number" id="instanceCapacity" class="admin-input" placeholder="40" min="1">
-                </div>
-            </div>
-            <div class="admin-form-group">
-                <label>Instructor *</label>
-                <select id="instanceTeacher" class="admin-input">
-                    <option value="">Select instructor...</option>
-                </select>
-            </div>
-            <div class="admin-form-row">
-                <div class="admin-form-group">
-                    <label>Day 1 *</label>
-                    <select id="instanceDay1" class="admin-input">
-                        <option value="">Select day...</option>
-                        <option value="0">Sunday</option>
-                        <option value="1">Monday</option>
-                        <option value="2">Tuesday</option>
-                        <option value="3">Wednesday</option>
-                        <option value="4">Thursday</option>
-                        <option value="5">Friday</option>
-                        <option value="6">Saturday</option>
-                    </select>
-                </div>
-                <div class="admin-form-group">
-                    <label>Day 2 (Optional)</label>
-                    <select id="instanceDay2" class="admin-input">
-                        <option value="">None</option>
-                        <option value="0">Sunday</option>
-                        <option value="1">Monday</option>
-                        <option value="2">Tuesday</option>
-                        <option value="3">Wednesday</option>
-                        <option value="4">Thursday</option>
-                        <option value="5">Friday</option>
-                        <option value="6">Saturday</option>
-                    </select>
+            <div class="admin-modal" id="instanceModal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h3 id="instanceModalTitle">Create Course Instance</h3>
+                        <button class="admin-modal-close" onclick="document.getElementById('instanceModal').style.display='none'">×</button>
+                    </div>
+                    <div class="admin-modal-body">
+                        <div class="admin-form-group">
+                            <label>Department *</label>
+                            <select id="instanceDepartment" class="admin-input"><option value="">Select department...</option></select>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Course *</label>
+                            <select id="instanceCourse" class="admin-input" disabled><option value="">Select department first...</option></select>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group"><label>Section *</label><input type="text" id="instanceSection" class="admin-input" placeholder="A"></div>
+                            <div class="admin-form-group"><label>Capacity *</label><input type="number" id="instanceCapacity" class="admin-input" placeholder="40" min="1"></div>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Instructor *</label>
+                            <select id="instanceTeacher" class="admin-input"><option value="">Select instructor...</option></select>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Day 1 *</label>
+                                <select id="instanceDay1" class="admin-input">
+                                    <option value="">Select day...</option>
+                                    <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+                                </select>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Day 2 (Optional)</label>
+                                <select id="instanceDay2" class="admin-input">
+                                    <option value="">None</option>
+                                    <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group"><label>Start Time *</label><input type="time" id="instanceStartTime" class="admin-input"></div>
+                            <div class="admin-form-group"><label>End Time *</label><input type="time" id="instanceEndTime" class="admin-input"></div>
+                        </div>
+                        <div class="admin-form-group"><label>Location</label><input type="text" id="instanceLocation" class="admin-input" placeholder="Building A - Room 101"></div>
+                    </div>
+                    <div class="admin-modal-footer">
+                        <button class="admin-btn-cancel" onclick="document.getElementById('instanceModal').style.display='none'">Cancel</button>
+                        <button class="admin-btn-primary" onclick="window.saveInstance()">Save Instance</button>
+                    </div>
                 </div>
             </div>
-            <div class="admin-form-row">
-                <div class="admin-form-group">
-                    <label>Start Time *</label>
-                    <input type="time" id="instanceStartTime" class="admin-input">
-                </div>
-                <div class="admin-form-group">
-                    <label>End Time *</label>
-                    <input type="time" id="instanceEndTime" class="admin-input">
+
+            <div class="admin-modal" id="enrollmentModal" style="display: none;">
+                <div class="admin-modal-content">
+                    <div class="admin-modal-header">
+                        <h3 id="enrollmentModalTitle">Manage Enrollments</h3>
+                        <button class="admin-modal-close" onclick="document.getElementById('enrollmentModal').style.display='none'">×</button>
+                    </div>
+                    
+                    <div class="admin-enrollment-top-bar">
+                        <div class="admin-enrollment-input-group">
+                            <input type="number" id="enrollStudentId" class="admin-enrollment-input" placeholder="Enter Student ID (e.g. 2024001)">
+                            <button class="admin-btn-primary" onclick="window.adminEnrollStudent()">Add Student</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-enrollment-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Enrolled Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="enrollmentListTable">
+                                <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading students...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="admin-modal-footer">
+                        <button class="admin-btn-cancel" onclick="document.getElementById('enrollmentModal').style.display='none'">Close</button>
+                    </div>
                 </div>
             </div>
-            <div class="admin-form-group">
-                <label>Location</label>
-                <input type="text" id="instanceLocation" class="admin-input" placeholder="Building A - Room 101">
-            </div>
-        </div>
-        <div class="admin-modal-footer">
-            <button class="admin-btn-cancel" onclick="document.getElementById('instanceModal').style.display='none'">Cancel</button>
-            <button class="admin-btn-primary" onclick="window.saveInstance()">Save Instance</button>
-        </div>
-    </div>
-</div>
-`,
+        `,
         afterRender: async () => {
             await loadInstanceData();
             await loadInstances();
@@ -427,41 +434,55 @@ export const AdminPages = {
     profile: {
         render: () => `
             <div class="admin-breadcrumb">Home / My Profile</div>
-            <div class="admin-section-header">Personal Information</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">👤</div>
-                <div class="placeholder-title">My Profile</div>
-                <div class="placeholder-text">View and update your personal information.</div>
-            </div>
-        `,
-        afterRender: () => { }
-    },
+            <div class="admin-section-header">My Profile</div>
 
-    settings: {
-        render: () => `
-            <div class="admin-breadcrumb">Home / System Settings</div>
-            <div class="admin-section-header">System Settings</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">⚙️</div>
-                <div class="placeholder-title">System Settings</div>
-                <div class="placeholder-text">Configure system-wide settings and preferences.</div>
-            </div>
-        `,
-        afterRender: () => { }
-    },
+            <div class="admin-profile-container">
+                
+                <div class="admin-card">
+                    <h3>Personal Information</h3>
+                    <div class="admin-form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="profileName" class="admin-input" readonly disabled>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="profileEmail" class="admin-input" readonly disabled>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Role</label>
+                        <input type="text" id="profileRole" class="admin-input" readonly disabled>
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Department</label>
+                        <input type="text" id="profileDepartment" class="admin-input" readonly disabled>
+                    </div>
+                </div>
 
-    logs: {
-        render: () => `
-            <div class="admin-breadcrumb">Home / Activity Logs</div>
-            <div class="admin-section-header">Activity Logs</div>
-            <div class="placeholder-page">
-                <div class="placeholder-icon">📋</div>
-                <div class="placeholder-title">Activity Logs</div>
-                <div class="placeholder-text">View system activity, audit logs, and user actions.</div>
+                <div class="admin-card">
+                    <h3>Security Settings</h3>
+                    <div class="admin-form-group">
+                        <label>Current Password</label>
+                        <input type="password" id="currentPassword" class="admin-input" placeholder="Enter current password">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPassword" class="admin-input" placeholder="Minimum 8 characters">
+                    </div>
+                    <div class="admin-form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="admin-input" placeholder="Repeat new password">
+                    </div>
+                    <div class="admin-card-footer">
+                        <button class="admin-btn-primary" onclick="window.updateAdminPassword()">Update Password</button>
+                    </div>
+                </div>
+
             </div>
         `,
-        afterRender: () => { }
-    }
+        afterRender: async () => {
+            await loadAdminProfile();
+        }
+    },
 };
 
 // ==================== USER MANAGEMENT ====================
@@ -801,7 +822,6 @@ async function loadInstances() {
     const searchTerm = document.getElementById('searchInstances')?.value || '';
 
     const response = await apiRequest(`/courseinstance/admin/all?departmentId=${departmentId}&searchTerm=${searchTerm}&pageSize=100`);
-
     const tbody = document.getElementById('instancesTable');
 
     if (!response.ok || !response.data) {
@@ -825,15 +845,16 @@ async function loadInstances() {
         return `
         <tr>
             <td>${inst.courseInstanceId}</td>
-            <td>${inst.courseCode}</td>
+            <td><strong>${inst.courseCode}</strong></td>
             <td>${inst.courseName}</td>
             <td>${inst.section}</td>
             <td>${inst.teacherName}</td>
             <td>${schedule}</td>
             <td>${inst.currentEnrollmentCount}/${inst.capacity}</td>
-            <td>
-                <button class="admin-action-btn edit" onclick="window.openEditInstanceModal(${inst.id})">Edit</button>
-                <button class="admin-action-btn delete" onclick="window.deleteInstance(${inst.id})">Delete</button>
+            <td style="white-space: nowrap;">
+                <button class="admin-action-btn info" onclick="window.openEnrollmentModal(${inst.courseInstanceId}, '${inst.courseCode}')">Students</button>
+                <button class="admin-action-btn edit" onclick="window.openEditInstanceModal(${inst.courseInstanceId})">Edit</button>
+                <button class="admin-action-btn delete" onclick="window.deleteInstance(${inst.courseInstanceId})">Delete</button>
             </td>
         </tr>
     `}).join('');
@@ -869,44 +890,48 @@ window.openEditInstanceModal = async (instanceId) => {
     document.getElementById('instanceModalTitle').textContent = 'Edit Course Instance';
 
     const deptSelect = document.getElementById('instanceDepartment');
-    if (deptSelect && allDepartments && allDepartments.length > 0) {
-        deptSelect.innerHTML = '<option value="">Select department...</option>' +
-            allDepartments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-    }
+    if (deptSelect && allDepartments.length > 0) {
 
-    loadTeachers();
-
-    const response = await apiRequest(`/courseinstance/admin/all?pageSize=100`);
-
-    if (response.ok && response.data) {
-        const inst = response.data.find(i => i.id === instanceId);
-        if (inst) {
-
-            document.getElementById('instanceDepartment').value = inst.departmentId || '';
-
-            if (inst.departmentId) {
-                await loadCoursesByDepartment(inst.departmentId);
-            }
-
-            document.getElementById('instanceCourse').value = inst.courseId || '';
-            document.getElementById('instanceSection').value = inst.section;
-            document.getElementById('instanceCapacity').value = inst.capacity;
-            document.getElementById('instanceTeacher').value = inst.teacherId || '';
-            document.getElementById('instanceDay1').value = inst.day1 !== null ? inst.day1 : '';
-            document.getElementById('instanceDay2').value = inst.day2 !== null ? inst.day2 : '';
-            document.getElementById('instanceStartTime').value = inst.startTime || '';
-            document.getElementById('instanceEndTime').value = inst.endTime || '';
-            document.getElementById('instanceLocation').value = inst.location || '';
+        if (deptSelect.options.length <= 1) {
+            deptSelect.innerHTML = '<option value="">Select department...</option>' +
+                allDepartments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
         }
     }
+    const response = await apiRequest(`/courseinstance/admin/detail/${instanceId}`);
+
+    if (!response.ok || !response.data) {
+        alert("Failed to load instance details.");
+        return;
+    }
+
+    const inst = response.data;
+
+    document.getElementById('instanceDepartment').value = inst.departmentId || '';
+
+    if (inst.departmentId) {
+        await Promise.all([
+            loadCoursesByDepartment(inst.departmentId),
+            loadTeachersByDepartment(inst.departmentId)
+        ]);
+    }
+
+    document.getElementById('instanceCourse').value = inst.courseId || '';
+    document.getElementById('instanceTeacher').value = inst.teacherId || '';
+    document.getElementById('instanceSection').value = inst.section;
+    document.getElementById('instanceCapacity').value = inst.capacity;
+
+    document.getElementById('instanceDay1').value = inst.day1 !== null ? inst.day1 : '';
+    document.getElementById('instanceDay2').value = (inst.day2 !== null && inst.day2 !== undefined) ? inst.day2 : '';
+    document.getElementById('instanceStartTime').value = inst.startTime || '';
+    document.getElementById('instanceEndTime').value = inst.endTime || '';
+    document.getElementById('instanceLocation').value = inst.location || '';
 
     const deptSelectElement = document.getElementById('instanceDepartment');
-    const newDeptSelect = deptSelectElement.cloneNode(true);
-    deptSelectElement.parentNode.replaceChild(newDeptSelect, deptSelectElement);
 
-    newDeptSelect.addEventListener('change', async (e) => {
+    deptSelectElement.onchange = async (e) => {
         await loadCoursesByDepartment(e.target.value);
-    });
+        await loadTeachersByDepartment(e.target.value);
+    };
 
     document.getElementById('instanceModal').style.display = 'flex';
 };
@@ -1071,6 +1096,7 @@ async function loadCoursesForTable() {
     };
 
     const getPrereqName = (id) => {
+
         if (!id) return '-';
         const c = allCourses.find(course => course.id === id);
         return c ? c.code : 'Unknown';
@@ -1092,8 +1118,277 @@ async function loadCoursesForTable() {
     `).join('');
 }
 
+function populateCourseModalDropdowns(selectedDepartmentId = null, excludeCourseId = null) {
+    const deptSelect = document.getElementById('courseDepartment');
+    const prereqSelect = document.getElementById('coursePrerequisite');
 
+    if (deptSelect && allDepartments.length > 0) {
+        if (deptSelect.innerHTML.length < 50) {
+            deptSelect.innerHTML = '<option value="">Select department...</option>' +
+                allDepartments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        }
 
+        if (selectedDepartmentId) {
+            deptSelect.value = selectedDepartmentId;
+        }
+
+        deptSelect.onchange = (e) => populateCourseModalDropdowns(e.target.value, excludeCourseId);
+    }
+
+    if (prereqSelect) {
+        prereqSelect.innerHTML = '<option value="">None</option>';
+
+        const currentDeptId = selectedDepartmentId || (deptSelect ? deptSelect.value : null);
+
+        if (!currentDeptId) {
+            prereqSelect.disabled = true;
+            return;
+        }
+
+        const availableCourses = allCourses.filter(c =>
+            c.departmentId == currentDeptId &&
+            c.id !== excludeCourseId
+        );
+
+        if (availableCourses.length > 0) {
+            prereqSelect.disabled = false;
+            prereqSelect.innerHTML += availableCourses.map(c =>
+                `<option value="${c.id}">${c.code} - ${c.name}</option>`
+            ).join('');
+        } else {
+            prereqSelect.disabled = false; 
+        }
+    }
+}
+
+window.openCreateCourseModal = () => {
+    currentEditingCourseId = null;
+    document.getElementById('courseModalTitle').textContent = 'Create Course';
+
+    document.getElementById('courseCode').value = '';
+    document.getElementById('courseName').value = '';
+    document.getElementById('courseCreditHours').value = '';
+
+    document.getElementById('courseDepartment').innerHTML = '';
+    document.getElementById('courseDepartment').value = '';
+    document.getElementById('coursePrerequisite').value = '';
+
+    populateCourseModalDropdowns(null, null);
+
+    document.getElementById('courseModal').style.display = 'flex';
+};
+
+window.openEditCourseModal = (courseId) => {
+    currentEditingCourseId = courseId;
+    document.getElementById('courseModalTitle').textContent = 'Edit Course';
+
+    const course = allCourses.find(c => c.id === courseId);
+
+    if (course) {
+
+        document.getElementById('courseCode').value = course.code;
+        document.getElementById('courseName').value = course.name;
+        document.getElementById('courseCreditHours').value = course.creditHours || '';
+
+        const deptSelect = document.getElementById('courseDepartment');
+        if (deptSelect && allDepartments.length > 0) {
+            deptSelect.innerHTML = '<option value="">Select department...</option>' +
+                allDepartments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        }
+        deptSelect.value = course.departmentId;
+
+        populateCourseModalDropdowns(course.departmentId, course.id);
+
+        document.getElementById('coursePrerequisite').value = course.prerequisiteCourseId || "";
+
+        document.getElementById('courseModal').style.display = 'flex';
+    } else {
+        alert("Error: Course details not found.");
+    }
+};
+
+window.saveCourse = async () => {
+
+    const code = document.getElementById('courseCode').value.trim();
+    const name = document.getElementById('courseName').value.trim();
+    const creditHours = document.getElementById('courseCreditHours').value;
+    const departmentId = document.getElementById('courseDepartment').value;
+    const prerequisiteCourseId = document.getElementById('coursePrerequisite').value;
+
+    if (!code || !name || !creditHours || !departmentId) {
+        alert('Please fill in all required fields marked with *');
+        return;
+    }
+
+    const payload = {
+        code: code,
+        name: name,
+        creditHours: parseInt(creditHours),
+        departmentId: parseInt(departmentId),
+        prerequisiteCourseId: prerequisiteCourseId ? parseInt(prerequisiteCourseId) : null
+    };
+
+    let response;
+    if (currentEditingCourseId) {
+        response = await apiRequest(`/course/admin/edit/${currentEditingCourseId}`, 'PUT', payload);
+    } else {
+        response = await apiRequest('/course/admin/create', 'POST', payload);
+    }
+
+    if (response.ok) {
+        alert(currentEditingCourseId ? 'Course updated successfully' : 'Course created successfully');
+        document.getElementById('courseModal').style.display = 'none';
+
+        await loadCourseData();
+        await loadCoursesForTable();
+    } else {
+        alert(response.message || 'Operation failed');
+    }
+};
+
+window.deleteCourse = async (courseId) => {
+    if (!confirm('Are you sure you want to delete this course? This action cannot be undone if students are enrolled.')) return;
+
+    const response = await apiRequest(`/course/admin/delete/${courseId}`, 'DELETE');
+
+    if (response.ok) {
+        alert('Course deleted successfully');
+        await loadCourseData();
+        await loadCoursesForTable();
+    } else {
+        alert(response.message || 'Delete failed. Ensure the course has no active instances.');
+    }
+};
+
+window.openEnrollmentModal = async (instanceId, courseCode) => {
+    currentManageInstanceId = instanceId;
+    document.getElementById('enrollmentModalTitle').textContent = `Manage Enrollments: ${courseCode}`;
+    document.getElementById('enrollmentModal').style.display = 'flex';
+    document.getElementById('enrollStudentId').value = '';
+
+    await loadClassEnrollments(instanceId);
+};
+
+async function loadClassEnrollments(instanceId) {
+    const tbody = document.getElementById('enrollmentListTable');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Loading...</td></tr>';
+
+    const response = await apiRequest(`/enrollment/admin/course/${instanceId}?pageIndex=1&pageSize=1000`);
+
+    if (response.ok && response.data) {
+        const students = response.data;
+
+        if (students.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No students enrolled yet.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = students.map(s => `
+            <tr>
+                <td>${s.studentId}</td>
+                <td>${s.studentName}</td>
+                <td>${s.studentEmail || '-'}</td>
+                <td>${new Date(s.enrolledAt).toLocaleDateString()}</td>
+                <td><span class="admin-enrollment-status">Active</span></td>
+                <td>
+                    <button class="admin-action-btn delete" onclick="window.adminDropStudent(${s.studentId})">Drop</button>
+                </td>
+            </tr>
+        `).join('');
+    } else {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Failed to load students.</td></tr>';
+    }
+}
+
+window.adminEnrollStudent = async () => {
+    const studentId = document.getElementById('enrollStudentId').value.trim();
+
+    if (!studentId) {
+        alert("Please enter a Student ID");
+        return;
+    }
+    const response = await apiRequest('/enrollment/admin/enroll', 'POST', {
+        studentId: parseInt(studentId),
+        courseInstanceId: currentManageInstanceId
+    });
+
+    if (response.ok) {
+        alert("Student enrolled successfully.");
+        document.getElementById('enrollStudentId').value = '';
+        await loadClassEnrollments(currentManageInstanceId);
+        await loadInstances();
+    } else {
+        alert(response.message || "Failed to enroll student. Check ID or Capacity.");
+    }
+};
+
+window.adminDropStudent = async (studentId) => {
+    if (!confirm(`Are you sure you want to remove Student ID: ${studentId} from this course?`)) return;
+
+    const response = await apiRequest('/enrollment/admin/drop', 'POST', {
+        studentId: parseInt(studentId),
+        courseInstanceId: currentManageInstanceId
+    });
+
+    if (response.ok) {
+        await loadClassEnrollments(currentManageInstanceId);
+        await loadInstances();
+    } else {
+        alert(response.message || "Failed to drop student.");
+    }
+};
+
+// ==================== ADMIN PROFILE FUNCTIONS ====================
+
+async function loadAdminProfile() {
+
+    const response = await apiRequest(`/user/admin/profile`);
+
+    if (response.ok && response.data) {
+        const u = response.data;
+        document.getElementById('profileName').value = `${u.firstName} ${u.lastName}`;
+        document.getElementById('profileEmail').value = u.email;
+        document.getElementById('profileRole').value = getRoleName(u.role);
+        document.getElementById('profileDepartment').value = u.departmentName || 'System Administrator';
+    }
+}
+
+window.updateAdminPassword = async () => {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        alert("Please fill in all password fields.");
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert("New passwords do not match.");
+        return;
+    }
+
+    if (newPassword.length < 8) {
+        alert("New password must be at least 8 characters.");
+        return;
+    }
+
+    const payload = {
+        currentPassword: currentPassword,
+        newPassword: newPassword
+    };
+
+    const response = await apiRequest('/user/change-password', 'POST', payload);
+
+    if (response.ok) {
+        alert("Password updated successfully.");
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+    } else {
+        alert(response.message || "Failed to update password.");
+    }
+};
 // ==================== UTILITY FUNCTIONS ====================
 
 function getRoleName(roleNumber) {

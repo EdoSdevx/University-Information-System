@@ -13,6 +13,17 @@ public class EnrollStudentRequest
     public int CourseInstanceId { get; set; }
 }
 
+public class AdminEnrollStudentRequest
+{
+    public int StudentId { get; set; }
+    public int CourseInstanceId { get; set; }
+}
+
+public class AdminDropCourseRequest
+{
+    public int StudentId { get; set; }
+    public int CourseInstanceId { get; set; }
+}
 public class DropCourseRequest
 {
     public int CourseInstanceId { get; set; }

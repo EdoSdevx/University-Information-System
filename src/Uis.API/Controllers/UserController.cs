@@ -229,4 +229,25 @@ public class UserController : ControllerBase
             return StatusCode(result.StatusCode, result);
         return Ok(result);
     }
+
+    [HttpGet("admin/profile")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAdminProfile()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("You are not authorized.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var result = await _userService.GetAdminProfile(userId);
+
+        if(!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return Ok(result);
+
+    }
 }

@@ -27,4 +27,5 @@ public interface IUserService
     Task<ResultService<AdminUserResponse>> CreateUserAsync(RegisterRequest request);
     Task<ResultService<AdminUserResponse>> UpdateUserByAdminAsync(int userId, AdminUpdateUserRequest request);
     Task<ResultService> DeleteUserAsync(int userId);
+    Task<ResultService<AdminProfileResponse>> GetAdminProfile(int adminId);
 }

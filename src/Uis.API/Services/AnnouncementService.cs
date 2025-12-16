@@ -84,7 +84,7 @@ public class AnnouncementService : IAnnouncementService
 
         return ResultService<AnnouncementResponse>.Ok(dto);
     }
-    public async Task<ResultService<AnnouncementResponse>> GetAnnouncementDetailForTeacherAsync(int announcementId)
+    public async Task<ResultService<AnnouncementResponse>> GetAnnouncementDetailForTeacherAsync(int announcementId, int teacherId)
     {
         var announcement = await _unitOfWork.Announcements.GetAnnouncementDetailForTeacherAsync(announcementId);
 
@@ -94,6 +94,11 @@ public class AnnouncementService : IAnnouncementService
             return ResultService<AnnouncementResponse>.NotFound("Announcement not found");
         }
 
+        if(teacherId != announcement.CreatedByTeacherId)
+        {
+            _logger.LogWarning("Teacher {TeacherId} tried to get detail of announcement: {AnnouncementId}.", teacherId,announcementId);
+            return ResultService<AnnouncementResponse>.Fail("You can only view your own announcements.");
+        }
         var dto = new AnnouncementResponse
         {
             Id = announcement.Id,

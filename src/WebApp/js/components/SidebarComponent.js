@@ -45,13 +45,12 @@ export const SidebarComponent = {
                 { page: 'dashboard', label: 'Dashboard' },
                 { page: 'users', label: 'User Management' },
                 { page: 'departments', label: 'Department Management' },
-                { page: 'instances', label: 'Course Instance Management' },
                 { page: 'courses', label: 'Course Management' },
+                { page: 'instances', label: 'Course Instance Management' },
+                
             ],
             account: [
                 { page: 'profile', label: 'My Profile' },
-                { page: 'settings', label: 'System Settings' },
-                { page: 'logs', label: 'Activity Logs' }
             ]
         }
     },

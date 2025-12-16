@@ -61,7 +61,7 @@ public class CourseController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("/admin/edit/{id}")]
+    [HttpPut("admin/edit/{id}")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(CourseResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -77,7 +77,7 @@ public class CourseController : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("/admin/delete/{id}")]
+    [HttpDelete("admin/delete/{id}")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

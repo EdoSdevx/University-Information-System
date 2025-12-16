@@ -72,152 +72,23 @@ public class EnrollmentService : IEnrollmentService
     }
     public async Task<ResultService<EnrollmentResponse>> EnrollStudentAsync(int studentId, EnrollStudentRequest request)
     {
-        _logger.LogInformation("Enrolling student {StudentId} in course instance {CourseInstanceId}",
-           studentId, request?.CourseInstanceId);
+        return await ExecuteEnrollmentAsync(studentId, request.CourseInstanceId, false);
+    }
 
-        if (request == null)
-            return ResultService<EnrollmentResponse>.Fail("Enrollment data required");
+    public async Task<ResultService<EnrollmentResponse>> AdminEnrollStudentAsync(AdminEnrollStudentRequest request)
+    {
+        return await ExecuteEnrollmentAsync(request.StudentId, request.CourseInstanceId, true);
+    }
 
-        var student = await _unitOfWork.Users.GetByIdAsync(studentId);
-        if (student == null)
-        {
-            _logger.LogWarning("Student {StudentId} not found", studentId);
-            return ResultService<EnrollmentResponse>.Fail("Student not found");
-        }
-
-        var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(request.CourseInstanceId);
-        if (courseInstance == null)
-        {
-            _logger.LogWarning("Course instance {CourseInstanceId} not found", request.CourseInstanceId);
-            return ResultService<EnrollmentResponse>.Fail("Course not found");
-        }
-
-        var isEnrolled = await _unitOfWork.Enrollments.IsStudentEnrolledAsync(
-            studentId,
-            request.CourseInstanceId);
-        if (isEnrolled)
-        {
-            _logger.LogWarning("Student {StudentId} already enrolled in course {CourseInstanceId}",
-                studentId, request.CourseInstanceId);
-            return ResultService<EnrollmentResponse>.Fail("Already enrolled in this course", ResultErrorCode.Conflict);
-        }
-
-        var hasCapacity = await _unitOfWork.CourseInstances.HasCapacityAsync(request.CourseInstanceId);
-        if (!hasCapacity)
-        {
-            _logger.LogWarning("Course {CourseInstanceId} is full", request.CourseInstanceId);
-            return ResultService<EnrollmentResponse>.Fail("Course is full", ResultErrorCode.CourseFull);
-        }
-
-        try
-        {
-            var transaction = await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                var enrollment = new Enrollment
-                {
-                    StudentId = studentId,
-                    CourseInstanceId = request.CourseInstanceId,
-                    AcademicYearId = courseInstance.AcademicYearId,
-                    Status = EnrollmentStatus.Active,
-                    EnrolledAt = DateTime.UtcNow,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                await _unitOfWork.Enrollments.AddAsync(enrollment);
-
-                courseInstance.CurrentEnrollmentCount++;
-                await _unitOfWork.CourseInstances.UpdateAsync(courseInstance);
-
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
-
-                _logger.LogInformation("Student {StudentId} enrolled in course {CourseInstanceId}",
-                    studentId, request.CourseInstanceId);
-
-                var dto = new EnrollmentResponse
-                {
-                    Id = enrollment.Id,
-                    CourseCode = courseInstance.Course?.Code ?? null,
-                    CourseName = courseInstance.Course?.Name ?? null,
-                    Section = courseInstance.Section,
-                    Status = enrollment.Status.ToString(),
-                    EnrolledAt = enrollment.EnrolledAt
-                };
-
-                return ResultService<EnrollmentResponse>.Ok(dto, "Enrolled successfully");
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(ex, "Enrollment transaction failed");
-                throw;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error enrolling student: {Message}", ex.Message);
-            return ResultService<EnrollmentResponse>.Fail("Enrollment failed. Please try again.");
-        }
+    public async Task<ResultService> AdminDropCourseAsync(AdminDropCourseRequest request)
+    {
+        return await ExecuteDropCourse(request.StudentId, request.CourseInstanceId);
     }
     public async Task<ResultService> DropCourseAsync(int studentId, DropCourseRequest request)
     {
-        _logger.LogInformation("Dropping course for student {StudentId} from course {CourseInstanceId}",
-            studentId, request?.CourseInstanceId);
-
-        if (request == null)
-            return ResultService.Fail("Drop request required");
-
-        var enrollment = await _unitOfWork.Enrollments.GetEnrollmentAsync(
-            studentId,
-            request.CourseInstanceId);
-
-        if (enrollment == null)
-        {
-            _logger.LogWarning("Enrollment not found for student {StudentId} in course {CourseInstanceId}",
-                studentId, request.CourseInstanceId);
-            return ResultService.NotFound("Not enrolled in this course");
-        }
-
-        if (enrollment.Status == EnrollmentStatus.Dropped)
-        {
-            _logger.LogWarning("Already dropped for student {StudentId}", studentId);
-            return ResultService.Fail("Already dropped");
-        }
-
-        try
-        {
-            var transaction = await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                await _unitOfWork.Enrollments.DeleteAsync(enrollment);
-
-                var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(request.CourseInstanceId);
-                if (courseInstance != null && courseInstance.CurrentEnrollmentCount > 0)
-                {
-                    courseInstance.CurrentEnrollmentCount--;
-                    await _unitOfWork.CourseInstances.UpdateAsync(courseInstance);
-                }
-
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitTransactionAsync();
-
-                _logger.LogInformation("Course dropped for student {StudentId}", studentId);
-                return ResultService.Ok("Course dropped successfully");
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(ex, "Drop transaction failed");
-                throw;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error dropping course: {Message}", ex.Message);
-            return ResultService.Fail("Drop failed. Please try again.");
-        }
+        return await ExecuteDropCourse(studentId, request.CourseInstanceId);
     }
+
     public async Task<PagedResultService<StudentEnrollmentResponse>> GetCourseEnrollmentsAsync(int courseInstanceId, int pageIndex = 1, int pageSize = 10)
     {
         _logger.LogInformation("Retrieving enrollments for course {CourseInstanceId}. Page {PageIndex}, Size {PageSize}",
@@ -261,4 +132,131 @@ public class EnrollmentService : IEnrollmentService
         return await _unitOfWork.Enrollments.IsStudentEnrolledAsync(studentId, courseInstanceId);
     }
 
+    private async Task<ResultService<EnrollmentResponse>> ExecuteEnrollmentAsync(int studentId, int courseInstanceId, bool ignoreCapacity = false)
+    {
+        var student = await _unitOfWork.Users.GetByIdAsync(studentId);
+        if (student == null) return ResultService<EnrollmentResponse>.Fail("Student not found");
+
+        var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(courseInstanceId);
+        if (courseInstance == null) return ResultService<EnrollmentResponse>.Fail("Course not found");
+
+        var isEnrolled = await _unitOfWork.Enrollments.IsStudentEnrolledAsync(studentId, courseInstanceId);
+        if (isEnrolled) return ResultService<EnrollmentResponse>.Fail("Already enrolled", ResultErrorCode.Conflict);
+
+        if (!ignoreCapacity)
+        {
+            if (courseInstance.CurrentEnrollmentCount >= courseInstance.Capacity)
+            {
+                _logger.LogWarning("Course {CourseInstanceId} is full. Capacity: {Capacity}", courseInstanceId, courseInstance.Capacity);
+                return ResultService<EnrollmentResponse>.Fail("Course is full", ResultErrorCode.CourseFull);
+            }
+        }
+        try
+        {
+            var transaction = await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var enrollment = new Enrollment
+                {
+                    StudentId = studentId,
+                    CourseInstanceId = courseInstanceId,
+                    AcademicYearId = courseInstance.AcademicYearId,
+                    Status = EnrollmentStatus.Active,
+                    EnrolledAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.Enrollments.AddAsync(enrollment);
+
+                courseInstance.CurrentEnrollmentCount++;
+                await _unitOfWork.CourseInstances.UpdateAsync(courseInstance);
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                _logger.LogInformation("Enrolled student {StudentId} in {Course}", studentId, courseInstanceId);
+
+                var dto = new EnrollmentResponse
+                {
+                    Id = enrollment.Id,
+                    CourseCode = courseInstance.Course?.Code,
+                    CourseName = courseInstance.Course?.Name,
+                    Section = courseInstance.Section,
+                    Status = enrollment.Status.ToString(),
+                    EnrolledAt = enrollment.EnrolledAt
+                };
+
+                return ResultService<EnrollmentResponse>.Ok(dto, "Enrolled successfully");
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Transaction failed");
+                throw;
+            }
+        }
+        catch (Exception ex)
+        {
+            return ResultService<EnrollmentResponse>.Fail("Enrollment failed: " + ex.Message);
+        }
+    }
+
+    private async Task<ResultService> ExecuteDropCourse(int studentId, int courseInstanceId)
+    {
+        _logger.LogInformation("Dropping course for student {StudentId} from course {CourseInstanceId}",
+            studentId, courseInstanceId);
+
+        if (studentId == null || courseInstanceId == null)
+            return ResultService.Fail("Drop request required");
+
+        var enrollment = await _unitOfWork.Enrollments.GetEnrollmentAsync(
+            studentId,
+            courseInstanceId);
+
+        if (enrollment == null)
+        {
+            _logger.LogWarning("Enrollment not found for student {StudentId} in course {CourseInstanceId}",
+                studentId, courseInstanceId);
+            return ResultService.NotFound("Not enrolled in this course");
+        }
+
+        if (enrollment.Status == EnrollmentStatus.Dropped)
+        {
+            _logger.LogWarning("Already dropped for student {StudentId}", studentId);
+            return ResultService.Fail("Already dropped");
+        }
+
+        try
+        {
+            var transaction = await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                await _unitOfWork.Enrollments.DeleteAsync(enrollment);
+
+                var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(courseInstanceId);
+                if (courseInstance != null && courseInstance.CurrentEnrollmentCount > 0)
+                {
+                    courseInstance.CurrentEnrollmentCount--;
+                    await _unitOfWork.CourseInstances.UpdateAsync(courseInstance);
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+
+                _logger.LogInformation("Course dropped for student {StudentId}", studentId);
+                return ResultService.Ok("Course dropped successfully");
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Drop transaction failed");
+                throw;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error dropping course: {Message}", ex.Message);
+            return ResultService.Fail("Drop failed. Please try again.");
+        }
+    }
 }

@@ -41,7 +41,6 @@ public class CourseInstanceController : ControllerBase
             return StatusCode(result.StatusCode, result);
         return Ok(result);
     }
-
     [HttpGet("available/{academicYearId}")]
     [Authorize(Roles = Roles.Student)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -117,9 +116,21 @@ public class CourseInstanceController : ControllerBase
         [FromQuery] int pageSize = 10)
     {
         var result = await _courseInstanceService.GetAllInstancesAsync(academicYearId, departmentId, searchTerm, pageIndex, pageSize);
-        return Ok(result);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return StatusCode(StatusCodes.Status201Created, result);
     }
 
+    [HttpGet("admin/detail/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var result = await _courseInstanceService.GetByIdAsync(id);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+        return StatusCode(StatusCodes.Status201Created, result);
+
+    }
     [HttpPost("admin/create")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateInstance([FromBody] CreateCourseInstanceRequest request)

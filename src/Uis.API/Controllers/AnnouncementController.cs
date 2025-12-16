@@ -147,15 +147,6 @@ public class AnnouncementController : ControllerBase
 
         var teacherId = int.Parse(teacherIdClaim);
 
-        var getResult = await _announcementService.GetAnnouncementDetailForTeacherAsync(id);
-        if (!getResult.Success)
-            return StatusCode(getResult.StatusCode, getResult);
-
-        if (getResult.Data.CreatedByTeacherId != teacherId)
-        {
-            return Forbid("You can only edit your own announcements.");
-        }
-
         var result = await _announcementService.UpdateAnnouncementAsync(id, teacherId, request);
         if (!result.Success)
             return StatusCode(result.StatusCode, result);
@@ -177,15 +168,6 @@ public class AnnouncementController : ControllerBase
         }
 
         var teacherId = int.Parse(teacherIdClaim);
-
-        var getResult = await _announcementService.GetAnnouncementDetailForTeacherAsync(id);
-        if (!getResult.Success)
-            return StatusCode(getResult.StatusCode, getResult);
-
-        if (getResult.Data.CreatedByTeacherId != teacherId)
-        {
-            return Forbid("You can only delete your own announcements.");
-        }
 
         var result = await _announcementService.DeleteAnnouncementAsync(id, teacherId);
         if (!result.Success)

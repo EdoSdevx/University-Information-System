@@ -12,7 +12,7 @@ public interface IAnnouncementService
     Task<PagedResultService<AnnouncementResponse>> GetStudentAnnouncementsAsync(int studentId, int pageIndex = 1, int pageSize = 10);
     Task<ResultService<AnnouncementResponse>> GetAnnouncementDetailForStudentAsync(int announcementId);
     Task<PagedResultService<AnnouncementResponse>> GetTeacherAnnouncementsAsync(int teacherId, int pageIndex = 1, int pageSize = 10);
-    Task<ResultService<AnnouncementResponse>> GetAnnouncementDetailForTeacherAsync(int announcementId);
+    Task<ResultService<AnnouncementResponse>> GetAnnouncementDetailForTeacherAsync(int announcementId, int teacherId);
     Task<ResultService<AnnouncementResponse>> CreateAnnouncementAsync(int teacherId, CreateAnnouncementRequest request);
     Task<ResultService<AnnouncementResponse>> UpdateAnnouncementAsync(int announcementId, int teacherId, UpdateAnnouncementRequest request);
     Task<ResultService> DeleteAnnouncementAsync(int announcementId, int teacherId);

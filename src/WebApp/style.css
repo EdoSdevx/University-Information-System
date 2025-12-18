@@ -1543,6 +1543,303 @@ input[type="password"]:focus {
     gap: 6px;
 }
 
+
+.register-course-enrolled-section {
+    margin-top: 30px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.register-course-enrolled-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #1e3a5f;
+    color: #fff;
+}
+
+    .register-course-enrolled-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .register-course-enrolled-header span {
+        font-size: 13px;
+        opacity: 0.9;
+    }
+
+.register-course-enrolled-list {
+    padding: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.register-course-enrolled-empty {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+    font-size: 14px;
+}
+
+.register-course-enrolled-card {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+    .register-course-enrolled-card:last-child {
+        margin-bottom: 0;
+    }
+
+.register-course-enrolled-card-left {
+    flex: 0 0 200px;
+    border-right: 1px solid #dee2e6;
+    padding-right: 15px;
+}
+
+.register-course-enrolled-code {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1e3a5f;
+}
+
+.register-course-enrolled-name {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.register-course-enrolled-card-center {
+    flex: 1;
+    padding: 0 20px;
+}
+
+.register-course-enrolled-detail {
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+    .register-course-enrolled-detail:last-child {
+        margin-bottom: 0;
+    }
+
+.register-course-enrolled-label {
+    color: #888;
+    margin-right: 5px;
+}
+
+.register-course-enrolled-card-right {
+    flex: 0 0 150px;
+    text-align: right;
+}
+
+.register-course-enrolled-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.register-course-enrolled-days {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1e3a5f;
+}
+
+.register-course-enrolled-time {
+    font-size: 12px;
+    color: #666;
+}
+
+.register-course-enrolled-location {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+}
+
+
+.register-course-result-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.register-course-result-modal .register-course-modal-content {
+    max-width: 480px;
+    width: 90%;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.register-course-result-header {
+    padding: 25px 20px;
+    text-align: center;
+    color: #fff;
+}
+
+.register-course-result-success {
+    background: #1e3a5f;
+}
+
+.register-course-result-error {
+    background: #c0392b;
+}
+
+.register-course-result-warning {
+    background: #d68910;
+}
+
+
+.register-course-result-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+
+.register-course-result-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.register-course-result-body {
+    padding: 20px;
+    background: #fff;
+}
+
+.register-course-result-body p {
+    margin: 0 0 15px;
+    color: #555;
+    text-align: center;
+    font-size: 14px;
+}
+
+.register-course-result-details {
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.register-course-result-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+    .register-course-result-item:last-child {
+        margin-bottom: 0;
+    }
+
+.register-course-result-item-success {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+}
+
+.register-course-result-item-error {
+    background: #ffebee;
+}
+
+.register-course-result-item-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.register-course-result-item-success .register-course-result-item-icon {
+    background: #27ae60;
+    color: white;
+}
+
+.register-course-result-item-error .register-course-result-item-icon {
+    background: #e74c3c;
+    color: white;
+}
+
+.register-course-result-item-code {
+    font-weight: 600;
+    color: #1e3a5f;
+    min-width: 70px;
+}
+
+.register-course-result-item-name {
+    color: #555;
+    flex: 1;
+}
+
+.register-course-result-item-error span:last-child {
+    font-size: 11px;
+    color: #c62828;
+}
+
+.register-course-result-actions {
+    display: flex;
+    gap: 10px;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    justify-content: flex-end;
+}
+
+.register-course-result-btn {
+    padding: 9px 18px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    background: #fff;
+    color: #555;
+    transition: all 0.2s;
+}
+    .register-course-result-btn:hover {
+        background: #f5f5f5;
+        border-color: #ccc;
+    }
+
+.register-course-result-btn-primary {
+    background: #1e3a5f;
+    color: #fff;
+    border-color: #1e3a5f;
+}
+
+    .register-course-result-btn-primary:hover {
+        background: #152a45;
+        border-color: #152a45;
+    }
+
 .student-grades-container {
     background: #fff;
     border-radius: 2px;
@@ -3263,8 +3560,38 @@ input[type="password"]:focus {
     .student-courses {
         grid-template-columns: 1fr;
     }
-}
 
+}
+@media (max-width: 768px) {
+    .register-course-enrolled-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .register-course-enrolled-card-left {
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+        padding-right: 0;
+        padding-bottom: 10px;
+        width: 100%;
+    }
+
+    .register-course-enrolled-card-center {
+        padding: 0;
+    }
+
+    .register-course-enrolled-card-right {
+        text-align: left;
+        width: 100%;
+        padding-top: 10px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .register-course-result-item {
+        flex-wrap: wrap;
+    }
+}
 @media (max-width: 768px) {
     .student-profile-header {
         flex-direction: column;
@@ -7452,5 +7779,98 @@ input[type="password"]:focus {
         font-size: 15px;
         margin-bottom: 16px;
         padding-bottom: 10px;
+    }
+}
+
+/* ==================== Pagination ==================== */
+.admin-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    margin-top: 15px;
+    border-top: 1px solid #e9ecef;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.admin-pagination-info {
+    font-size: 13px;
+    color: #666;
+}
+
+    .admin-pagination-info strong {
+        color: #1e3a5f;
+    }
+
+.admin-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-pagination-size {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+    cursor: pointer;
+}
+
+    .admin-pagination-size:focus {
+        outline: none;
+        border-color: #1e3a5f;
+    }
+
+.admin-pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.admin-pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .admin-pagination-btn:hover:not(:disabled):not(.active) {
+        background: #f5f5f5;
+        border-color: #1e3a5f;
+    }
+
+    .admin-pagination-btn.active {
+        background: #1e3a5f;
+        color: #fff;
+        border-color: #1e3a5f;
+    }
+
+    .admin-pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+.admin-pagination-ellipsis {
+    padding: 0 5px;
+    color: #999;
+}
+
+@media (max-width: 768px) {
+    .admin-pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-pagination-controls {
+        width: 100%;
+        justify-content: space-between;
     }
 }

@@ -23,18 +23,30 @@ public class CourseService : ICourseService
         _logger = logger;
     }
 
-    public async Task<PagedResultService<CourseDetailResponse>> GetAllCoursesAsync(int pageIndex = 1, int pageSize = 10)
+    public async Task<PagedResultService<CourseDetailResponse>> GetAllCoursesAsync(int pageIndex = 1, int pageSize = 10, string? searchTerm = null)
     {
         if (pageIndex < 1) pageIndex = 1;
         if (pageSize < 1) pageSize = 10;
 
         _logger.LogInformation("Retrieving all courses. Page {PageIndex}, Size {PageSize}", pageIndex, pageSize);
 
-        var courses = await _unitOfWork.Courses.GetAllAsync();
+        var allCourses = await _unitOfWork.Courses.GetAllAsync();
 
-        var totalCount = courses.Count;
+        IEnumerable<Course> filteredQuery = allCourses;
 
-        var pagedCourses = courses
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            searchTerm = searchTerm.Trim().ToLowerInvariant();
+
+            filteredQuery = filteredQuery.Where(c =>
+                (c.Code != null && c.Code.ToLowerInvariant().Contains(searchTerm)) ||
+                (c.Name != null && c.Name.ToLowerInvariant().Contains(searchTerm))
+            );
+        }
+
+        var totalFilteredCount = filteredQuery.Count();
+
+        var pagedCourses = filteredQuery
                                 .OrderBy(c => c.Name)
                                 .Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize)
@@ -50,7 +62,7 @@ public class CourseService : ICourseService
             DepartmentId = course.DepartmentId
         }).ToList();
 
-        return PagedResultService<CourseDetailResponse>.Ok(dtos, pageIndex, pageSize, totalCount);
+        return PagedResultService<CourseDetailResponse>.Ok(dtos, pageIndex, pageSize, totalFilteredCount);
     }
     public async Task<ResultService<CourseResponse>> GetCourseByCodeAsync(string code)
     {

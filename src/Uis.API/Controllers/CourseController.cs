@@ -38,9 +38,10 @@ public class CourseController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllCoursesForAdminAsync(
     [FromQuery] int pageIndex = 1,
-    [FromQuery] int pageSize = 100)
+    [FromQuery] int pageSize = 100,
+    [FromQuery] string? searchTerm = null)
     {
-        var result = await _courseService.GetAllCoursesAsync(pageIndex, pageSize);
+        var result = await _courseService.GetAllCoursesAsync(pageIndex, pageSize, searchTerm);
         return Ok(result);
     }
 

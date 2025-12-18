@@ -724,7 +724,7 @@ export const TeacherPages = {
                         `/enrollment/course/${courseInstanceId}?pageIndex=1&pageSize=1000`
                     );
 
-                    if (!response.ok || !response.data) {
+                    if (!response.ok) {
                         attendanceTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: red;">Failed to load students</td></tr>';
                         return;
                     }
@@ -734,6 +734,13 @@ export const TeacherPages = {
 
                     const course = courses.find(c => c.courseInstanceId === courseInstanceId);
                     classInfo.textContent = `${course.courseCode}: ${course.courseName} (${course.section})`;
+
+                    if (enrollments.length === 0) {
+                        attendanceTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: #888;">No students enrolled in this class</td></tr>';
+                        currentCourseData = null;
+                        daysContainer.style.display = 'none';
+                        return;
+                    }
 
                     currentCourseData = {
                         courseInstanceId,
@@ -1036,6 +1043,7 @@ export const TeacherPages = {
                 }
 
                 courses = response.data;
+
                 classSelect.innerHTML = courses.map(course => `
                 <option value="${course.courseInstanceId}">
                     ${course.courseCode} - ${course.courseName} (${course.section})
@@ -1128,7 +1136,7 @@ export const TeacherPages = {
                         `/enrollment/course/${courseInstanceId}?pageIndex=1&pageSize=1000`
                     );
 
-                    if (!response.ok || !response.data) {
+                    if (!response.ok) {
                         rosterTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: red;">Failed to load roster</td></tr>';
                         return;
                     }
@@ -1139,6 +1147,11 @@ export const TeacherPages = {
                     const course = courses.find(c => c.courseInstanceId === courseInstanceId);
                     classInfo.textContent = `${course.courseCode}: ${course.courseName} (${course.section})`;
                     rosterCount.textContent = `${allStudents.length} students enrolled`;
+
+                    if (allStudents.length === 0) {
+                        rosterTable.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #888;">No students enrolled in this class</td></tr>';
+                        return;
+                    }
 
                     renderRoster(allStudents);
                 } catch (error) {

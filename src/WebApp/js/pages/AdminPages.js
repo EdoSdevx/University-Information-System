@@ -22,24 +22,6 @@ export const AdminPages = {
                 <div class="admin-banner-title">System Dashboard</div>
                 <div class="admin-banner-text">System is running normally. All services operational.</div>
             </div>
-            <div class="admin-stats">
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">2,547</div>
-                    <div class="admin-stat-label">Total Users</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">156</div>
-                    <div class="admin-stat-label">Active Courses</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">98.5%</div>
-                    <div class="admin-stat-label">System Uptime</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">42</div>
-                    <div class="admin-stat-label">Pending Requests</div>
-                </div>
-            </div>
         `,
         afterRender: () => { }
     },
@@ -84,6 +66,9 @@ export const AdminPages = {
                 </tbody>
             </table>
         </div>
+
+        <div id="usersPagination"></div>
+
     </div>
     
     <div class="admin-modal" id="userModal" style="display: none;">
@@ -136,12 +121,24 @@ export const AdminPages = {
     </div>
 `,
         afterRender: async () => {
+
+            window.usersPaginationPagination = new Pagination('usersPagination', {
+                pageSize: 10,
+                onPageChange: (page, pageSize) => loadUsers(page, pageSize)
+            });
+
             await loadDepartmentsForDropdown();
             await loadUsers();
 
-            document.getElementById('roleFilter').addEventListener('change', loadUsers);
-            document.getElementById('departmentFilter').addEventListener('change', loadUsers);
-            document.getElementById('searchUsers').addEventListener('input', debounce(loadUsers, 500));
+            document.getElementById('roleFilter').addEventListener('change', () => {
+                loadUsers(1, 10);
+            });
+            document.getElementById('departmentFilter').addEventListener('change', () => {
+                loadUsers(1, 10);
+            });
+            document.getElementById('searchUsers').addEventListener('input', debounce(() => {
+                loadUsers(1, 10);
+            }, 500));
         }
     },
 
@@ -244,6 +241,9 @@ export const AdminPages = {
                         </tbody>
                     </table>
                 </div>
+
+                <div id="instancesPagination"></div>
+
             </div>
 
             <div class="admin-modal" id="instanceModal" style="display: none;">
@@ -328,6 +328,9 @@ export const AdminPages = {
                                 <tr><td colspan="6" style="text-align: center; padding: 20px;">Loading students...</td></tr>
                             </tbody>
                         </table>
+
+                        <div id="enrollmentPagination"></div>
+
                     </div>
                     
                     <div class="admin-modal-footer">
@@ -337,11 +340,21 @@ export const AdminPages = {
             </div>
         `,
         afterRender: async () => {
-            await loadInstanceData();
-            await loadInstances();
 
-            document.getElementById('instanceDepartmentFilter').addEventListener('change', loadInstances);
-            document.getElementById('searchInstances').addEventListener('input', debounce(loadInstances, 500));
+            window.instancesPaginationPagination = new Pagination('instancesPagination', {
+                pageSize: 10,
+                onPageChange: (page, pageSize) => loadInstances(page, pageSize)
+            });
+
+            await loadInstanceData();
+            await loadInstances(1, 10);
+
+            document.getElementById('instanceDepartmentFilter').addEventListener('change', () => {
+                loadInstances(1, 10);
+            });
+            document.getElementById('searchInstances').addEventListener('input', debounce(() => {
+                loadInstances(1, 10);
+            }, 500));
         }
     },
 
@@ -379,6 +392,9 @@ export const AdminPages = {
                 </tbody>
             </table>
         </div>
+
+        <div id="coursesPagination"></div>
+
     </div>
     
     <div class="admin-modal" id="courseModal" style="display: none;">
@@ -423,11 +439,21 @@ export const AdminPages = {
     </div>
 `,
         afterRender: async () => {
-            await loadCourseData();
-            await loadCoursesForTable();
 
-            document.getElementById('courseDepartmentFilter').addEventListener('change', loadCoursesForTable);
-            document.getElementById('searchCourses').addEventListener('input', debounce(loadCoursesForTable, 500));
+            window.coursesPaginationPagination = new Pagination('coursesPagination', {
+                pageSize: 10,
+                onPageChange: (page, pageSize) => loadCoursesForTable(page, pageSize)
+            });
+
+            await loadCourseData();
+            await loadCoursesForTable(1, 10);
+
+            document.getElementById('courseDepartmentFilter').addEventListener('change', () => {
+                loadCoursesForTable(1, 10);
+            });
+            document.getElementById('searchCourses').addEventListener('input', debounce(() => {
+                loadCoursesForTable(1, 10);
+            }, 500));
         }
     },
 
@@ -488,21 +514,28 @@ export const AdminPages = {
 // ==================== USER MANAGEMENT ====================
 
 
-async function loadUsers() {
+async function loadUsers(page = 1, pageSize = 10) {
+
+    const tbody = document.getElementById('usersTable');
+    if (!tbody) return;
+
     const roleFilter = document.getElementById('roleFilter')?.value || '';
     const departmentId = document.getElementById('departmentFilter')?.value || '';
     const searchTerm = document.getElementById('searchUsers')?.value || '';
 
-    const response = await apiRequest(`/user/admin/all?roleFilter=${roleFilter}&departmentId=${departmentId}&searchTerm=${searchTerm}&pageSize=100`);
-
-    const tbody = document.getElementById('usersTable');
+    const response = await apiRequest(`/user/admin/all?roleFilter=${roleFilter}&departmentId=${departmentId}&searchTerm=${searchTerm}&pageIndex=${page}&pageSize=${pageSize}`);
 
     if (!response.ok || !response.data) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: red;">Failed to load users</td></tr>';
         return;
     }
 
-    const users = response.data;
+    const users = response.data || [];
+    const totalCount = response.totalCount;
+
+    if (window.usersPaginationPagination) {
+        window.usersPaginationPagination.update(totalCount, page);
+    }
 
     if (users.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No users found</td></tr>';
@@ -817,11 +850,12 @@ async function loadCoursesByDepartment(departmentId) {
     }
 }
 
-async function loadInstances() {
+async function loadInstances(page = 1, pageSize = 10) {
     const departmentId = document.getElementById('instanceDepartmentFilter')?.value || '';
     const searchTerm = document.getElementById('searchInstances')?.value || '';
 
-    const response = await apiRequest(`/courseinstance/admin/all?departmentId=${departmentId}&searchTerm=${searchTerm}&pageSize=100`);
+    const response = await apiRequest(`/courseinstance/admin/all?departmentId=${departmentId}&searchTerm=${searchTerm}&pageIndex=${page}&pageSize=${pageSize}`);
+
     const tbody = document.getElementById('instancesTable');
 
     if (!response.ok || !response.data) {
@@ -830,6 +864,11 @@ async function loadInstances() {
     }
 
     const instances = response.data;
+    const totalCount = response.totalCount;
+
+    if (window.instancesPaginationPagination) {
+        window.instancesPaginationPagination.update(totalCount, page);
+    }
 
     if (instances.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px;">No instances found</td></tr>';
@@ -1058,16 +1097,26 @@ async function loadCourseData() {
     }
 }
 
-async function loadCoursesForTable() {
+async function loadCoursesForTable(page = 1, pageSize = 10) {
+
+    const tbody = document.getElementById('coursesTable');
+
+    if (!tbody) {
+        return;
+    }
+
     const departmentId = document.getElementById('courseDepartmentFilter')?.value || '';
     const searchTerm = document.getElementById('searchCourses')?.value.toLowerCase() || '';
-    const tbody = document.getElementById('coursesTable');
 
     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Loading...</td></tr>';
 
     let url = departmentId
-        ? `/course/admin/by-department/${departmentId}?pageSize=100`
-        : `/course/admin/all?pageSize=100`;
+        ? `/course/admin/by-department/${departmentId}?pageIndex=${page}&pageSize=${pageSize}`
+        : `/course/admin/all?pageIndex=${page}&pageSize=${pageSize}`;
+
+    if (searchTerm) {
+        url += `&searchTerm=${encodeURIComponent(searchTerm)}`;
+    }
 
     const response = await apiRequest(url);
 
@@ -1077,12 +1126,10 @@ async function loadCoursesForTable() {
     }
 
     let courses = response.data.items || response.data;
+    const totalCount = response.totalCount;
 
-    if (searchTerm) {
-        courses = courses.filter(c =>
-            c.name.toLowerCase().includes(searchTerm) ||
-            c.code.toLowerCase().includes(searchTerm)
-        );
+    if (window.coursesPaginationPagination) {
+        window.coursesPaginationPagination.update(totalCount, page);
     }
 
     if (courses.length === 0) {
@@ -1266,18 +1313,29 @@ window.openEnrollmentModal = async (instanceId, courseCode) => {
     document.getElementById('enrollmentModal').style.display = 'flex';
     document.getElementById('enrollStudentId').value = '';
 
-    await loadClassEnrollments(instanceId);
+    if (!window.enrollmentPaginationPagination) {
+        window.enrollmentPaginationPagination = new Pagination('enrollmentPagination', {
+            pageSize: 10,
+            onPageChange: (page, pageSize) => loadClassEnrollments(currentManageInstanceId, page, pageSize)
+        });
+    }
+
+    await loadClassEnrollments(instanceId, 1, 10);
 };
 
-async function loadClassEnrollments(instanceId) {
+async function loadClassEnrollments(instanceId, page = 1, pageSize = 10) {
     const tbody = document.getElementById('enrollmentListTable');
     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Loading...</td></tr>';
 
-    const response = await apiRequest(`/enrollment/admin/course/${instanceId}?pageIndex=1&pageSize=1000`);
+    const response = await apiRequest(`/enrollment/admin/course/${instanceId}?pageIndex=${page}&pageSize=${pageSize}`);
 
     if (response.ok && response.data) {
         const students = response.data;
+        const totalCount = response.totalCount;
 
+        if (window.enrollmentPaginationPagination) {
+            window.enrollmentPaginationPagination.update(totalCount, page);
+        }
         if (students.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No students enrolled yet.</td></tr>';
             return;
@@ -1411,4 +1469,100 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+
+// ==================== PAGINATION UTILITY ====================
+
+class Pagination {
+    constructor(containerId, options = {}) {
+        this.containerId = containerId;
+        this.currentPage = 1;
+        this.pageSize = options.pageSize || 10;
+        this.totalItems = 0;
+        this.totalPages = 0;
+        this.onPageChange = options.onPageChange || (() => { });
+        this.pageSizeOptions = options.pageSizeOptions || [10, 25, 50, 100];
+    }
+
+    update(totalItems, currentPage = 1) {
+        this.totalItems = totalItems;
+        this.currentPage = currentPage;
+        this.totalPages = Math.ceil(totalItems / this.pageSize);
+        this.render();
+    }
+
+    setPageSize(size) {
+        this.pageSize = size;
+        this.currentPage = 1;
+        this.totalPages = Math.ceil(this.totalItems / this.pageSize);
+        this.onPageChange(this.currentPage, this.pageSize);
+    }
+
+    goToPage(page) {
+        if (page < 1 || page > this.totalPages) return;
+        this.currentPage = page;
+        this.onPageChange(this.currentPage, this.pageSize);
+    }
+
+    render() {
+        const container = document.getElementById(this.containerId);
+        if (!container) return;
+
+        if (this.totalItems === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const startItem = (this.currentPage - 1) * this.pageSize + 1;
+        const endItem = Math.min(this.currentPage * this.pageSize, this.totalItems);
+
+        let pageNumbers = [];
+        const maxVisiblePages = 5;
+
+        if (this.totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= this.totalPages; i++) {
+                pageNumbers.push(i);
+            }
+        } else {
+            if (this.currentPage <= 3) {
+                pageNumbers = [1, 2, 3, 4, '...', this.totalPages];
+            } else if (this.currentPage >= this.totalPages - 2) {
+                pageNumbers = [1, '...', this.totalPages - 3, this.totalPages - 2, this.totalPages - 1, this.totalPages];
+            } else {
+                pageNumbers = [1, '...', this.currentPage - 1, this.currentPage, this.currentPage + 1, '...', this.totalPages];
+            }
+        }
+
+        container.innerHTML = `
+            <div class="admin-pagination">
+                <div class="admin-pagination-info">
+                    Showing <strong>${startItem}-${endItem}</strong> of <strong>${this.totalItems}</strong> items
+                </div>
+                <div class="admin-pagination-controls">
+                    <select class="admin-pagination-size" onchange="window.${this.containerId}Pagination.setPageSize(Number(this.value))">
+                        ${this.pageSizeOptions.map(size =>
+            `<option value="${size}" ${size === this.pageSize ? 'selected' : ''}>${size} / page</option>`
+        ).join('')}
+                    </select>
+                    <div class="admin-pagination-pages">
+                        <button class="admin-pagination-btn" ${this.currentPage === 1 ? 'disabled' : ''} 
+                            onclick="window.${this.containerId}Pagination.goToPage(${this.currentPage - 1})">
+                            &laquo; Prev
+                        </button>
+                        ${pageNumbers.map(page =>
+            page === '...'
+                ? `<span class="admin-pagination-ellipsis">...</span>`
+                : `<button class="admin-pagination-btn ${page === this.currentPage ? 'active' : ''}" 
+                                    onclick="window.${this.containerId}Pagination.goToPage(${page})">${page}</button>`
+        ).join('')}
+                        <button class="admin-pagination-btn" ${this.currentPage === this.totalPages ? 'disabled' : ''} 
+                            onclick="window.${this.containerId}Pagination.goToPage(${this.currentPage + 1})">
+                            Next &raquo;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 }

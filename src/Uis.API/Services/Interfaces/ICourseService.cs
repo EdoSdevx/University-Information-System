@@ -13,7 +13,7 @@ public interface ICourseService
     Task<PagedResultService<CourseResponse>> GetByDepartmentAsync(int departmentId, int pageIndex, int pageSize);
 
 
-    Task<PagedResultService<CourseDetailResponse>> GetAllCoursesAsync(int pageIndex, int pageSize);
+    Task<PagedResultService<CourseDetailResponse>> GetAllCoursesAsync(int pageIndex, int pageSize, string? searchTerm );
     Task<ResultService<CourseDetailResponse>> CreateCourseAsync(CreateCourseRequest request);
     Task<ResultService<CourseResponse>> UpdateCourseAsync(int courseId, UpdateCourseRequest request);
     Task<ResultService> DeleteCourseAsync(int courseId);

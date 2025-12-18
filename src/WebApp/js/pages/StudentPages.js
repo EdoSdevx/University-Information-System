@@ -1265,6 +1265,33 @@ export const StudentPages = {
             </div>
         </div>
     </div>
+
+    <div class="register-course-enrolled-section">
+        <div class="register-course-enrolled-header">
+            <h3>Currently Enrolled Courses</h3>
+            <span id="enrolledCount">0 courses</span>
+        </div>
+        <div class="register-course-enrolled-list" id="enrolledCoursesList">
+            <div style="text-align: center; padding: 20px; color: #999;">Loading enrolled courses...</div>
+        </div>
+    </div>
+
+    <div class="register-course-result-modal" id="resultModal">
+    <div class="register-course-modal-content">
+        <div class="register-course-result-header" id="resultHeader">
+            <div class="register-course-result-icon" id="resultIcon"></div>
+            <h3 id="resultTitle"></h3>
+        </div>
+        <div class="register-course-result-body">
+            <p id="resultMessage"></p>
+            <div class="register-course-result-details" id="resultDetails"></div>
+        </div>
+        <div class="register-course-result-actions">
+            <button class="register-course-result-btn" onclick="document.getElementById('resultModal').style.display='none'">Close</button>
+           
+        </div>
+    </div>
+</div>
 `,
         afterRender: async () => {
             const selectedCourses = new Map();
@@ -1601,6 +1628,7 @@ export const StudentPages = {
                 confirmBtn.disabled = true;
                 confirmBtn.textContent = 'Registering...';
 
+                const results = [];
                 let successCount = 0;
                 let failCount = 0;
 
@@ -1609,14 +1637,61 @@ export const StudentPages = {
 
                     if (response.ok) {
                         successCount++;
+                        results.push({ courseCode, name: data.name, success: true });
                     } else {
                         failCount++;
+                        const errorMsg = response.message || 'Registration failed';
+                        results.push({ courseCode, name: data.name, success: false, error: errorMsg });
                     }
                 }
 
                 const totalCredits = Array.from(selectedCourses.values()).reduce((sum, c) => sum + c.credits, 0);
-                alert(`Successfully registered for ${successCount} courses (${totalCredits} credits)!`);
-                console.log('Selected courses:', Array.from(selectedCourses.entries()));
+
+                const modal = document.getElementById('resultModal');
+                const icon = document.getElementById('resultIcon');
+                const title = document.getElementById('resultTitle');
+                const message = document.getElementById('resultMessage');
+                const details = document.getElementById('resultDetails');
+                const header = document.getElementById('resultHeader');
+
+                if (failCount === 0) {
+          
+                    header.className = 'register-course-result-header register-course-result-success';
+                    icon.innerHTML = '✓';
+                    title.textContent = 'Registration Successful!';
+                    message.textContent = `You have successfully registered for ${successCount} course${successCount > 1 ? 's' : ''} (${totalCredits} credits)`;
+                } else if (successCount === 0) {
+
+                    header.className = 'register-course-result-header register-course-result-error';
+                    icon.innerHTML = '✕';
+                    title.textContent = 'Registration Failed';
+                    message.textContent = 'Unable to register for the selected courses. Please try again.';
+                } else {
+
+                    header.className = 'register-course-result-header register-course-result-warning';
+                    icon.innerHTML = '!';
+                    title.textContent = 'Partial Registration';
+                    message.textContent = `${successCount} course${successCount > 1 ? 's' : ''} registered successfully, ${failCount} failed.`;
+                }
+
+                details.innerHTML = results.map(r => `
+        <div class="register-course-result-item ${r.success ? 'register-course-result-item-success' : 'register-course-result-item-error'}">
+            <span class="register-course-result-item-icon">${r.success ? '✓' : '✕'}</span>
+            <span class="register-course-result-item-code">${r.courseCode}</span>
+            <span class="register-course-result-item-name">${r.name}</span>
+            ${!r.success ? `<span class="register-course-result-item-error">${r.error}</span>` : ''}
+        </div>
+    `).join('');
+
+                modal.style.display = 'flex';
+
+                if (successCount > 0) {
+                    results.filter(r => r.success).forEach(r => {
+                        selectedCourses.delete(r.courseCode);
+                    });
+                    filterAndDisplayCourses();
+                    updateSelectedGrid();
+                }
 
                 confirmBtn.disabled = false;
                 confirmBtn.textContent = 'Confirm Registration';
@@ -1625,6 +1700,69 @@ export const StudentPages = {
             if (await loadAcademicYear()) {
                 await loadAllCourses();
             }
+
+            const loadEnrolledCourses = async () => {
+                const enrolledList = document.getElementById('enrolledCoursesList');
+                const enrolledCount = document.getElementById('enrolledCount');
+
+                try {
+                    const response = await apiRequest('/courseInstance/my-schedule');
+
+                    if (!response.ok || !response.data || response.data.length === 0) {
+                        enrolledList.innerHTML = '<div class="register-course-enrolled-empty">No courses enrolled yet</div>';
+                        enrolledCount.textContent = '0 courses';
+                        return;
+                    }
+
+                    const courses = response.data;
+                    enrolledCount.textContent = `${courses.length} course${courses.length !== 1 ? 's' : ''}`;
+
+                    enrolledList.innerHTML = courses.map(course => {
+                        const day1Name = course.day1 !== null ? getDayAbbr(course.day1) : '';
+                        const day2Name = course.day2 !== null ? getDayAbbr(course.day2) : '';
+                        const schedule = day2Name ? `${day1Name}/${day2Name}` : day1Name || 'TBA';
+
+                        return `
+                <div class="register-course-enrolled-card">
+                    <div class="register-course-enrolled-card-left">
+                        <div class="register-course-enrolled-code">${course.courseCode}</div>
+                        <div class="register-course-enrolled-name">${course.courseName}</div>
+                    </div>
+                    <div class="register-course-enrolled-card-center">
+                        <div class="register-course-enrolled-detail">
+                            <span class="register-course-enrolled-label">Section:</span>
+                            <span>${course.section}</span>
+                        </div>
+                        <div class="register-course-enrolled-detail">
+                            <span class="register-course-enrolled-label">Instructor:</span>
+                            <span>${course.teacherName}</span>
+                        </div>
+                    </div>
+                    <div class="register-course-enrolled-card-right">
+                        <div class="register-course-enrolled-schedule">
+                            <span class="register-course-enrolled-days">${schedule}</span>
+                            <span class="register-course-enrolled-time">${formatTime(course.startTime)} - ${formatTime(course.endTime)}</span>
+                        </div>
+                        <div class="register-course-enrolled-location">${course.location || 'TBA'}</div>
+                    </div>
+                </div>
+            `;
+                    }).join('');
+
+                } catch (error) {
+                    console.error('Failed to load enrolled courses:', error);
+                    enrolledList.innerHTML = '<div class="register-course-enrolled-empty">Failed to load enrolled courses</div>';
+                }
+            };
+ 
+            await loadEnrolledCourses();
+
+            const originalConfirmHandler = document.getElementById('confirmBtn').onclick;
+            document.getElementById('resultModal').addEventListener('click', async function (e) {
+                if (e.target.classList.contains('register-course-result-btn') && !e.target.classList.contains('register-course-result-btn-primary')) {
+                    await loadEnrolledCourses();
+                }
+            });
         }
     },
 
@@ -1660,21 +1798,32 @@ export const StudentPages = {
                     return;
                 }
 
-                const courseGrades = enrollments.map(enrollment => {
+                const courseDetailPromises = enrollments.map(enrollment =>
+                    apiRequest(`/courseInstance/${enrollment.courseInstanceId}/enrollment-detail`)
+                );
+                const courseDetailResponses = await Promise.all(courseDetailPromises);
+
+                const courseGrades = enrollments.map((enrollment, index) => {
                     const gradeData = grades.find(g =>
                         g.courseCode === enrollment.courseCode ||
                         g.courseInstanceId === enrollment.courseInstanceId
                     );
 
+                    const courseDetail = courseDetailResponses[index];
+                    const creditHours = courseDetail.ok && courseDetail.data
+                        ? courseDetail.data.credits || courseDetail.data.creditHours || 3
+                        : 3;
+
                     return {
                         courseCode: enrollment.courseCode,
                         courseName: enrollment.courseName,
-                        creditHours: enrollment.creditHours || 3,
-                        exam1: gradeData?.exam1 || null,
-                        exam2: gradeData?.exam2 || null,
-                        final: gradeData?.final || null,
-                        project: gradeData?.project || null,
-                        letterGrade: gradeData?.letterGrade || null,
+                        creditHours: creditHours,
+                        exam1: gradeData?.exam1 ?? null,
+                        exam2: gradeData?.exam2 ?? null,
+                        final: gradeData?.final ?? null,
+                        project: gradeData?.project ?? null,
+                        score: gradeData?.score ?? null,
+                        letterGrade: gradeData?.letterGrade ?? null,
                         hasGrade: !!gradeData
                     };
                 });
@@ -1707,6 +1856,7 @@ export const StudentPages = {
                                     <th class="student-grades-col-grade">Exam 2</th>
                                     <th class="student-grades-col-grade">Final</th>
                                     <th class="student-grades-col-grade">Project</th>
+                                    <th class="student-grades-col-grade">Avg</th>
                                     <th class="student-grades-col-letter">Letter Grade</th>
                                     <th class="student-grades-col-credits">Credits</th>
                                 </tr>
@@ -1720,6 +1870,7 @@ export const StudentPages = {
                                     <td class="student-grades-col-grade">${grade.exam2 ?? '-'}</td>
                                     <td class="student-grades-col-grade">${grade.final ?? '-'}</td>
                                     <td class="student-grades-col-grade">${grade.project ?? '-'}</td>
+                                    <td class="student-grades-col-grade">${grade.score ?? '-'}</td>
                                     <td class="student-grades-col-letter">
                                         ${grade.letterGrade
                         ? `<span class="student-grades-letter student-grades-letter-${grade.letterGrade.toLowerCase()}">${grade.letterGrade}</span>`
@@ -1734,7 +1885,7 @@ export const StudentPages = {
                     </div>
 
                     <div class="student-grades-info">
-                        <p><strong>Note:</strong> Grades are updated as instructors submit them. Courses showing "Pending" have not been graded yet. Contact your instructor if you believe there's an error.</p>
+                        <p><strong>Note:</strong> Grades are updated as instructors submit them. Courses showing "-" have not been graded yet. Contact your instructor if you believe there's an error.</p>
                     </div>
                 </div>
             `;
@@ -1745,7 +1896,10 @@ export const StudentPages = {
                 document.getElementById('gradesContainer').innerHTML =
                     '<div style="text-align: center; padding: 20px; color: red;">Failed to load grades.</div>';
             }
+
+
         }
+
     },
 
     profile: {

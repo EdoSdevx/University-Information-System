@@ -17,7 +17,7 @@ export const SidebarComponent = {
                 { page: 'assignments', label: 'Assignments'},
                 { page: 'schedule', label: 'My Schedule' },
                 { page: 'registration', label: 'Course Registration' },
-                { page: 'grades', label: 'Grades & Transcripts' }
+                { page: 'grades', label: 'My Grades' }
             ],
             account: [
                 { page: 'profile', label: 'My Profile' },

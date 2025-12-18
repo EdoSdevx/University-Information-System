@@ -17,9 +17,9 @@ namespace Uis.API.Repositories
             return await DbSet
                 .Where(g => g.StudentId == studentId)
                 .Include(g => g.CourseInstance)
-                    .ThenInclude(ci => ci.Course)
+                    .ThenInclude(ci => ci!.Course)
                 .Include(g => g.CourseInstance)
-                    .ThenInclude(ci => ci.Teacher)
+                    .ThenInclude(ci => ci!.Teacher)
                 .AsNoTracking()
                 .OrderByDescending(g => g.SubmittedAt)
                 .ToListAsync();
@@ -29,7 +29,7 @@ namespace Uis.API.Repositories
         {
             return await DbSet
                 .Include(g => g.CourseInstance)
-                    .ThenInclude(ci => ci.Course)
+                    .ThenInclude(ci => ci!.Course)
                 .FirstOrDefaultAsync(g => g.StudentId == studentId &&
                                          g.CourseInstanceId == courseInstanceId);
         }
@@ -39,8 +39,8 @@ namespace Uis.API.Repositories
                 .Where(g => g.CourseInstanceId == courseInstanceId)
                 .Include(g => g.Student)
                 .AsNoTracking()
-                .OrderBy(g => g.Student.LastName)
-                .ThenBy(g => g.Student.FirstName)
+                .OrderBy(g => g.Student!.LastName)
+                .ThenBy(g => g.Student!.FirstName)
                 .ToListAsync();
         }
 

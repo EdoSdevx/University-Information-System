@@ -110,7 +110,7 @@ public class EnrollmentController : ControllerBase
 
         var teacherId = int.Parse(teacherIdClaim);
 
-        var result = await _enrollmentService.GetCourseEnrollmentsAsync(courseInstanceId, pageIndex, pageSize);
+        var result = await _enrollmentService.GetCourseEnrollmentsAsync(courseInstanceId, pageIndex, pageSize, teacherId, false);
         return Ok(result);
 
     }
@@ -124,7 +124,7 @@ public class EnrollmentController : ControllerBase
     [FromQuery] int pageIndex = 1,
     [FromQuery] int pageSize = 100)
     {
-        var result = await _enrollmentService.GetCourseEnrollmentsAsync(courseInstanceId, pageIndex, pageSize);
+        var result = await _enrollmentService.GetCourseEnrollmentsAsync(courseInstanceId, pageIndex, pageSize, -1, true);
 
         if (!result.Success) 
             return StatusCode(result.StatusCode, result);

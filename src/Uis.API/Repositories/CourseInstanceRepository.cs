@@ -33,7 +33,7 @@ namespace Uis.API.Repositories
                 .Include(ci => ci.Course)
                 .Include(ci => ci.Teacher)
                 .AsNoTracking()
-                .OrderBy(ci => ci.Course.Code)
+                .OrderBy(ci => ci.Course!.Code)
                 .ToListAsync();
         }
         public virtual async Task<CourseInstance?> GetForEnrollmentAsync(int courseInstanceId)
@@ -64,7 +64,7 @@ namespace Uis.API.Repositories
                 .Include(ci => ci.Enrollments)
                 .Include(ci => ci.AcademicYear)
                 .AsNoTracking()
-                .OrderByDescending(ci => ci.AcademicYear.StartYear)
+                .OrderByDescending(ci => ci.AcademicYear!.StartYear)
                 .ToListAsync();
         }
         public virtual async Task<CourseInstance?> GetWithEnrollmentsAsync(int courseInstanceId)
@@ -89,7 +89,7 @@ namespace Uis.API.Repositories
         {
             return await DbSet
                             .Include(ci => ci.Course)
-                                .ThenInclude(c => c.Department)
+                                .ThenInclude(c => c!.Department)
                             .Include(ci => ci.Teacher)
                             .Include(ci => ci.AcademicYear)
                             .Include(ci => ci.Department)

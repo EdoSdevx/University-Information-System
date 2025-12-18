@@ -118,7 +118,7 @@ public class CourseService : ICourseService
 
     public async Task<ResultService<CourseDetailResponse>> CreateCourseAsync(CreateCourseRequest request)
     {
-        var existingCourse = await _unitOfWork.Courses.GetByCodeAsync(request.Code);
+        var existingCourse = await _unitOfWork.Courses.GetByCodeAsync(request.Code!);
 
         if (existingCourse != null)
             return ResultService<CourseDetailResponse>.Fail("Course code already exists");
@@ -136,8 +136,8 @@ public class CourseService : ICourseService
 
         var course = new Course
         {
-            Code = request.Code,
-            Name = request.Name,
+            Code = request.Code!,
+            Name = request.Name!,
             CreditHours = request.CreditHours,
             DepartmentId = request.DepartmentId,
             PrerequisiteCourseId = request.PrerequisiteCourseId,
@@ -168,7 +168,7 @@ public class CourseService : ICourseService
 
         if (request.Code != course.Code)
         {
-            var existingCourse = await _unitOfWork.Courses.GetByCodeAsync(request.Code);
+            var existingCourse = await _unitOfWork.Courses.GetByCodeAsync(request.Code!);
             if (existingCourse != null)
                 return ResultService<CourseResponse>.Fail("Course code already exists");
         }
@@ -187,8 +187,8 @@ public class CourseService : ICourseService
                 return ResultService<CourseResponse>.Fail("Prerequisite course not found");
         }
 
-        course.Code = request.Code;
-        course.Name = request.Name;
+        course.Code = request.Code!;
+        course.Name = request.Name!;
         course.CreditHours = request.CreditHours;
         course.DepartmentId = request.DepartmentId;
         course.PrerequisiteCourseId = request.PrerequisiteCourseId;

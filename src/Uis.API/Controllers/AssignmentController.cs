@@ -201,7 +201,7 @@ public class AssignmentController : ControllerBase
 
         var dto = new SubmitAssignmentDto
         {
-            SubmissionText = request.SubmissionText,
+            SubmissionText = request.SubmissionText!,
             FileUrl = fileUrl
         };
 

@@ -16,9 +16,9 @@ public class Announcement : BaseEntity
     public int? TargetAcademicYearId { get; set; }
     public int? TargetCourseInstanceId { get; set; }
 
-    public virtual User? CreatedByTeacher { get; set; }
-    public virtual Department? TargetDepartment { get; set; }
-    public virtual AcademicYear? TargetAcademicYear { get; set; }
-    public virtual CourseInstance? TargetCourseInstance { get; set; }
+    public virtual User? CreatedByTeacher { get; set; } 
+    public virtual Department? TargetDepartment { get; set; } 
+    public virtual AcademicYear? TargetAcademicYear { get; set; } 
+    public virtual CourseInstance? TargetCourseInstance { get; set; } 
 }
 

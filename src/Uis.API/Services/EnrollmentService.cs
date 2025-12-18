@@ -89,7 +89,7 @@ public class EnrollmentService : IEnrollmentService
         return await ExecuteDropCourse(studentId, request.CourseInstanceId);
     }
 
-    public async Task<PagedResultService<StudentEnrollmentResponse>> GetCourseEnrollmentsAsync(int courseInstanceId, int pageIndex = 1, int pageSize = 10)
+    public async Task<PagedResultService<StudentEnrollmentResponse>> GetCourseEnrollmentsAsync(int courseInstanceId, int pageIndex = 1, int pageSize = 10, int teacherId = -1, bool byPass = false)
     {
         _logger.LogInformation("Retrieving enrollments for course {CourseInstanceId}. Page {PageIndex}, Size {PageSize}",
             courseInstanceId, pageIndex, pageSize);
@@ -97,6 +97,24 @@ public class EnrollmentService : IEnrollmentService
         if (pageIndex < 1) pageIndex = 1;
         if (pageSize < 1) pageSize = 10;
 
+        if(!byPass && teacherId == -1)
+        {
+            return PagedResultService<StudentEnrollmentResponse>.Fail($"Wrong teacherId: {teacherId}.");
+        }
+        var courseInstance = await _unitOfWork.CourseInstances.FirstOrDefaultAsync(ci => ci.Id == courseInstanceId);
+
+        if(courseInstance == null)
+        {
+            return PagedResultService<StudentEnrollmentResponse>.Fail($"No such course instance exist with id: {courseInstanceId}.");
+        }
+
+        if(!byPass)
+        {
+            if (courseInstance.TeacherId != teacherId)
+            {
+                return PagedResultService<StudentEnrollmentResponse>.Fail("You are not authorized to see other teachers courses.");
+            }
+        }
         var enrollments = await _unitOfWork.Enrollments.GetCourseEnrollmentsAsync(courseInstanceId);
 
         var totalCount = enrollments.Count;
@@ -205,9 +223,6 @@ public class EnrollmentService : IEnrollmentService
     {
         _logger.LogInformation("Dropping course for student {StudentId} from course {CourseInstanceId}",
             studentId, courseInstanceId);
-
-        if (studentId == null || courseInstanceId == null)
-            return ResultService.Fail("Drop request required");
 
         var enrollment = await _unitOfWork.Enrollments.GetEnrollmentAsync(
             studentId,

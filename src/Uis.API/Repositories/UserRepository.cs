@@ -28,7 +28,7 @@ namespace Uis.API.Repositories
                 .FirstOrDefaultAsync(u => u.Id == teacherId && u.Role == UserRole.Teacher);
         }
 
-        public virtual async Task<List<User?>> GetAllUsers()
+        public virtual async Task<List<User>> GetAllUsers()
         {
             return await DbSet
                         .Include(u => u.Department)

@@ -47,8 +47,8 @@ public class AssignmentService : IAssignmentService
         var dtos = assignments.Select(a => new AssignmentResponse
         {
             Id = a.Id,
-            Title = a.Title,
-            Description = a.Description,
+            Title = a.Title!,
+            Description = a.Description!,
             DueDate = a.DueDate,
             TotalPoints = a.TotalPoints,
             Status = a.Status.ToString(),
@@ -161,8 +161,8 @@ public class AssignmentService : IAssignmentService
         var dto = new AssignmentResponse
         {
             Id = assignment.Id,
-            Title = assignment.Title,
-            Description = assignment.Description,
+            Title = assignment.Title!,
+            Description = assignment.Description!,
             DueDate = assignment.DueDate,
             TotalPoints = assignment.TotalPoints,
             Status = assignment.Status.ToString(),
@@ -244,10 +244,6 @@ public class AssignmentService : IAssignmentService
         _logger.LogInformation("Retrieved {Count} submissions for assignment {AssignmentId}",
             dtos.Count, assignmentId);
 
-        foreach(SubmissionResponse test in dtos)
-        {
-            _logger.LogInformation(test.FileUrl);
-        }
         return ResultService<List<SubmissionResponse>>.Ok(dtos);
     }
 
@@ -264,8 +260,8 @@ public class AssignmentService : IAssignmentService
             return new StudentAssignmentResponse
             {
                 Id = a.Id,
-                Title = a.Title,
-                Description = a.Description,
+                Title = a.Title!,
+                Description = a.Description!,
                 DueDate = a.DueDate,
                 TotalPoints = a.TotalPoints,
                 CourseCode = a.CourseInstance?.Course?.Code ?? "N/A",

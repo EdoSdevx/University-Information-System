@@ -17,11 +17,11 @@ namespace Uis.API.Repositories
             return await DbSet
                 .Where(e => e.StudentId == studentId && e.Status == EnrollmentStatus.Active)
                 .Include(e => e.CourseInstance)
-                    .ThenInclude(ci => ci.Course)
+                    .ThenInclude(ci => ci!.Course)
                 .Include(e => e.CourseInstance)
-                    .ThenInclude(ci => ci.Teacher)
+                    .ThenInclude(ci => ci!.Teacher)
                 .Include(e => e.CourseInstance)
-                    .ThenInclude(ci => ci.AcademicYear)
+                    .ThenInclude(ci => ci!.AcademicYear)
                 .AsNoTracking()
                 .OrderByDescending(e => e.EnrolledAt)
                 .ToListAsync();
@@ -47,7 +47,7 @@ namespace Uis.API.Repositories
                 .Where(e => e.CourseInstanceId == courseInstanceId && e.Status == EnrollmentStatus.Active)
                 .Include(e => e.Student)
                 .AsNoTracking()
-                .OrderBy(e => e.Student.FirstName)
+                .OrderBy(e => e.Student!.FirstName)
                 .ToListAsync();
         }
 
@@ -61,14 +61,14 @@ namespace Uis.API.Repositories
         {
             return await DbSet
                 .Include(e => e.CourseInstance)
-                    .ThenInclude(ci => ci.Course)
+                    .ThenInclude(ci => ci!.Course)
                 .Include(e => e.CourseInstance)
-                    .ThenInclude(ci => ci.Teacher)
+                    .ThenInclude(ci => ci!.Teacher)
                 .Where(e => e.StudentId == studentId)
                 .Select(e => new CourseInstructorDto
                 {
-                    CourseCode = e.CourseInstance.Course.Code,
-                    CourseName = e.CourseInstance.Course.Name,
+                    CourseCode = e.CourseInstance!.Course!.Code,
+                    CourseName = e.CourseInstance!.Course.Name,
                     InstructorName = e.CourseInstance.Teacher != null
                         ? $"{e.CourseInstance.Teacher.FirstName} {e.CourseInstance.Teacher.LastName}"
                         : "TBA",

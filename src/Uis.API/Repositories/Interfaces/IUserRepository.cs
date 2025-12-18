@@ -11,6 +11,6 @@ namespace Uis.API.Repositories.Interfaces
     {
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetTeacherWithCoursesAsync(int teacherId);
-        Task<List<User?>> GetAllUsers();
+        Task<List<User>> GetAllUsers();
     }
 }

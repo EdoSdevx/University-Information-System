@@ -27,10 +27,10 @@ public class CourseInstance : BaseEntity
 
     public byte[]? ConcurrencyToken { get; set; }
 
-    public virtual Course? Course { get; set; }
-    public virtual User? Teacher { get; set; }
-    public virtual AcademicYear? AcademicYear { get; set; }
-    public virtual Department? Department { get; set; }
+    public virtual Course? Course { get; set; } 
+    public virtual User? Teacher { get; set; } 
+    public virtual AcademicYear? AcademicYear { get; set; } 
+    public virtual Department? Department { get; set; } 
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
     public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();

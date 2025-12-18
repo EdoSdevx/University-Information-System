@@ -191,7 +191,7 @@ public class AnnouncementService : IAnnouncementService
             CreatedByTeacherName = announcement.CreatedByTeacherName,
             CourseCode = announcement.TargetCourseInstance?.Course?.Code ?? null,
             CourseName = announcement?.TargetCourseInstance?.Course?.Name ?? null,
-            PublishedAt = announcement.PublishedAt
+            PublishedAt = announcement?.PublishedAt
         };
         return ResultService<AnnouncementResponse>.Ok(dto, "Announcement created");
     }
@@ -228,7 +228,7 @@ public class AnnouncementService : IAnnouncementService
             CreatedByTeacherName = announcement.CreatedByTeacherName,
             CourseCode = announcement.TargetCourseInstance?.Course?.Code ?? null,
             CourseName = announcement?.TargetCourseInstance?.Course?.Name ?? null,
-            PublishedAt = announcement.PublishedAt
+            PublishedAt = announcement?.PublishedAt
         };
         return ResultService<AnnouncementResponse>.Ok(dto, "Announcement updated");
     }

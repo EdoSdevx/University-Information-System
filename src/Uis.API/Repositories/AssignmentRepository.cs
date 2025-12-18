@@ -12,7 +12,7 @@ public class AssignmentRepository : BaseRepository<Assignment>, IAssignmentRepos
     {
         return await DbSet
             .Include(a => a.CourseInstance)
-                .ThenInclude(ci => ci.Course)
+                .ThenInclude(ci => ci!.Course)
             .Include(a => a.Submissions)
             .Where(a => a.CreatedByTeacherId == teacherId && a.CourseInstanceId == courseInstanceId)
             .OrderByDescending(a => a.CreatedAt)
@@ -23,11 +23,11 @@ public class AssignmentRepository : BaseRepository<Assignment>, IAssignmentRepos
     {
         return await _context.Enrollments
             .Where(e => e.StudentId == studentId)
-            .SelectMany(e => e.CourseInstance.Assignments)
+            .SelectMany(e => e.CourseInstance!.Assignments)
             .Include(a => a.CourseInstance)
-                .ThenInclude(ci => ci.Course)
+                .ThenInclude(ci => ci!.Course)
             .Include(a => a.CourseInstance)
-                .ThenInclude(ci => ci.Teacher)
+                .ThenInclude(ci => ci!.Teacher)
             .Include(a => a.Submissions.Where(s => s.StudentId == studentId))
             .OrderBy(a => a.DueDate)
             .ToListAsync();
@@ -37,7 +37,7 @@ public class AssignmentRepository : BaseRepository<Assignment>, IAssignmentRepos
     {
         return await DbSet
             .Include(a => a.CourseInstance)
-                .ThenInclude(ci => ci.Course)
+                .ThenInclude(ci => ci!.Course)
             .Include(a => a.Submissions)
                 .ThenInclude(s => s.Student)
             .FirstOrDefaultAsync(a => a.Id == assignmentId);

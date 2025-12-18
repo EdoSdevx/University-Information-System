@@ -953,21 +953,18 @@ export const TeacherPages = {
                     for (const [enrollmentId, weekDays] of Object.entries(attendanceData)) {
                         const status = weekDays[weekDayKey];
 
-                        // Skip if no data for this week-day combination
                         if (!status) continue;
 
                         try {
                             const intEnrollmentId = parseInt(enrollmentId);
                             const key = `${intEnrollmentId}-${selectedWeek}-${selectedDay}`;
 
-                            // Check if value actually changed from loaded state
                             const loadedRecord = loadedAttendance[key];
                             if (loadedRecord && loadedRecord.status === status) {
-                                continue;  // Skip unchanged records
+                                continue; 
                             }
 
                             if (loadedRecord) {
-                                // Update existing record
                                 const attendanceId = loadedRecord.id;
                                 const response = await apiRequest(
                                     `/attendance/${attendanceId}`,
@@ -981,7 +978,7 @@ export const TeacherPages = {
                                     failCount++;
                                 }
                             } else {
-                                // Create new record
+
                                 const response = await apiRequest(
                                     '/attendance/mark',
                                     'POST',
@@ -1012,7 +1009,6 @@ export const TeacherPages = {
                     });
                     document.getElementById('selectAllCheckbox').checked = false;
 
-                    // Clear data only for current week-day
                     for (const enrollmentId of Object.keys(attendanceData)) {
                         delete attendanceData[enrollmentId][weekDayKey];
                         if (Object.keys(attendanceData[enrollmentId]).length === 0) {

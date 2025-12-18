@@ -11,17 +11,17 @@ using Uis.API.Repositories.Interfaces;
 namespace Uis.API.Repositories;
 public class AnnouncementRepository : BaseRepository<Announcement>, IAnnouncementRepository
 {
-    public AnnouncementRepository(ApplicationDbContext context, IEnrollmentRepository enrollmentRepository) : base(context) {}
+    public AnnouncementRepository(ApplicationDbContext context) : base(context) {}
 
     public virtual async Task<List<Announcement>> GetAnnouncementsForStudentAsync(int studentId)
     {
         return await DbSet
             .Include(a => a.TargetCourseInstance)
-                .ThenInclude(ci => ci.Course)
+                .ThenInclude(ci => ci!.Course)
             .Include(a => a.TargetCourseInstance)
-                .ThenInclude(ci => ci.Teacher)
+                .ThenInclude(ci => ci!.Teacher)
             .Where(a => a.TargetCourseInstanceId.HasValue &&
-                        a.TargetCourseInstance.Enrollments.Any(e =>
+                        a.TargetCourseInstance!.Enrollments.Any(e =>
                             e.StudentId == studentId &&
                             e.Status == EnrollmentStatus.Active))
             .AsNoTracking()
@@ -29,20 +29,20 @@ public class AnnouncementRepository : BaseRepository<Announcement>, IAnnouncemen
             .ToListAsync();
     }
 
-    public virtual async Task<Announcement> GetAnnouncementDetailForStudentAsync(int announcementId)
+    public virtual async Task<Announcement?> GetAnnouncementDetailForStudentAsync(int announcementId)
     {
         return await DbSet
                     .Include(a => a.TargetCourseInstance)
-                            .ThenInclude(ci => ci.Course)
+                            .ThenInclude(ci => ci!.Course)
                     .AsNoTracking()
                     .FirstOrDefaultAsync(a => a.Id == announcementId);
     }
 
-    public virtual async Task<Announcement> GetAnnouncementDetailForTeacherAsync(int announcementId)
+    public virtual async Task<Announcement?> GetAnnouncementDetailForTeacherAsync(int announcementId)
     {
         return await DbSet
             .Include(a => a.TargetCourseInstance)
-                .ThenInclude(ci => ci.Course)
+                .ThenInclude(ci => ci!.Course)
             .FirstOrDefaultAsync(a => a.Id == announcementId);
     }
 

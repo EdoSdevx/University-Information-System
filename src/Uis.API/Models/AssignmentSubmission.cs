@@ -19,7 +19,7 @@ public class AssignmentSubmission : BaseEntity
     public int? GradedByTeacherId { get; set; }
     public SubmissionStatus Status { get; set; }
 
-    public virtual Assignment? Assignment { get; set; }
+    public virtual Assignment? Assignment { get; set; } 
     public virtual User? Student { get; set; }
     public virtual User? GradedByTeacher { get; set; }
 

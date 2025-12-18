@@ -40,10 +40,10 @@ public class AuthenticationService : Interfaces.IAuthenticationService
             return ResultService<AuthenticationResponse>.Fail("Email is required", ResultErrorCode.ValidationError);
         }
 
-        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 8)
         {
             _logger.LogWarning("Registration failed: password is weak");
-            return ResultService<AuthenticationResponse>.Fail("Password must be at least 6 characters", ResultErrorCode.ValidationError);
+            return ResultService<AuthenticationResponse>.Fail("Password must be at least 8 characters", ResultErrorCode.ValidationError);
         }
 
         if (string.IsNullOrWhiteSpace(request.FirstName))
@@ -79,6 +79,7 @@ public class AuthenticationService : Interfaces.IAuthenticationService
             PasswordHash = passwordHash,
             FirstName = request.FirstName,
             LastName = request.LastName,
+            DepartmentId = request.DepartmentId,
             Role = role,
             CreatedAt = DateTime.UtcNow
         };

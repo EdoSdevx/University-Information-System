@@ -22,8 +22,8 @@ public class UnitOfWork : IUnitOfWork
     private IGradeRepository? _grades;
     private IAnnouncementRepository? _announcements;
     private IAttendanceRepository? _attendanceRepository;
-    private IAssignmentRepository _assignmentRepository;
-    private IAssignmentSubmissionRepository _assignmentSubmissionRepository;
+    private IAssignmentRepository? _assignmentRepository;
+    private IAssignmentSubmissionRepository? _assignmentSubmissionRepository;
 
 
     public UnitOfWork(ApplicationDbContext context)
@@ -45,7 +45,7 @@ public class UnitOfWork : IUnitOfWork
 
     public IGradeRepository Grades => _grades ??= new GradeRepository(_context);
 
-    public IAnnouncementRepository Announcements => _announcements ??= new AnnouncementRepository(_context, _enrollments);
+    public IAnnouncementRepository Announcements => _announcements ??= new AnnouncementRepository(_context);
 
     public IAttendanceRepository Attendances => _attendanceRepository ??= new AttendanceRepository(_context);
 

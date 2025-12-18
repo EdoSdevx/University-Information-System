@@ -126,7 +126,7 @@ public class CourseController : ControllerBase
 
         var user = userResult.Data;
 
-        if (user.DepartmentId != departmentId)
+        if (user!.DepartmentId != departmentId)
         {
             return StatusCode(StatusCodes.Status403Forbidden,
             new { success = false, message = "You can only view courses from your own department." });

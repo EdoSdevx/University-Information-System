@@ -67,7 +67,7 @@ public class AnnouncementController : ControllerBase
 
         var announcement = announcementResult.Data;
 
-        var isEnrolled = await _enrollmentService.IsStudentEnrolledAsync(studentId, announcement.TargetCourseInstanceId);
+        var isEnrolled = await _enrollmentService.IsStudentEnrolledAsync(studentId, announcement!.TargetCourseInstanceId);
 
         if (!isEnrolled)
         {

@@ -10,7 +10,7 @@ using Uis.API.Repositories.Interfaces;
 using Uis.API.Services;
 using Uis.API.Services.Interfaces;
 
-namespace Uis.API.API.Controllers;
+namespace Uis.API.Controllers;
 
 [ApiController]
 [Authorize]

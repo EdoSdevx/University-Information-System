@@ -41,8 +41,9 @@ public class AttendanceService : IAttendanceService
             var attendance = new Attendance
             {
                 EnrollmentId = enrollmentId,
+                Day = (DayOfWeek?)request.Day,
                 Week = request.Week,
-                Status = request.Status,
+                Status = request.Status!,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -77,6 +78,7 @@ public class AttendanceService : IAttendanceService
             var dtos = paginated.Select(a => new AttendanceResponse
             {
                 Id = a.Id,
+                Day = (int?)a.Day,
                 CourseCode = a.Enrollment?.CourseInstance?.Course?.Code ?? "N/A",
                 CourseName = a.Enrollment?.CourseInstance?.Course?.Name ?? "N/A",
                 Week = a.Week,
@@ -125,7 +127,7 @@ public class AttendanceService : IAttendanceService
                 EnrollmentId = a.EnrollmentId,
                 StudentName = $"{a.Enrollment?.Student?.FirstName} {a.Enrollment?.Student?.LastName}",
                 Week = a.Week,
-                Day = a.Day,
+                Day = (int?)a.Day,
                 Status = a.Status
             }).ToList();
 
@@ -161,7 +163,7 @@ public class AttendanceService : IAttendanceService
                 return new ResultService { Success = false, Message = "Attendance record not found" };
             }
 
-            attendance.Status = request.Status;
+            attendance.Status = request.Status!;
             attendance.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Attendances.UpdateAsync(attendance);

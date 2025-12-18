@@ -18,8 +18,8 @@ public class AttendanceRepository : BaseRepository<Attendance>, IAttendanceRepos
         return await DbSet
             .Where(a => a.Enrollment!.StudentId == studentId)
             .Include(a => a.Enrollment)
-                .ThenInclude(e => e.CourseInstance)
-                    .ThenInclude(ci => ci.Course)
+                .ThenInclude(e => e!.CourseInstance)
+                    .ThenInclude(ci => ci!.Course)
             .OrderByDescending(a => a.Week)
             .ToListAsync();
     }
@@ -30,7 +30,7 @@ public class AttendanceRepository : BaseRepository<Attendance>, IAttendanceRepos
             .Where(a => a.Enrollment!.CourseInstanceId == courseInstanceId &&
                        a.Week == week)
             .Include(a => a.Enrollment)
-                .ThenInclude(e => e.Student)
+                .ThenInclude(e => e!.Student)
             .OrderBy(a => a.Enrollment!.Student!.FirstName)
             .ToListAsync();
     }

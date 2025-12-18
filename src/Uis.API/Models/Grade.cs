@@ -23,8 +23,8 @@ public class Grade : BaseEntity
     // Audit trail
     public string? Notes { get; set; }
 
-    public virtual User? Student { get; set; }
+    public virtual User? Student { get; set; } 
     public virtual CourseInstance? CourseInstance { get; set; }
-    public virtual User? SubmittedByTeacher { get; set; }
-    public virtual AcademicYear? AcademicYear { get; set; }
+    public virtual User? SubmittedByTeacher { get; set; } 
+    public virtual AcademicYear? AcademicYear { get; set; } 
 }

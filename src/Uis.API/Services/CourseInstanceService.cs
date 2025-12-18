@@ -31,15 +31,15 @@ public class CourseInstanceService : ICourseInstanceService
         var schedule = courseInstances.Select(ci => new CourseInstanceSchedule
         {
             CourseInstanceId = ci.Id,
-            CourseCode = ci.Course.Code,
-            CourseName = ci.Course.Name,
-            Section = ci.Section,
-            Day1 = (int)ci.Day1,
-            Day2 = (int)ci.Day2,
-            StartTime = ci.StartTime?.ToString("HH:mm"),
+            CourseCode = ci?.Course?.Code,
+            CourseName = ci?.Course?.Name,
+            Section = ci?.Section,
+            Day1 = (int?)ci?.Day1,
+            Day2 = (int?)ci?.Day2,
+            StartTime = ci!.StartTime?.ToString("HH:mm"),
             EndTime = ci.EndTime?.ToString("HH:mm"),
-            TeacherName = $"{ci.Teacher.FirstName} {ci.Teacher.LastName}",
-            Location = ci.Location
+            TeacherName = $"{ci?.Teacher?.FirstName} {ci?.Teacher?.LastName}",
+            Location = ci?.Location
         }).ToList();
 
         return ResultService<List<CourseInstanceSchedule>>.Ok(schedule);
@@ -51,7 +51,7 @@ public class CourseInstanceService : ICourseInstanceService
         if (pageSize < 1) pageSize = 10;
 
         var student = await _unitOfWork.Users.GetByIdAsync(studentId);
-        if (student == null || student.DepartmentId == null)
+        if (student == null || student?.DepartmentId == null)
         {
             _logger.LogWarning("Student {StudentId} not found or not assigned to department", studentId);
             return PagedResultService<CourseInstanceResponse>.Fail("Student not found or not assigned to department");
@@ -80,8 +80,8 @@ public class CourseInstanceService : ICourseInstanceService
             Section = ci.Section,
             Capacity = ci.Capacity,
             CurrentEnrollmentCount = ci.Enrollments.Count(e => e.Status == EnrollmentStatus.Active),
-            Day1 = (int)ci.Day1,
-            Day2 = (int)ci.Day2,
+            Day1 = (int?)ci.Day1,
+            Day2 = (int?)ci.Day2,
             StartTime = ci.StartTime?.ToString("HH:mm"),
             EndTime = ci.EndTime?.ToString("HH:mm"),
             Location = ci.Location
@@ -120,8 +120,8 @@ public class CourseInstanceService : ICourseInstanceService
             Section = course.Section,
             Capacity = course.Capacity,
             CurrentEnrollmentCount = enrollmentCount,
-            Day1 = (int)course.Day1,
-            Day2 = (int)course.Day2,
+            Day1 = (int?)course.Day1,
+            Day2 = (int?)course.Day2,
             StartTime = course.StartTime?.ToString("HH:mm"),
             EndTime = course.EndTime?.ToString("HH:mm"),
             Location = course.Location,
@@ -161,8 +161,8 @@ public class CourseInstanceService : ICourseInstanceService
             Capacity = ci.Capacity,
             CurrentEnrollmentCount = ci.Enrollments?.Count(e => e.Status == EnrollmentStatus.Active) ?? 0,
             AcademicYear = ci.AcademicYear?.Year ?? null,
-            Day1 = (int)ci.Day1,
-            Day2 = (int)ci.Day2,
+            Day1 = (int?)ci.Day1,
+            Day2 = (int?)ci.Day2,
             StartTime = ci.StartTime?.ToString("HH:mm"),
             EndTime = ci.EndTime?.ToString("HH:mm"),
             Location = ci.Location
@@ -302,13 +302,13 @@ public class CourseInstanceService : ICourseInstanceService
             TeacherId = request.TeacherId,
             AcademicYearId = request.AcademicYearId,
             DepartmentId = course.DepartmentId,
-            Section = request.Section,
-            Capacity = request.Capacity,
+            Section = request.Section!,
+            Capacity = request.Capacity!,
             Day1 = request.Day1.HasValue ? (DayOfWeek)request.Day1.Value : null,
             Day2 = request.Day2.HasValue ? (DayOfWeek)request.Day2.Value : null,
-            StartTime = TimeOnly.Parse(request.StartTime),
-            EndTime = TimeOnly.Parse(request.EndTime),
-            Location = request.Location,
+            StartTime = TimeOnly.Parse(request.StartTime!),
+            EndTime = TimeOnly.Parse(request.EndTime!),
+            Location = request.Location!,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -322,7 +322,7 @@ public class CourseInstanceService : ICourseInstanceService
             CourseName = course.Name,
             Section = instance.Section,
             TeacherName = $"{teacher.FirstName} {teacher.LastName}",
-            Day1 = (int)instance.Day1,
+            Day1 = (int?)instance.Day1,
             Day2 = request.Day2.HasValue ? (int)request.Day2.Value : null,
             StartTime = instance.StartTime?.ToString("HH:mm"),
             EndTime = instance.EndTime?.ToString("HH:mm"),
@@ -392,8 +392,8 @@ public class CourseInstanceService : ICourseInstanceService
             CourseName = updatedInstance.Course?.Name,
             Section = updatedInstance.Section,
             TeacherName = updatedInstance.Teacher != null ? $"{updatedInstance.Teacher.FirstName} {updatedInstance.Teacher.LastName}" : null,
-            Day1 = (int)updatedInstance.Day1,
-            Day2 = (int)updatedInstance.Day2,
+            Day1 = (int?)updatedInstance.Day1,
+            Day2 = (int?)updatedInstance.Day2,
             StartTime = updatedInstance.StartTime?.ToString("HH:mm"),
             EndTime = updatedInstance.EndTime?.ToString("HH:mm"),
             Location = updatedInstance.Location,

@@ -23,7 +23,7 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : BaseEntit
 
     // ==================== READ OPERATIONS ====================
 
-    public virtual async Task<List<T?>> GetAllAsync()
+    public virtual async Task<List<T>> GetAllAsync()
     {
         return await DbSet.ToListAsync();
     }

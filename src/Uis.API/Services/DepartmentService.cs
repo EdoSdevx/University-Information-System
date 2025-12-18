@@ -35,14 +35,14 @@ public class DepartmentService : IDepartmentService
         var totalCount = departments.Count;
 
         var pagedDepartments = departments
-                                .OrderBy(d => d.Name)
+                                .OrderBy(d => d!.Name)
                                 .Skip((pageIndex - 1) * pageSize)
                                 .Take(pageSize)
                                 .ToList();
 
         var dtos = pagedDepartments.Select(d => new DepartmentResponse
         {
-            Id = d.Id,
+            Id = d!.Id,
             Name = d.Name,
             Code = d.Code,
             Email = d.Email,

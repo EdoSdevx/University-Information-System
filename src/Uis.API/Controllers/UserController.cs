@@ -198,6 +198,16 @@ public class UserController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("admin/{userId}")]
+    public async Task<IActionResult> GetUserDetails(int userId)
+    {
+        var result = await _userService.GetUserByIdAsync(userId);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result);
+
+        return Ok(result);
+    }
     [HttpPost("admin/create")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateUser([FromBody] RegisterRequest request)

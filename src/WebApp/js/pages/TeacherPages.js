@@ -1551,13 +1551,13 @@ export const TeacherPages = {
                 const tableHeader = document.querySelector('.teacher-assignment-submissions-table thead tr');
                 if (!tableHeader.innerHTML.includes('File')) {
                     tableHeader.innerHTML = `
-            <th>Student Name</th>
-            <th>Status</th>
-            <th>Submitted</th>
-            <th>File</th>
-            <th>Grade</th>
-            <th>Action</th>
-        `;
+                                            <th>Student Name</th>
+                                            <th>Status</th>
+                                            <th>Submitted</th>
+                                            <th>File</th>
+                                            <th>Grade</th>
+                                            <th>Action</th>
+                                        `;
                 }
 
                 const tableBody = document.getElementById('submissionsTable');

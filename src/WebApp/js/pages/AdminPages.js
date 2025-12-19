@@ -602,10 +602,11 @@ window.openEditUserModal = async (userId) => {
 
     populateDepartmentDropdown();
 
-    const response = await apiRequest(`/user/admin/all?pageSize=100`);
+    const response = await apiRequest(`/user/admin/${userId}`);
 
     if (response.ok && response.data) {
-        const user = response.data.find(u => u.id === userId);
+
+        const user = response.data;
         if (user) {
             document.getElementById('userEmail').value = user.email;
             document.getElementById('userFirstName').value = user.firstName;

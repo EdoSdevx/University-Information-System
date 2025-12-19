@@ -31,7 +31,7 @@ public class AttendanceService : IAttendanceService
                 return new ResultService { Success = false, Message = "Enrollment not found" };
             }
 
-            var existing = await _unitOfWork.Attendances.GetAttendanceAsync(enrollmentId, request.Week);
+            var existing = await _unitOfWork.Attendances.GetAttendanceAsync(enrollmentId, request.Week, request.Day);
             if (existing != null)
             {
                 _logger.LogWarning($"Attendance already exists for enrollment {enrollmentId} on {request.Week}");

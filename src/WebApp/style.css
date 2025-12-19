@@ -2855,13 +2855,8 @@ input[type="password"]:focus {
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
-
-.student-assignment-description,
-
 .student-assignment-due-date,
-
 .student-assignment-course-name,
-
 .student-assignment-points {
     font-size: 14px;
     color: #2c2c2c;
@@ -2874,8 +2869,24 @@ input[type="password"]:focus {
     border: 1px solid #e9ecef;
 }
 
-.student-assignment-file-input,
+.student-assignment-description {
+    font-size: 14px;
+    color: #2c2c2c;
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    line-height: 1.6;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+    min-height: auto;
+    overflow-wrap: break-word;
+}
 
+.student-assignment-file-input,
 .student-assignment-textarea {
     width: 100%;
     padding: 12px 14px;
@@ -6020,7 +6031,6 @@ input[type="password"]:focus {
     animation: teacher-assignment-slideIn 0.3s ease;
     max-height: 80vh;
     overflow-y: auto;
-    overflow: hidden;
 }
 
 .teacher-assignment-modal-header {

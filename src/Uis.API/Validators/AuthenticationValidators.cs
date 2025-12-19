@@ -14,13 +14,11 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required")
-            .EmailAddress().WithMessage("Invalid email format")
-            .Must(e => e.EndsWith("@yildiz.edu.tr") || e.EndsWith("@std.yildiz.edu.tr"))
-            .WithMessage("Must use a valid university email address");
+            .EmailAddress().WithMessage("Invalid email format");
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required")
-            .MinimumLength(6).WithMessage("Password must be at least 6 characters");
+            .MinimumLength(6).WithMessage("Password must be at least 8 characters");
 
         RuleFor(x => x.FirstName).NotEmpty().MaximumLength(50);
         RuleFor(x => x.LastName).NotEmpty().MaximumLength(50);

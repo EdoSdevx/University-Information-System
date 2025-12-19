@@ -10,5 +10,5 @@ public interface IAttendanceRepository : IBaseRepository<Attendance>
 {
     Task<List<Attendance>> GetStudentAttendanceAsync(int studentId);
     Task<List<Attendance>> GetCourseAttendanceAsync(int courseInstanceId, int week);
-    Task<Attendance?> GetAttendanceAsync(int enrollmentId, int week);
+    Task<Attendance?> GetAttendanceAsync(int enrollmentId, int week, int day);
 }

@@ -35,9 +35,9 @@ public class AttendanceRepository : BaseRepository<Attendance>, IAttendanceRepos
             .ToListAsync();
     }
 
-    public async Task<Attendance?> GetAttendanceAsync(int enrollmentId, int week)
+    public async Task<Attendance?> GetAttendanceAsync(int enrollmentId, int week, int day)
     {
         return await DbSet
-            .FirstOrDefaultAsync(a => a.EnrollmentId == enrollmentId && a.Week == week);
+            .FirstOrDefaultAsync(a => a.EnrollmentId == enrollmentId && a.Week == week && (int?)a.Day == day);
     }
 }

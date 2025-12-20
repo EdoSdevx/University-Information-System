@@ -12,8 +12,8 @@ using Uis.API.Models;
 namespace Uis.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251215084940_DepartmentName")]
-    partial class DepartmentName
+    [Migration("20251220090516_Last")]
+    partial class Last
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

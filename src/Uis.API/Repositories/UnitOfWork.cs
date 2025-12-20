@@ -59,6 +59,11 @@ public class UnitOfWork : IUnitOfWork
         return await _context.SaveChangesAsync();
     }
 
+    public void ClearChangeTracker()
+    {
+        _context.ChangeTracker.Clear();
+    }
+
     public async Task<IAsyncDisposable> BeginTransactionAsync()
     {
         _transaction = await _context.Database.BeginTransactionAsync();

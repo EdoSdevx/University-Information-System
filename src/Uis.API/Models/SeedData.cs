@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Uis.API.Constants;
@@ -634,5 +636,208 @@ public static class SeedData
         if (score >= 55) return "C-";
         if (score >= 50) return "D";
         return "F";
+    }
+
+
+}
+
+public static class LoadTestSeed
+{
+    public static async Task SeedAsync(ApplicationDbContext context, int studentCount = 3000, int courseCount = 60, int courseCapacity = 50)
+    {
+        Console.WriteLine("=== LOAD TEST SEED ===");
+        var sw = Stopwatch.StartNew();
+
+        // Check if already seeded
+        if (await context.Users.AnyAsync(u => u.Email.StartsWith("loadtest.student")))
+        {
+            var existingCount = await context.Users.CountAsync(u => u.Email.StartsWith("loadtest.student"));
+            var courseInstances = await context.CourseInstances
+                .Include(ci => ci.Course)
+                .Where(ci => ci.Course.Code.StartsWith("LOAD"))
+                .ToListAsync();
+
+            Console.WriteLine($"Load test data already exists: {existingCount} students, {courseInstances.Count} courses");
+            Console.WriteLine("\nCourse Instance IDs:");
+            foreach (var ci in courseInstances)
+            {
+                Console.WriteLine($"  {ci.Id}: {ci.Course.Code} - {ci.CurrentEnrollmentCount}/{ci.Capacity}");
+            }
+            return;
+        }
+
+        // Get or create department
+        var department = await context.Departments.FirstOrDefaultAsync(d => d.Code == "CSE");
+        if (department == null)
+        {
+            department = new Department { Code = "CSE", Name = "Computer Science", CreatedAt = DateTime.UtcNow };
+            context.Departments.Add(department);
+            await context.SaveChangesAsync();
+        }
+
+        // Get or create academic year
+        var academicYear = await context.AcademicYears.FirstOrDefaultAsync(a => a.IsActive);
+        if (academicYear == null)
+        {
+            academicYear = new AcademicYear
+            {
+                Year = "2024-2025",
+                StartYear = 2024,
+                EndYear = 2025,
+                EnrollmentStartDate = DateTime.UtcNow.AddDays(-30),
+                EnrollmentEndDate = DateTime.UtcNow.AddDays(60),
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.AcademicYears.Add(academicYear);
+            await context.SaveChangesAsync();
+        }
+
+        // Create teachers (one per 10 courses)
+        var teacherCount = (int)Math.Ceiling(courseCount / 10.0);
+        var teachers = new List<User>();
+        var hashedTeacherPassword = BCrypt.Net.BCrypt.HashPassword("Teacher123");
+
+        for (int i = 1; i <= teacherCount; i++)
+        {
+            teachers.Add(new User
+            {
+                Email = $"loadtest.teacher{i}@university.edu",
+                FirstName = "LoadTest",
+                LastName = $"Teacher{i}",
+                DepartmentId = department.Id,
+                PasswordHash = hashedTeacherPassword,
+                Role = UserRole.Teacher,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        context.Users.AddRange(teachers);
+        await context.SaveChangesAsync();
+        Console.WriteLine($"Created {teacherCount} teachers");
+
+        // Create courses and course instances
+        var courseInstanceIds = new List<int>();
+        var random = new Random(42); // Fixed seed for reproducibility
+
+        for (int i = 1; i <= courseCount; i++)
+        {
+            var course = new Course
+            {
+                Code = $"LOAD{i:D3}",
+                Name = $"Load Test Course {i}",
+                CreditHours = 3,
+                DepartmentId = department.Id,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.Courses.Add(course);
+            await context.SaveChangesAsync();
+
+            // Vary capacity: 30-70 seats per course
+            var capacity = courseCapacity + random.Next(-20, 21);
+            capacity = Math.Max(20, capacity); // Minimum 20 seats
+
+            var teacherIndex = (i - 1) % teachers.Count;
+            var courseInstance = new CourseInstance
+            {
+                CourseId = course.Id,
+                TeacherId = teachers[teacherIndex].Id,
+                AcademicYearId = academicYear.Id,
+                DepartmentId = department.Id,
+                Section = $"S{i:D2}",
+                Capacity = capacity,
+                CurrentEnrollmentCount = 0,
+                Day1 = (DayOfWeek)(i % 5 + 1), // Mon-Fri
+                Day2 = (DayOfWeek)((i + 2) % 5 + 1),
+                StartTime = new TimeOnly(8 + (i % 8), 0), // 8:00 - 15:00
+                EndTime = new TimeOnly(9 + (i % 8), 30),
+                Location = $"Room {100 + i}",
+                Status = CourseInstanceStatus.Open,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.CourseInstances.Add(courseInstance);
+            await context.SaveChangesAsync();
+
+            courseInstanceIds.Add(courseInstance.Id);
+
+            if (i % 10 == 0)
+                Console.WriteLine($"Created courses 1-{i}");
+        }
+
+        Console.WriteLine($"\nCreated {courseCount} course instances");
+
+        // Create students in batches
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword("Student123");
+        const int batchSize = 500;
+        int batches = (int)Math.Ceiling(studentCount / (double)batchSize);
+
+        for (int batch = 0; batch < batches; batch++)
+        {
+            var students = new List<User>();
+            int startIndex = batch * batchSize + 1;
+            int endIndex = Math.Min((batch + 1) * batchSize, studentCount);
+
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                students.Add(new User
+                {
+                    Email = $"loadtest.student{i}@university.edu",
+                    FirstName = "Student",
+                    LastName = i.ToString(),
+                    DepartmentId = department.Id,
+                    PasswordHash = hashedPassword,
+                    Role = UserRole.Student,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            context.Users.AddRange(students);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"Created students {startIndex} to {endIndex}");
+        }
+
+        sw.Stop();
+        Console.WriteLine($"\n=== SEED COMPLETE ===");
+        Console.WriteLine($"Time: {sw.Elapsed.TotalSeconds:F2} seconds");
+        Console.WriteLine($"Students: {studentCount}");
+        Console.WriteLine($"Courses: {courseCount}");
+        Console.WriteLine($"Total Capacity: ~{courseCount * courseCapacity} seats");
+
+        Console.WriteLine($"\nCourse Instance IDs: [{string.Join(", ", courseInstanceIds)}]");
+        Console.WriteLine($"\nCredentials:");
+        Console.WriteLine($"  Students: loadtest.student{{1-{studentCount}}}@university.edu / Student123");
+        Console.WriteLine($"  Teachers: loadtest.teacher{{1-{teacherCount}}}@university.edu / Teacher123");
+    }
+
+    public static async Task ResetAsync(ApplicationDbContext context)
+    {
+        Console.WriteLine("=== RESETTING LOAD TEST DATA ===");
+
+        // Get all load test course instance IDs
+        var courseInstanceIds = await context.CourseInstances
+            .Include(ci => ci.Course)
+            .Where(ci => ci.Course.Code.StartsWith("LOAD"))
+            .Select(ci => ci.Id)
+            .ToListAsync();
+
+        if (!courseInstanceIds.Any())
+        {
+            Console.WriteLine("No load test courses found");
+            return;
+        }
+
+        // Delete enrollments
+        var deleted = await context.Enrollments
+            .Where(e => courseInstanceIds.Contains(e.CourseInstanceId))
+            .ExecuteDeleteAsync();
+
+        Console.WriteLine($"Deleted {deleted} enrollments");
+
+        // Reset enrollment counts
+        await context.CourseInstances
+            .Where(ci => courseInstanceIds.Contains(ci.Id))
+            .ExecuteUpdateAsync(s => s.SetProperty(ci => ci.CurrentEnrollmentCount, 0));
+
+        Console.WriteLine($"Reset {courseInstanceIds.Count} course instances to 0 enrollment");
+        Console.WriteLine("=== RESET COMPLETE ===");
     }
 }

@@ -1,0 +1,41 @@
+
+================================================================================
+                         ENROLLMENT LOAD TEST RESULTS
+================================================================================
+
+TEST CONFIGURATION
+------------------
+Virtual Users (VUs):     200
+Total Iterations:        3000
+Duration:                244.0s
+
+ENROLLMENT OUTCOMES
+-------------------
+✓ Successful:            2268 (75.6%)
+✓ Course Full:           706 (23.5%)
+✗ Failed (Server Busy):  26 (0.9%)
+
+PERFORMANCE METRICS
+-------------------
+HTTP Request Duration:
+  Average:               8086ms
+  Median:                5110ms
+  P90:                   16759ms
+  P95:                   24543ms
+  Min:                   356ms
+  Max:                   60043ms
+
+Login Duration:
+  Average:               4377ms
+  P95:                   7631ms
+
+Enrollment Duration:
+  Average:               11796ms
+  P95:                   33558ms
+
+THROUGHPUT
+----------
+Requests/sec:            24.59
+Iterations/sec:          12.30
+
+================================================================================

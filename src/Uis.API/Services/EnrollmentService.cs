@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -152,28 +153,35 @@ public class EnrollmentService : IEnrollmentService
 
     private async Task<ResultService<EnrollmentResponse>> ExecuteEnrollmentAsync(int studentId, int courseInstanceId, bool ignoreCapacity = false)
     {
-        var student = await _unitOfWork.Users.GetByIdAsync(studentId);
-        if (student == null) return ResultService<EnrollmentResponse>.Fail("Student not found");
+        const int maxRetries = 10;
 
-        var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(courseInstanceId);
-        if (courseInstance == null) return ResultService<EnrollmentResponse>.Fail("Course not found");
-
-        var isEnrolled = await _unitOfWork.Enrollments.IsStudentEnrolledAsync(studentId, courseInstanceId);
-        if (isEnrolled) return ResultService<EnrollmentResponse>.Fail("Already enrolled", ResultErrorCode.Conflict);
-
-        if (!ignoreCapacity)
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            if (courseInstance.CurrentEnrollmentCount >= courseInstance.Capacity)
+            if (attempt > 1)
             {
-                _logger.LogWarning("Course {CourseInstanceId} is full. Capacity: {Capacity}", courseInstanceId, courseInstance.Capacity);
+                _unitOfWork.ClearChangeTracker();
+                await Task.Delay(Random.Shared.Next(50, 150 * attempt));
+                _logger.LogInformation("Retry attempt {Attempt} for student {StudentId}", attempt, studentId);
+            }
+
+            var student = await _unitOfWork.Users.GetByIdAsync(studentId);
+            if (student == null) return ResultService<EnrollmentResponse>.Fail("Student not found");
+
+            var courseInstance = await _unitOfWork.CourseInstances.GetByIdAsync(courseInstanceId);
+            if (courseInstance == null) return ResultService<EnrollmentResponse>.Fail("Course not found");
+
+            var isEnrolled = await _unitOfWork.Enrollments.IsStudentEnrolledAsync(studentId, courseInstanceId);
+            if (isEnrolled) return ResultService<EnrollmentResponse>.Fail("Already enrolled", ResultErrorCode.Conflict);
+
+            if (!ignoreCapacity && courseInstance.CurrentEnrollmentCount >= courseInstance.Capacity)
+            {
                 return ResultService<EnrollmentResponse>.Fail("Course is full", ResultErrorCode.CourseFull);
             }
-        }
-        try
-        {
-            var transaction = await _unitOfWork.BeginTransactionAsync();
+
             try
             {
+                var transaction = await _unitOfWork.BeginTransactionAsync();
+
                 var enrollment = new Enrollment
                 {
                     StudentId = studentId,
@@ -185,16 +193,14 @@ public class EnrollmentService : IEnrollmentService
                 };
 
                 await _unitOfWork.Enrollments.AddAsync(enrollment);
-
                 courseInstance.CurrentEnrollmentCount++;
                 await _unitOfWork.CourseInstances.UpdateAsync(courseInstance);
-
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                _logger.LogInformation("Enrolled student {StudentId} in {Course}", studentId, courseInstanceId);
+                _logger.LogInformation("Enrolled student {StudentId} in course {CourseId}", studentId, courseInstanceId);
 
-                var dto = new EnrollmentResponse
+                return ResultService<EnrollmentResponse>.Ok(new EnrollmentResponse
                 {
                     Id = enrollment.Id,
                     CourseCode = courseInstance.Course?.Code,
@@ -202,23 +208,29 @@ public class EnrollmentService : IEnrollmentService
                     Section = courseInstance.Section,
                     Status = enrollment.Status.ToString(),
                     EnrolledAt = enrollment.EnrolledAt
-                };
+                }, "Enrolled successfully");
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
 
-                return ResultService<EnrollmentResponse>.Ok(dto, "Enrolled successfully");
+                if (attempt == maxRetries)
+                {
+                    _logger.LogWarning("Enrollment failed after {MaxRetries} retries", maxRetries);
+                    return ResultService<EnrollmentResponse>.Fail("Server busy, please try again");
+                }
+                // Loop continues automatically
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(ex, "Transaction failed");
-                throw;
+                _logger.LogError(ex, "Enrollment failed unexpectedly");
+                return ResultService<EnrollmentResponse>.Fail("Enrollment failed: " + ex.Message);
             }
         }
-        catch (Exception ex)
-        {
-            return ResultService<EnrollmentResponse>.Fail("Enrollment failed: " + ex.Message);
-        }
-    }
 
+        return ResultService<EnrollmentResponse>.Fail("Enrollment failed");
+    }
     private async Task<ResultService> ExecuteDropCourse(int studentId, int courseInstanceId)
     {
         _logger.LogInformation("Dropping course for student {StudentId} from course {CourseInstanceId}",
@@ -265,7 +277,7 @@ public class EnrollmentService : IEnrollmentService
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, "Drop transaction failed");
-                throw;
+                throw;  
             }
         }
         catch (Exception ex)

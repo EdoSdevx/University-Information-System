@@ -20,6 +20,7 @@ public interface IUnitOfWork : IAsyncDisposable
     IAssignmentSubmissionRepository AssignmentSubmissions { get; }
 
     Task<int> SaveChangesAsync();
+    void ClearChangeTracker();
     Task<IAsyncDisposable> BeginTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackTransactionAsync();

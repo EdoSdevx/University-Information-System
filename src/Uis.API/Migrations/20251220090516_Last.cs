@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Uis.API.Migrations
 {
     /// <inheritdoc />
-    public partial class DepartmentName : Migration
+    public partial class Last : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -96,5 +96,13 @@ namespace Uis.API.Repositories
                             .Include(ci => ci.Enrollments)
                             .FirstOrDefaultAsync(ci => ci.Id == id);
         }
+
+        public async Task<CourseInstance?> GetByIdWithLockAsync(int id)
+        {
+            return await _context.CourseInstances
+                .FromSqlRaw("SELECT * FROM CourseInstances WITH (UPDLOCK, ROWLOCK) WHERE Id = {0}", id)
+                .FirstOrDefaultAsync();
+        }
     }
+
 }

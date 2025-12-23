@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Uis.API.Constants;
 using Uis.API.DTOs.Authentication;
+using Uis.API.Repositories.Interfaces;
+using Uis.API.Services;
 using Uis.API.Services.Interfaces;
 
 namespace Uis.API.Controllers;
@@ -17,11 +19,15 @@ public class AuthenticationController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly ILogger<AuthenticationController> _logger;
+    private readonly IUserRepository _repo;
+    private readonly ITokenService _tokenService;
 
-    public AuthenticationController(IAuthenticationService authenticationService, ILogger<AuthenticationController> logger)
+    public AuthenticationController(IAuthenticationService authenticationService, ILogger<AuthenticationController> logger, IUserRepository repo, ITokenService tokenService)
     {
         _authenticationService = authenticationService;
         _logger = logger;
+        _repo = repo;
+        _tokenService = tokenService;
     }
 
     [HttpPost("register")]
@@ -94,5 +100,23 @@ public class AuthenticationController : ControllerBase
 
         _logger.LogInformation("Token refreshed successfully");
         return Ok(result);
+    }
+
+    [HttpPost("login-load-test")]
+    public async Task<IActionResult> LoginLoadTest([FromBody] int studentId)
+    {
+        // SAFETY: Crash if we are in Production. This is for testing only.
+        // If you don't have IWebHostEnvironment injected, just comment this out for now.
+        // if (!_env.IsDevelopment()) return Unauthorized();
+
+        // 1. Get the student directly (No Password Check)
+        var student = await _repo.GetByIdAsync(studentId);
+        if (student == null) return NotFound("Student not found");
+
+        // 2. Generate the REAL Token (Exactly as your normal login does)
+        // assuming you have a method like GenerateToken(User user)
+        var token = _tokenService.GenerateAccessToken(student);
+
+        return Ok(new { data = new { accessToken = token } });
     }
 }

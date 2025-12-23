@@ -27,6 +27,12 @@ var jwtIssuer = jwtSettings["Issuer"];
 var jwtAudience = jwtSettings["Audience"];
 var jwtExpirationMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "10");
 
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxConcurrentConnections = 5000;
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
+});
 // ==================== REPOSITORIES ====================
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();

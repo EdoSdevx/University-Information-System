@@ -16,5 +16,7 @@ namespace Uis.API.Repositories.Interfaces
 
         Task<List<CourseInstance>> GetAllWithDetailsAsync();
         Task<CourseInstance?> GetByIdWithDetailsAsync(int id);
+
+        Task<CourseInstance?> GetByIdWithLockAsync(int id);
     }
 }
